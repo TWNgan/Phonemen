@@ -1,0 +1,1990 @@
+<!doctype html>
+<html lang="zh-Hant-HK">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>手機俠後台 · Proposal B</title>
+<style>
+/* Shared pieces for all three mockups: modal, toast, printouts, device art. */
+:root {
+  --font: -apple-system, "Segoe UI", "Microsoft JhengHei", "微軟正黑體", "PingFang HK", "Noto Sans TC", Arial, sans-serif;
+  --mono: "Cascadia Mono", Consolas, "SFMono-Regular", Menlo, monospace;
+}
+* { box-sizing: border-box; }
+
+/* Modal */
+.pm-overlay { position: fixed; inset: 0; background: rgba(15, 18, 25, .45); display: flex; align-items: flex-start; justify-content: center; z-index: 1000; padding: 48px 16px; overflow: auto; animation: pm-fade .12s ease-out; }
+.pm-modal { background: #fff; color: #18181b; border-radius: 14px; box-shadow: 0 24px 60px rgba(0,0,0,.25); width: 100%; max-width: 560px; font-family: var(--font); font-size: 14px; }
+.pm-modal-head { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; border-bottom: 1px solid #ececf0; font-weight: 600; font-size: 16px; }
+.pm-modal-head button { border: 0; background: none; font-size: 20px; line-height: 1; cursor: pointer; color: #71717a; }
+.pm-modal-body { padding: 20px; }
+.pm-modal-foot { padding: 14px 20px; border-top: 1px solid #ececf0; display: flex; gap: 8px; justify-content: flex-end; }
+@keyframes pm-fade { from { opacity: 0; } to { opacity: 1; } }
+.pm-btn { font: 14px var(--font); padding: 8px 14px; border-radius: 8px; border: 1px solid #d4d4d8; background: #fff; color: #18181b; cursor: pointer; }
+.pm-btn:hover { background: #f4f4f5; }
+.pm-btn.primary { background: #18181b; border-color: #18181b; color: #fff; }
+.pm-btn.primary:hover { background: #27272a; }
+
+/* Toast */
+.pm-toasts { position: fixed; left: 50%; bottom: 28px; transform: translateX(-50%); display: flex; flex-direction: column; gap: 8px; z-index: 2000; pointer-events: none; }
+.pm-toast { background: #18181b; color: #fafafa; font: 14px var(--font); padding: 10px 16px; border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,.25); animation: pm-up .18s ease-out; }
+@keyframes pm-up { from { transform: translateY(8px); opacity: 0; } to { transform: none; opacity: 1; } }
+
+/* Printouts: 80 mm thermal paper and a 50 x 30 mm label */
+.paper-stage { background: #e9e9ee; border-radius: 10px; padding: 24px; display: flex; justify-content: center; }
+.receipt { width: 302px; background: #fff; color: #111; font: 12px/1.45 var(--mono); padding: 16px 14px 22px; box-shadow: 0 2px 10px rgba(0,0,0,.12); position: relative; }
+.receipt::after { content: ''; position: absolute; left: 0; right: 0; bottom: -8px; height: 8px; background: linear-gradient(-45deg, transparent 33%, #fff 33%, #fff 66%, transparent 66%) 0 0 / 12px 8px, linear-gradient(45deg, transparent 33%, #fff 33%, #fff 66%, transparent 66%) 0 0 / 12px 8px; }
+.receipt .c { text-align: center; }
+.receipt .big { font-size: 16px; font-weight: 700; font-family: var(--font); }
+.receipt .rule { border-top: 1px dashed #777; margin: 8px 0; }
+.receipt .row { display: flex; justify-content: space-between; gap: 8px; }
+.receipt .muted { color: #555; }
+.receipt .tot { font-size: 15px; font-weight: 700; }
+.receipt .qr { width: 96px; height: 96px; margin: 8px auto 0; }
+.receipt .sig { height: 54px; border-bottom: 1px solid #333; margin-top: 6px; display: flex; align-items: flex-end; }
+.receipt .sig img { max-height: 52px; }
+.receipt .small { font-size: 10.5px; line-height: 1.4; }
+.label { width: 302px; height: 181px; background: #fff; color: #111; border-radius: 6px; padding: 12px 14px; font: 12px var(--font); box-shadow: 0 2px 10px rgba(0,0,0,.12); display: flex; flex-direction: column; justify-content: space-between; }
+.label .l1 { font-weight: 700; font-size: 15px; }
+.label .l2 { display: flex; justify-content: space-between; font-size: 12px; }
+.label .bc { height: 44px; }
+.label .bc svg { width: 100%; height: 100%; }
+.label .code { font: 12px var(--mono); text-align: center; letter-spacing: .08em; }
+
+/* Device art */
+.dev { display: flex; align-items: center; justify-content: center; background: radial-gradient(circle at 50% 35%, #fbfbfd, #eceef2); border-radius: 12px; overflow: hidden; }
+.dev svg { height: 86%; width: auto; max-width: 86%; filter: drop-shadow(0 8px 14px rgba(0,0,0,.14)); }
+
+</style>
+<style>
+/* Proposal B — modern admin: sidebar, scan-first top bar, cards and boards. */
+:root {
+  --bg: #f5f6f8; --card: #fff; --line: #e5e7eb; --line2: #eef0f3;
+  --ink: #0f172a; --ink2: #334155; --muted: #64748b; --faint: #94a3b8;
+  --pri: #4f46e5; --pri-d: #4338ca; --pri-50: #eef2ff; --pri-100: #e0e7ff;
+  --green: #16a34a; --green-50: #f0fdf4; --amber: #b45309; --amber-50: #fffbeb; --red: #dc2626; --red-50: #fef2f2;
+  --sky: #0369a1; --sky-50: #f0f9ff; --violet: #6d28d9; --violet-50: #f5f3ff; --orange: #c2410c; --orange-50: #fff7ed; --slate-50: #f1f5f9;
+  --r: 12px;
+}
+body { margin: 0; font: 14px/1.5 var(--font); color: var(--ink); background: var(--bg); }
+a { color: var(--pri); text-decoration: none; }
+button { font: inherit; }
+input, select, textarea { font: inherit; color: inherit; }
+.ic { width: 18px; height: 18px; flex: none; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+
+/* Shell */
+.app { display: grid; grid-template-columns: 232px 1fr; min-height: 100vh; }
+.side { background: #0f1115; color: #cbd5e1; display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh; }
+.brand { display: flex; align-items: center; gap: 10px; padding: 18px 18px 14px; }
+.logo { width: 34px; height: 34px; border-radius: 9px; background: linear-gradient(135deg, #ff6a2b, #ff3d6e); color: #fff; display: grid; place-items: center; font-weight: 800; font-size: 17px; }
+.brand b { color: #fff; font-size: 15px; display: block; line-height: 1.2; }
+.brand small { color: #8b93a3; font-size: 12px; }
+.nav { padding: 6px 10px; display: flex; flex-direction: column; gap: 2px; overflow: auto; flex: 1; }
+.nav .sec { font-size: 11px; letter-spacing: .06em; color: #6b7280; padding: 14px 10px 6px; text-transform: uppercase; }
+.nav a { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 8px; color: #cbd5e1; cursor: pointer; }
+.nav a:hover { background: #1b1e25; color: #fff; }
+.nav a.on { background: #23263a; color: #fff; box-shadow: inset 2px 0 0 #818cf8; }
+.nav a .cnt { margin-left: auto; background: #2b2f3a; color: #e2e8f0; font-size: 11px; padding: 0 7px; border-radius: 999px; line-height: 18px; }
+.nav a .cnt.hot { background: #dc2626; color: #fff; }
+.nav a kbd { margin-left: auto; font: 11px var(--font); color: #6b7280; border: 1px solid #2f3440; border-radius: 4px; padding: 0 5px; }
+.side-foot { padding: 14px 18px; border-top: 1px solid #1d2028; font-size: 12px; color: #8b93a3; line-height: 1.7; }
+.side-foot a { color: #a5b4fc; }
+
+.main { min-width: 0; display: flex; flex-direction: column; }
+.top { position: sticky; top: 0; z-index: 30; display: flex; align-items: center; gap: 16px; padding: 12px 28px; background: rgba(245,246,248,.92); backdrop-filter: blur(6px); border-bottom: 1px solid var(--line); }
+.scan { flex: 1; max-width: 620px; display: flex; align-items: center; gap: 10px; background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 0 12px; height: 40px; }
+.scan:focus-within { border-color: var(--pri); box-shadow: 0 0 0 3px var(--pri-100); }
+.scan input { border: 0; outline: none; flex: 1; background: none; }
+.scan kbd, .kbd { font: 11px var(--font); color: var(--muted); border: 1px solid var(--line); border-radius: 4px; padding: 0 5px; background: #fff; }
+.top-r { margin-left: auto; display: flex; align-items: center; gap: 12px; color: var(--ink2); font-size: 13px; }
+.seg { display: inline-flex; background: #e9ebef; border-radius: 9px; padding: 3px; gap: 2px; }
+.seg button { border: 0; background: none; padding: 5px 12px; border-radius: 7px; cursor: pointer; color: var(--ink2); white-space: nowrap; }
+.seg button.on { background: #fff; color: var(--ink); box-shadow: 0 1px 2px rgba(0,0,0,.08); font-weight: 600; }
+.avatar { width: 32px; height: 32px; border-radius: 50%; background: #c7d2fe; color: #3730a3; display: grid; place-items: center; font-weight: 700; }
+#view { padding: 24px 28px 48px; }
+
+/* Page header */
+.ph { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; margin-bottom: 18px; flex-wrap: wrap; }
+.ph h1 { font-size: 22px; margin: 0; letter-spacing: -.01em; }
+.ph p { margin: 2px 0 0; color: var(--muted); }
+.ph .acts { display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* Buttons */
+.btn { display: inline-flex; align-items: center; gap: 7px; height: 36px; padding: 0 14px; border-radius: 9px; border: 1px solid var(--line); background: #fff; color: var(--ink); cursor: pointer; white-space: nowrap; font-weight: 500; }
+.btn:hover { background: #f8fafc; }
+.btn.pri { background: var(--pri); border-color: var(--pri); color: #fff; }
+.btn.pri:hover { background: var(--pri-d); }
+.btn.dark { background: #111827; border-color: #111827; color: #fff; }
+.btn.green { background: var(--green); border-color: var(--green); color: #fff; }
+.btn.ghost { border-color: transparent; background: transparent; }
+.btn.ghost:hover { background: #eef0f3; }
+.btn.sm { height: 30px; padding: 0 10px; font-size: 13px; border-radius: 8px; }
+.btn.lg { height: 46px; padding: 0 20px; font-size: 15px; border-radius: 11px; }
+.btn.block { width: 100%; justify-content: center; }
+.btn[disabled] { opacity: .45; cursor: not-allowed; }
+.link { color: var(--pri); cursor: pointer; background: none; border: 0; padding: 0; }
+
+/* Cards and layout */
+.card { background: var(--card); border: 1px solid var(--line); border-radius: var(--r); box-shadow: 0 1px 2px rgba(15,23,42,.04); }
+.card > .hd { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 14px 18px; border-bottom: 1px solid var(--line2); }
+.card > .hd h3 { margin: 0; font-size: 15px; }
+.card > .hd .sub { color: var(--muted); font-size: 13px; }
+.card > .bd { padding: 16px 18px; }
+.grid { display: grid; gap: 16px; }
+.g2 { grid-template-columns: 1fr 1fr; }
+.g3 { grid-template-columns: repeat(3, 1fr); }
+.g4 { grid-template-columns: repeat(4, 1fr); }
+.g-side { grid-template-columns: minmax(0, 1fr) 360px; align-items: start; }
+.g-side2 { grid-template-columns: 340px minmax(0, 1fr); align-items: start; }
+.row { display: flex; align-items: center; gap: 10px; }
+.row.sb { justify-content: space-between; }
+.stack { display: flex; flex-direction: column; gap: 12px; }
+.muted { color: var(--muted); }
+.faint { color: var(--faint); }
+.small { font-size: 12.5px; }
+.num { font-variant-numeric: tabular-nums; }
+.right { text-align: right; }
+.mono { font-family: var(--mono); font-size: 13px; }
+.hr { height: 1px; background: var(--line2); margin: 12px 0; }
+
+/* Chips */
+.chip { display: inline-flex; align-items: center; gap: 5px; height: 24px; padding: 0 9px; border-radius: 999px; font-size: 12.5px; font-weight: 600; white-space: nowrap; background: var(--slate-50); color: #475569; }
+.chip.green { background: var(--green-50); color: var(--green); }
+.chip.amber { background: var(--amber-50); color: var(--amber); }
+.chip.red { background: var(--red-50); color: var(--red); }
+.chip.sky { background: var(--sky-50); color: var(--sky); }
+.chip.violet { background: var(--violet-50); color: var(--violet); }
+.chip.orange { background: var(--orange-50); color: var(--orange); }
+.chip.slate { background: var(--slate-50); color: #475569; }
+.chip.pri { background: var(--pri-50); color: var(--pri); }
+.chip.out { background: #fff; border: 1px solid var(--line); color: var(--ink2); font-weight: 500; }
+.dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; background: currentColor; }
+
+/* KPI */
+.kpi { padding: 16px 18px; }
+.kpi .lb { color: var(--muted); font-size: 13px; display: flex; align-items: center; gap: 8px; }
+.kpi .v { font-size: 26px; font-weight: 700; letter-spacing: -.02em; margin-top: 4px; }
+.kpi .s { color: var(--muted); font-size: 13px; margin-top: 2px; }
+.kpi .s b { color: var(--ink); font-weight: 600; }
+
+/* Bars */
+.bars { display: flex; flex-direction: column; gap: 10px; }
+.bar { display: grid; grid-template-columns: 92px 1fr 96px; align-items: center; gap: 10px; font-size: 13px; }
+.bar .tr { height: 10px; background: #eef0f3; border-radius: 999px; overflow: hidden; }
+.bar .fl { height: 100%; background: var(--pri); border-radius: 999px; }
+.bar .fl.green { background: var(--green); } .bar .fl.amber { background: #f59e0b; } .bar .fl.red { background: #ef4444; } .bar .fl.sky { background: #0ea5e9; } .bar .fl.violet { background: #8b5cf6; }
+
+/* Queue list */
+.queue a { display: flex; align-items: center; gap: 12px; padding: 11px 18px; border-top: 1px solid var(--line2); color: var(--ink); }
+.queue a:first-child { border-top: 0; }
+.queue a:hover { background: #fafbfc; }
+.queue .n { font-weight: 700; font-size: 18px; min-width: 30px; }
+.queue .t { flex: 1; }
+.queue .t small { display: block; color: var(--muted); }
+
+/* Table */
+.tbl { width: 100%; border-collapse: collapse; }
+.tbl th { text-align: left; font-size: 12.5px; font-weight: 600; color: var(--muted); padding: 10px 12px; border-bottom: 1px solid var(--line); background: #fafbfc; position: sticky; top: 0; white-space: nowrap; }
+.tbl td { padding: 10px 12px; border-bottom: 1px solid var(--line2); vertical-align: middle; }
+.tbl tr.click { cursor: pointer; }
+.tbl tr.click:hover td { background: #fafbff; }
+.tbl .thumb { width: 40px; height: 40px; border-radius: 8px; }
+.tbl .t1 { font-weight: 600; }
+.tbl .t2 { color: var(--muted); font-size: 12.5px; }
+.tbl input { width: 100px; height: 32px; border: 1px solid var(--line); border-radius: 8px; padding: 0 8px; text-align: right; }
+.tbl-wrap { overflow: auto; }
+
+/* Forms */
+.field { display: flex; flex-direction: column; gap: 6px; }
+.field > label { font-size: 13px; font-weight: 600; color: var(--ink2); }
+.field .hint { font-size: 12px; color: var(--muted); }
+.inp, .sel, .ta { height: 40px; border: 1px solid var(--line); border-radius: 9px; padding: 0 12px; background: #fff; outline: none; width: 100%; }
+.ta { height: auto; min-height: 90px; padding: 10px 12px; resize: vertical; line-height: 1.6; }
+.inp:focus, .sel:focus, .ta:focus { border-color: var(--pri); box-shadow: 0 0 0 3px var(--pri-100); }
+.inp.big { height: 54px; font-size: 18px; border-radius: 12px; padding: 0 16px; }
+.inp.num { text-align: right; }
+.tog { position: relative; width: 38px; height: 22px; border-radius: 999px; background: #cbd5e1; border: 0; cursor: pointer; flex: none; }
+.tog::after { content: ''; position: absolute; top: 3px; left: 3px; width: 16px; height: 16px; border-radius: 50%; background: #fff; transition: left .15s; box-shadow: 0 1px 2px rgba(0,0,0,.2); }
+.tog.on { background: var(--green); }
+.tog.on::after { left: 19px; }
+
+/* Tabs */
+.tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--line); margin-bottom: 18px; }
+.tabs button { border: 0; background: none; padding: 10px 14px; cursor: pointer; color: var(--muted); border-bottom: 2px solid transparent; margin-bottom: -1px; font-weight: 500; }
+.tabs button.on { color: var(--ink); border-color: var(--pri); font-weight: 600; }
+.filters { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 14px; }
+.filters .chip { cursor: pointer; height: 30px; padding: 0 12px; }
+.filters .chip.sel { background: #111827; color: #fff; }
+
+/* Wizard */
+.steps { display: flex; gap: 0; margin-bottom: 20px; }
+.steps .st { flex: 1; display: flex; align-items: center; gap: 10px; color: var(--muted); font-weight: 500; }
+.steps .st .b { width: 28px; height: 28px; border-radius: 50%; border: 2px solid #cbd5e1; display: grid; place-items: center; font-size: 13px; font-weight: 700; background: #fff; flex: none; }
+.steps .st::after { content: ''; flex: 1; height: 2px; background: #e2e8f0; margin: 0 10px; }
+.steps .st:last-child::after { display: none; }
+.steps .st.on { color: var(--ink); }
+.steps .st.on .b { border-color: var(--pri); color: var(--pri); }
+.steps .st.done .b { background: var(--pri); border-color: var(--pri); color: #fff; }
+.devcard { display: grid; grid-template-columns: 150px 1fr; gap: 20px; align-items: center; }
+.devcard .dev { height: 190px; }
+.dl { display: grid; grid-template-columns: 110px 1fr; gap: 8px 12px; font-size: 14px; }
+.dl dt { color: var(--muted); }
+.dl dd { margin: 0; font-weight: 500; }
+.checks { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
+.ck { display: flex; align-items: center; justify-content: space-between; gap: 8px; height: 42px; padding: 0 12px; border: 1px solid var(--line); border-radius: 10px; background: #fff; cursor: pointer; font-weight: 500; }
+.ck .m { width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; background: var(--green-50); color: var(--green); }
+.ck.bad { border-color: #fecaca; background: var(--red-50); }
+.ck.bad .m { background: var(--red); color: #fff; }
+.ck.fixed .m { background: var(--sky-50); color: var(--sky); }
+.ck.static { cursor: default; }
+.grades { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+.gr { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; cursor: pointer; background: #fff; }
+.gr b { display: block; font-size: 16px; }
+.gr span { font-size: 12px; color: var(--muted); line-height: 1.4; display: block; margin-top: 2px; }
+.gr.on { border-color: var(--pri); box-shadow: 0 0 0 3px var(--pri-100); background: var(--pri-50); }
+.quote { font-size: 13.5px; }
+.quote .ln { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px dashed var(--line); }
+.quote .ln.neg span:last-child { color: var(--red); }
+.quote .tot { display: flex; justify-content: space-between; align-items: baseline; padding-top: 12px; font-weight: 700; }
+.quote .tot b { font-size: 26px; letter-spacing: -.02em; }
+.offer { display: flex; align-items: center; gap: 8px; }
+.offer .inp { font-size: 22px; font-weight: 700; height: 52px; text-align: center; }
+.sig { border: 1px dashed #cbd5e1; border-radius: 10px; background: #fcfcfd; width: 100%; height: 140px; touch-action: none; cursor: crosshair; }
+.success { text-align: center; padding: 28px 10px 8px; }
+.success .ok { width: 60px; height: 60px; border-radius: 50%; background: var(--green-50); color: var(--green); display: grid; place-items: center; margin: 0 auto 12px; }
+.success .ok .ic { width: 30px; height: 30px; stroke-width: 2.4; }
+.photo-slots { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; }
+.photo-slots.three { grid-template-columns: repeat(3, 1fr); }
+.slot { aspect-ratio: 1; border: 1.5px dashed #cbd5e1; border-radius: 12px; display: grid; place-items: center; color: var(--faint); cursor: pointer; background: #fcfcfd; position: relative; overflow: hidden; }
+.slot .dev { position: absolute; inset: 0; border-radius: 0; }
+.slot.full { border-style: solid; border-color: var(--line); }
+.slot .cover { position: absolute; left: 6px; top: 6px; font-size: 11px; background: #111827; color: #fff; border-radius: 6px; padding: 1px 6px; z-index: 1; }
+
+/* Board */
+.board { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(280px, 1fr); gap: 14px; overflow-x: auto; padding-bottom: 6px; align-items: start; }
+.col { background: #eceef2; border-radius: 14px; padding: 10px; min-height: 300px; }
+.col.drop { outline: 2px dashed var(--pri); outline-offset: -4px; background: #e8eafc; }
+.col > .hd { display: flex; align-items: center; justify-content: space-between; padding: 4px 6px 10px; font-weight: 600; }
+.col > .hd .c { color: var(--muted); font-weight: 500; }
+.tk { background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 12px; margin-bottom: 10px; box-shadow: 0 1px 2px rgba(15,23,42,.05); cursor: grab; }
+.tk.late { border-color: #fecaca; box-shadow: inset 3px 0 0 var(--red); }
+.tk .tt { display: flex; gap: 10px; }
+.tk .tt .dev { width: 46px; height: 46px; border-radius: 8px; flex: none; }
+.tk .nm { font-weight: 600; line-height: 1.35; }
+.tk .cd { font-size: 12px; color: var(--muted); }
+.tk .ch { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 8px; }
+.tk .ft { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; font-size: 12.5px; color: var(--muted); gap: 6px; }
+
+/* Listing studio */
+.ulist { max-height: calc(100vh - 210px); overflow: auto; }
+.ui { display: flex; gap: 10px; padding: 10px 14px; border-top: 1px solid var(--line2); cursor: pointer; align-items: center; }
+.ui:hover { background: #fafbfc; }
+.ui.on { background: var(--pri-50); }
+.ui .dev { width: 44px; height: 44px; border-radius: 8px; flex: none; }
+.ui .nm { font-weight: 600; font-size: 13.5px; line-height: 1.35; }
+.ui .cd { font-size: 12px; color: var(--muted); }
+.comps { font-size: 13px; }
+.comps .r { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid var(--line2); }
+.post { white-space: pre-wrap; font-size: 13px; background: #f8fafc; border: 1px solid var(--line); border-radius: 10px; padding: 12px; line-height: 1.6; max-height: 190px; overflow: auto; }
+
+/* Checkout */
+.cart-line { display: grid; grid-template-columns: 56px 1fr 130px 32px; gap: 12px; align-items: center; padding: 12px 0; border-top: 1px solid var(--line2); }
+.cart-line:first-child { border-top: 0; }
+.cart-line .dev { width: 56px; height: 56px; border-radius: 10px; }
+.cart-line .inp { height: 38px; text-align: right; font-weight: 600; }
+.pay-methods { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.pm { height: 46px; border: 1px solid var(--line); border-radius: 10px; background: #fff; cursor: pointer; font-weight: 600; }
+.pm:hover { border-color: var(--pri); color: var(--pri); }
+.pay-row { display: grid; grid-template-columns: 1fr 130px 28px; gap: 8px; align-items: center; margin-top: 8px; }
+.pay-row .inp { height: 36px; text-align: right; }
+.sum { font-size: 14px; }
+.sum .r { display: flex; justify-content: space-between; padding: 5px 0; }
+.sum .big { font-size: 28px; font-weight: 800; letter-spacing: -.02em; }
+.warn { display: flex; gap: 8px; align-items: flex-start; background: var(--amber-50); color: #92400e; border: 1px solid #fde68a; border-radius: 10px; padding: 10px 12px; font-size: 13px; }
+.note-ok { display: flex; gap: 8px; align-items: center; background: var(--green-50); color: #166534; border: 1px solid #bbf7d0; border-radius: 10px; padding: 10px 12px; font-size: 13px; }
+.hintchips { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; font-size: 12.5px; color: var(--muted); }
+.hintchips button { border: 1px solid var(--line); background: #fff; border-radius: 999px; padding: 2px 10px; cursor: pointer; font-family: var(--mono); font-size: 12px; color: var(--ink2); }
+
+/* Passport */
+.pass-hd { display: grid; grid-template-columns: 180px 1fr auto; gap: 22px; align-items: center; padding: 18px; }
+.pass-hd .dev { height: 200px; }
+.pass-hd h2 { margin: 0 0 6px; font-size: 22px; }
+.tl { position: relative; padding-left: 22px; }
+.tl::before { content: ''; position: absolute; left: 7px; top: 6px; bottom: 6px; width: 2px; background: var(--line); }
+.tl .ev { position: relative; padding: 0 0 16px; }
+.tl .ev::before { content: ''; position: absolute; left: -19px; top: 5px; width: 10px; height: 10px; border-radius: 50%; background: #fff; border: 2px solid var(--pri); }
+.tl .ev .h { display: flex; gap: 8px; align-items: baseline; }
+.tl .ev .h b { font-size: 14px; }
+.tl .ev .h span { color: var(--muted); font-size: 12.5px; }
+.tl .ev p { margin: 2px 0 0; color: var(--ink2); font-size: 13.5px; }
+.locked { display: flex; align-items: center; gap: 8px; color: var(--muted); background: #f8fafc; border: 1px dashed var(--line); border-radius: 10px; padding: 14px; font-size: 13px; }
+
+/* CMS */
+.blk { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 10px; background: #fff; margin-bottom: 8px; }
+.blk .grip { color: var(--faint); cursor: grab; }
+.blk .nm { flex: 1; font-weight: 600; }
+.blk .nm small { display: block; font-weight: 400; color: var(--muted); }
+.blk.edit { border-color: var(--pri); box-shadow: 0 0 0 3px var(--pri-100); }
+.preview { border: 1px solid var(--line); border-radius: 14px; overflow: hidden; background: #fff; }
+.preview .bar { display: flex; align-items: center; gap: 6px; padding: 8px 12px; background: #f1f3f6; border-bottom: 1px solid var(--line); grid-template-columns: none; }
+.preview .bar i { width: 10px; height: 10px; border-radius: 50%; background: #d4d4d8; display: inline-block; }
+.preview .bar span { margin-left: 10px; font-size: 12px; color: var(--muted); background: #fff; border-radius: 6px; padding: 2px 10px; flex: 1; }
+.preview iframe { width: 100%; height: 640px; border: 0; display: block; background: #fff; }
+.preview.mobile iframe { width: 390px; margin: 0 auto; border-left: 1px solid var(--line); border-right: 1px solid var(--line); }
+.serp { border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; background: #fff; font-family: Arial, sans-serif; }
+.serp .u { font-size: 12.5px; color: #4d5156; }
+.serp .t { font-size: 19px; color: #1a0dab; margin: 2px 0; }
+.serp .d { font-size: 13.5px; color: #4d5156; line-height: 1.5; }
+.rte-bar { display: flex; gap: 2px; border: 1px solid var(--line); border-bottom: 0; border-radius: 9px 9px 0 0; padding: 4px; background: #fafbfc; }
+.rte-bar button { border: 0; background: none; width: 32px; height: 30px; border-radius: 6px; cursor: pointer; }
+.rte-bar button:hover { background: #eef0f3; }
+.rte { border: 1px solid var(--line); border-radius: 0 0 9px 9px; min-height: 200px; padding: 12px 14px; outline: none; line-height: 1.7; }
+
+/* Customer */
+.prof { display: flex; gap: 16px; align-items: center; }
+.prof .av { width: 56px; height: 56px; border-radius: 50%; background: #e0e7ff; color: #3730a3; display: grid; place-items: center; font-weight: 800; font-size: 20px; }
+
+.empty { text-align: center; color: var(--muted); padding: 40px 10px; }
+.wa-msg { background: #e7ffdb; border-radius: 10px 10px 10px 2px; padding: 10px 12px; font-size: 14px; line-height: 1.6; max-width: 360px; box-shadow: 0 1px 1px rgba(0,0,0,.08); }
+.wa-wrap { background: #efeae2; border-radius: 12px; padding: 16px; }
+
+@media (max-width: 1100px) {
+  .app { grid-template-columns: 76px 1fr; }
+  .brand div, .nav a span.t, .nav .sec, .nav a kbd, .nav a .cnt, .side-foot { display: none; }
+  .nav a { justify-content: center; }
+  .g4 { grid-template-columns: 1fr 1fr; }
+  .g-side, .g-side2 { grid-template-columns: 1fr; }
+}
+
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="side">
+    <div class="brand"><span class="logo">俠</span><div><b>手機俠</b><small>Phonemen 後台</small></div></div>
+    <nav class="nav" id="nav"></nav>
+    <div class="side-foot">Proposal B · 現代介面 · 示範資料<br><a href="index.html">返回示範首頁</a></div>
+  </aside>
+  <div class="main">
+    <header class="top">
+      <label class="scan"><svg class="ic" viewBox="0 0 24 24"><path d="M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16zM21 21l-4.3-4.3"/></svg><input id="scan" placeholder="掃描或輸入 IMEI、貨品編號、單號或客戶電話" autocomplete="off"><kbd>/</kbd></label>
+      <div class="top-r">
+        <div class="seg" id="role"><button type="button" data-role="staff">店員</button><button type="button" data-role="manager">經理</button></div>
+        <span>旺角店</span>
+        <span class="avatar" title="Alan · 經理">A</span>
+      </div>
+    </header>
+    <main id="view"></main>
+  </div>
+</div>
+<script>window.PM_LINKS = {"hub": "index.html", "a": "proposal-a.html", "b": "proposal-b.html", "shop": "storefront.html"};</script>
+<script>
+/* Phonemen mockups: demo data plus a tiny shared store (localStorage).
+   Every customer, phone number, IMEI, serial number and price here is fictional. */
+(function () {
+  'use strict';
+
+  const TODAY = '2026-11-02';
+  const day = n => { const d = new Date(Date.UTC(2026, 10, 2)); d.setUTCDate(d.getUTCDate() - n); return d.toISOString().slice(0, 10); };
+  const daysBetween = (a, b) => Math.round((Date.parse(b) - Date.parse(a)) / 864e5);
+  const hkd = n => 'HK$' + Math.round(Number(n) || 0).toLocaleString('en-US');
+  const r10 = n => Math.round(n / 10) * 10;
+
+  const REGIONS = { HK: '港版', US: '美版', JP: '日版', KR: '韓版', AU: '澳洲版', CA: '加拿大版' };
+
+  const GRADES = [
+    { id: 'A★★★', name: '近全新', desc: '機身及螢幕幾乎無痕，接近全新', mult: 1.08 },
+    { id: 'A★', name: '極新淨', desc: '細看才見輕微使用痕', mult: 1.04 },
+    { id: 'A', name: '新淨', desc: '輕微使用痕，螢幕無花', mult: 1 },
+    { id: 'B', name: '正常使用痕', desc: '機身有花痕，螢幕或有細花', mult: 0.9 },
+    { id: 'C', name: '明顯花痕', desc: '機身有明顯花痕或撞痕，功能正常', mult: 0.8 },
+  ];
+  const gradeOf = id => GRADES.find(g => g.id === id) || GRADES[2];
+  const BUY_MULT = { 'A★★★': 1.06, 'A★': 1.03, A: 1, B: 0.88, C: 0.75 };
+
+  // The 17-point checklist from today's 維修記錄 screen.
+  const CHECKS = [
+    ['touch', '觸控'], ['screen', '熒幕'], ['port', '尾插'], ['sim', 'Sim 卡'], ['call', '打電話'],
+    ['earpiece', '聽筒'], ['mic', '話筒'], ['speaker', '擴音'], ['vibrate', '震機'], ['wifi', 'WIFI'],
+    ['bt', '藍牙'], ['buttons', '按鈕'], ['faceid', 'FaceID/TouchID'], ['fcam', '前鏡頭'], ['rcam', '後鏡頭'],
+    ['housing', '後殼'], ['battery', '電池'],
+  ].map(([id, name]) => ({ id, name }));
+  const checkName = id => (CHECKS.find(c => c.id === id) || { name: id }).name;
+
+  // [buyback price cut, typical refurb cost]
+  const FAULTS = { screen: [0.35, 650], touch: [0.3, 650], faceid: [0.3, 0], rcam: [0.15, 420], fcam: [0.1, 320], battery: [0.06, 280], housing: [0.1, 380], port: [0.06, 220] };
+  const faultCut = id => (FAULTS[id] || [0.05, 180])[0];
+  const faultFix = id => (FAULTS[id] || [0.05, 180])[1];
+
+  // base = asking price at grade A, by capacity
+  const MODELS = [
+    { id: 'ip16pm', family: 'iPhone', name: 'iPhone 16 Pro Max', slug: 'iphone-16-pro-max', no: 'A3084', pro: true, os: 'iOS 26.0.1', colors: [['沙漠色鈦金屬', '#C7B39B'], ['黑色鈦金屬', '#3A3A3C'], ['原色鈦金屬', '#BEB7AC']], base: { '256GB': 6680, '512GB': 7480 } },
+    { id: 'ip16p', family: 'iPhone', name: 'iPhone 16 Pro', slug: 'iphone-16-pro', no: 'A3083', pro: true, os: 'iOS 26.0.1', colors: [['白色鈦金屬', '#E5E3DE'], ['沙漠色鈦金屬', '#C7B39B'], ['黑色鈦金屬', '#3A3A3C']], base: { '128GB': 5280, '256GB': 5880 } },
+    { id: 'ip15p', family: 'iPhone', name: 'iPhone 15 Pro', slug: 'iphone-15-pro', no: 'A2848', pro: true, os: 'iOS 26.0', colors: [['原色鈦金屬', '#BDB5A9'], ['藍色鈦金屬', '#414B5A'], ['白色鈦金屬', '#E6E4DF'], ['黑色鈦金屬', '#2F2F31']], base: { '128GB': 4180, '256GB': 4680 } },
+    { id: 'ip15', family: 'iPhone', name: 'iPhone 15', slug: 'iphone-15', no: 'A2846', os: 'iOS 26.0', colors: [['粉紅色', '#F1D5D9'], ['藍色', '#CDDEE7'], ['黑色', '#35393B']], base: { '128GB': 3180, '256GB': 3580 } },
+    { id: 'ip14p', family: 'iPhone', name: 'iPhone 14 Pro', slug: 'iphone-14-pro', no: 'A2892', pro: true, os: 'iOS 18.6', colors: [['深紫色', '#4F455A'], ['太空黑色', '#2E2D2F'], ['金色', '#F1E2C5']], base: { '128GB': 3380, '256GB': 3780 } },
+    { id: 'ip14plus', family: 'iPhone', name: 'iPhone 14 Plus', slug: 'iphone-14-plus', no: 'A2888', os: 'iOS 18.6', colors: [['午夜色', '#232A31'], ['藍色', '#A6C0D8'], ['紫色', '#D7CEE0']], base: { '128GB': 2680, '256GB': 2980 } },
+    { id: 'ip13p', family: 'iPhone', name: 'iPhone 13 Pro', slug: 'iphone-13-pro', no: 'A2639', pro: true, os: 'iOS 18.5', colors: [['天峰藍色', '#9AB4CD'], ['石墨色', '#55534F'], ['松嶺青色', '#576957']], base: { '128GB': 2580, '256GB': 2880 } },
+    { id: 'ip13', family: 'iPhone', name: 'iPhone 13', slug: 'iphone-13', no: 'A2634', os: 'iOS 18.5', colors: [['午夜色', '#232A31'], ['星光色', '#F0EAE0'], ['粉紅色', '#F8DFE0']], base: { '128GB': 1880 } },
+    { id: 'ipse3', family: 'iPhone', name: 'iPhone SE (2022)', slug: 'iphone-se-2022', no: 'A2785', se: true, os: 'iOS 18.5', colors: [['午夜色', '#232A31'], ['(PRODUCT)RED', '#BE1E2D']], base: { '64GB': 980, '128GB': 1180 } },
+    { id: 'ipadpro11m4', family: 'iPad', name: 'iPad Pro 11" (M4) Wi-Fi', slug: 'ipad-pro-11-m4', no: 'A2836', cellular: false, os: 'iPadOS 18.6', colors: [['太空黑色', '#2F2F31'], ['銀色', '#E2E3E4']], base: { '256GB': 5480, '512GB': 6280 } },
+    { id: 'ipadmini6', family: 'iPad', name: 'iPad mini 6 Wi-Fi', slug: 'ipad-mini-6', no: 'A2567', cellular: false, os: 'iPadOS 18.6', colors: [['太空灰色', '#5E5E60'], ['星光色', '#F0EAE0']], base: { '64GB': 1980, '256GB': 2480 } },
+    { id: 'ipad9', family: 'iPad', name: 'iPad 9 Wi-Fi', slug: 'ipad-9', no: 'A2602', cellular: false, os: 'iPadOS 18.6', colors: [['太空灰色', '#5E5E60'], ['銀色', '#E2E3E4']], base: { '64GB': 1080 } },
+    { id: 'mbam2', family: 'Mac', name: 'MacBook Air 13" (M2)', slug: 'macbook-air-m2', no: 'A2681', cellular: false, os: 'macOS 15.6', colors: [['午夜色', '#2E3641'], ['星光色', '#E6DDD2']], base: { '256GB': 4580, '512GB': 5280 } },
+    { id: 's24u', family: 'Android', name: 'Samsung Galaxy S24 Ultra', slug: 'galaxy-s24-ultra', no: 'SM-S9280', os: 'One UI 7', colors: [['鈦灰色', '#8A8885'], ['鈦黑色', '#2C2C2C']], base: { '256GB': 4380, '512GB': 4880 } },
+    { id: 'pixel8', family: 'Android', name: 'Google Pixel 8', slug: 'pixel-8', no: 'GKWS6', pixel: true, os: 'Android 16', colors: [['曜石黑', '#2B2B2B'], ['海灣藍', '#A8C1D5']], base: { '128GB': 1880 } },
+    { id: 'aw9', family: 'Watch', name: 'Apple Watch Series 9 45mm', slug: 'apple-watch-s9-45', no: 'A2980', cellular: false, os: 'watchOS 11', colors: [['午夜色', '#232A31'], ['星光色', '#F0EAE0']], base: { 'GPS': 1380 } },
+  ];
+  const modelOf = id => MODELS.find(m => m.id === id);
+  const modelBySlug = slug => MODELS.find(m => m.slug === slug);
+  const FAMILIES = [
+    { id: 'iphone', name: 'iPhone', family: 'iPhone' },
+    { id: 'ipad', name: 'iPad', family: 'iPad' },
+    { id: 'mac', name: 'Mac', family: 'Mac' },
+    { id: 'android', name: 'Android', family: 'Android' },
+    { id: 'watch', name: 'Apple Watch', family: 'Watch' },
+  ];
+
+  const STAFF = [{ id: 'Alan', role: '經理' }, { id: 'Bonnie', role: '店員' }, { id: 'Carmen', role: '店員' }, { id: 'Dicky', role: '師傅' }];
+  const TECHS = ['Dicky', '外判師傅 K'];
+  const CHANNELS = ['門市', 'WhatsApp', 'Carousell', '網店', '公司'];
+  const PAYMENTS = ['轉數快', '現金', '信用卡', '支付寶HK', '銀行轉帳'];
+
+  const CUSTOMERS = [
+    { phone: '9123 4567', name: '陳大文', since: '2024-03-12', note: '常客，偏好 Pro 系列', consent: true },
+    { phone: '6234 5678', name: '李小美', since: '2025-08-02', note: '', consent: true },
+    { phone: '5432 1098', name: '張志明', since: '2025-11-20', note: '', consent: false },
+    { phone: '9876 5432', name: '黃家樂', since: '2023-06-30', note: '有一部 iPad 送修中', consent: true },
+    { phone: '6111 2233', name: '何嘉欣', since: '2026-01-15', note: '', consent: true },
+    { phone: '9333 4455', name: 'Tom Lee', since: '2026-05-09', note: 'Carousell 客', consent: false },
+    { phone: '5666 7788', name: 'Mandy Chan', since: '2024-09-21', note: '公司客，月結', consent: true },
+    { phone: '9444 1122', name: '林小儀', since: '2026-10-30', note: '', consent: true },
+    { phone: '6555 3344', name: '周志強', since: '2025-02-14', note: '', consent: false },
+  ];
+
+  // Deterministic pseudo-random numbers so every reset gives the same demo.
+  let seedN = 20261102;
+  const rnd = () => (seedN = (seedN * 1103515245 + 12345) % 2147483648) / 2147483648;
+  const luhn = s => { let t = 0; for (let i = 0; i < s.length; i++) { let d = +s[i]; if (i % 2 === 1) { d *= 2; if (d > 9) d -= 9; } t += d; } return (10 - (t % 10)) % 10; };
+  const makeImei = () => { let s = '35' + String(Math.floor(rnd() * 1e6)).padStart(6, '0'); while (s.length < 14) s += Math.floor(rnd() * 10); return s + luhn(s); };
+  const SN = 'CDFGHJKLMNPQRTVWXY0123456789';
+  const makeSerial = () => Array.from({ length: 10 }, () => SN[Math.floor(rnd() * SN.length)]).join('');
+
+  const askPrice = (m, cap, grade, battery) => { const p = m.base[cap] * gradeOf(grade).mult - (battery < 85 ? 100 : 0); return Math.floor(p / 100) * 100 + 80; };
+
+  // [model, capacity, colour index, grade, battery %, region, status, photos, days since buyback, faults, extra]
+  const U = [
+    ['ip16pm', '256GB', 0, 'A★', 96, 'US', 'listed', 6, 4],
+    ['ip16pm', '512GB', 1, 'A', 92, 'HK', 'listed', 5, 9],
+    ['ip16p', '128GB', 2, 'A★★★', 100, 'HK', 'listed', 6, 2],
+    ['ip16p', '256GB', 0, 'B', 88, 'JP', 'listed', 4, 12],
+    ['ip15p', '256GB', 0, 'A★', 89, 'US', 'listed', 5, 5],
+    ['ip15p', '128GB', 1, 'A', 86, 'HK', 'listed', 4, 7],
+    ['ip15p', '128GB', 3, 'B', 84, 'JP', 'listed', 4, 15],
+    ['ip15', '128GB', 1, 'A', 91, 'HK', 'listed', 4, 3],
+    ['ip15', '256GB', 2, 'C', 82, 'US', 'listed', 4, 21],
+    ['ip14p', '128GB', 0, 'A', 87, 'HK', 'listed', 5, 6, [], { pastFix: ['housing'] }],
+    ['ip14p', '256GB', 1, 'B', 83, 'US', 'listed', 4, 18],
+    ['ip14plus', '128GB', 1, 'A★', 90, 'HK', 'listed', 4, 8],
+    ['ip13p', '128GB', 0, 'A', 85, 'HK', 'listed', 4, 10],
+    ['ip13p', '256GB', 1, 'B', 81, 'JP', 'listed', 4, 26],
+    ['ip13', '128GB', 1, 'A', 88, 'HK', 'listed', 4, 4],
+    ['ipse3', '64GB', 0, 'B', 84, 'HK', 'listed', 3, 33, [], { pastFix: ['buttons'] }],
+    ['ipadpro11m4', '256GB', 0, 'A★★★', 100, 'HK', 'listed', 6, 5],
+    ['ipadmini6', '64GB', 0, 'A', 92, 'US', 'listed', 4, 14],
+    ['ipad9', '64GB', 1, 'B', 90, 'HK', 'listed', 4, 40],
+    ['mbam2', '256GB', 0, 'A★', 94, 'HK', 'listed', 5, 11],
+    ['s24u', '256GB', 0, 'A', 93, 'HK', 'listed', 4, 9],
+    ['pixel8', '128GB', 0, 'B', 88, 'HK', 'listed', 3, 37],
+    ['aw9', 'GPS', 0, 'A', 95, 'HK', 'listed', 3, 16],
+    ['ip16p', '256GB', 1, 'A★', 97, 'HK', 'reserved', 5, 3, [], { by: '6234 5678', deposit: 200, channel: '網店' }],
+    ['ip14plus', '256GB', 0, 'A', 89, 'US', 'reserved', 4, 6, [], { by: '5432 1098', deposit: 300, channel: 'WhatsApp' }],
+    ['ip15p', '128GB', 2, 'A', 90, 'HK', 'ready', 0, 1],
+    ['ip13', '128GB', 0, 'B', 86, 'JP', 'ready', 0, 2],
+    ['ipadmini6', '256GB', 1, 'A★', 98, 'HK', 'ready', 2, 2],
+    ['ip14p', '128GB', 2, 'A', 85, 'US', 'ready', 0, 1],
+    ['ip16pm', '256GB', 2, 'A', 94, 'HK', 'qc', 0, 0],
+    ['ip15', '128GB', 0, 'A', 89, 'HK', 'qc', 0, 0],
+    ['s24u', '512GB', 1, 'B', 87, 'HK', 'qc', 0, 1],
+    ['ip13p', '128GB', 2, 'B', 83, 'US', 'qc', 0, 0],
+    ['ip14p', '256GB', 0, 'B', 76, 'HK', 'refurb', 0, 3, ['battery'], { tech: '外判師傅 K', place: '外判' }],
+    ['ip13p', '128GB', 1, 'B', 84, 'JP', 'refurb', 0, 7, ['rcam'], { tech: 'Dicky', place: '店內' }],
+    ['ip15', '128GB', 2, 'A', 90, 'US', 'refurb', 0, 2, ['screen'], { tech: '外判師傅 K', place: '外判' }],
+    ['ipadpro11m4', '512GB', 1, 'A', 96, 'HK', 'refurb', 0, 1, ['port'], { tech: 'Dicky', place: '店內' }],
+    ['ip15p', '256GB', 1, 'A★', 92, 'HK', 'sold', 5, 20, [], { soldAgo: 9, to: '9123 4567', channel: 'WhatsApp', pay: '轉數快', staff: 'Alan' }],
+    ['ip13', '128GB', 2, 'A', 87, 'HK', 'sold', 4, 12, [], { soldAgo: 2, to: '9876 5432', channel: '門市', pay: '現金', staff: 'Carmen' }],
+    ['ip16p', '128GB', 0, 'A', 95, 'US', 'sold', 5, 6, [], { soldAgo: 1, to: '9333 4455', channel: 'Carousell', pay: '轉數快', staff: 'Bonnie' }],
+    ['ipad9', '64GB', 0, 'C', 85, 'HK', 'sold', 3, 30, [], { soldAgo: 0, to: '5666 7788', channel: '門市', pay: '信用卡', staff: 'Carmen' }],
+  ];
+
+  function customerName(list, phone) { const c = list.find(x => x.phone === phone); return c ? c.name : '散客'; }
+
+  function buildUnits() {
+    const order = U.map((t, i) => ({ t, i })).sort((a, b) => b.t[8] - a.t[8] || a.i - b.i);
+    let code = 126301, octSeq = 391, novSeq = 1;
+    const sellers = ['6111 2233', '9444 1122', '6555 3344', '9876 5432', '9123 4567', '5432 1098', '9333 4455'];
+    return order.map(({ t }, k) => {
+      const [mid, cap, ci, grade, battery, region, status, photos, ago, faults = [], x = {}] = t;
+      const m = modelOf(mid);
+      const bought = day(ago);
+      const seq = bought >= '2026-11-01' ? novSeq++ : octSeq++;
+      const slip = '01CGR' + bought.slice(2, 4) + bought.slice(5, 7) + String(seq).padStart(4, '0');
+      const cellular = m.cellular !== false;
+      const price = askPrice(m, cap, grade, battery);
+      const pastFix = x.pastFix || [];
+      const staff = ['Alan', 'Bonnie', 'Carmen'][k % 3];
+      const u = {
+        code: '2ND' + (code++), model: mid, cap, color: m.colors[ci][0], hex: m.colors[ci][1], grade, battery, region, os: m.os,
+        imei: cellular ? makeImei() : '', serial: cellular ? '' : makeSerial(),
+        cost: r10(price * 0.72), refurb: pastFix.reduce((s, f) => s + faultFix(f), 0), price, floor: r10(price * 0.93),
+        status, photos, bought, slip, seller: sellers[k % sellers.length], staff,
+        faults: faults.slice(), tech: x.tech || '', place: x.place || '', fixFrom: status === 'refurb' ? bought : '',
+        reserved: null, sold: null, checks: {}, events: [],
+      };
+      if (status !== 'qc') CHECKS.forEach(c => { u.checks[c.id] = pastFix.includes(c.id) ? 'fixed' : faults.includes(c.id) ? 'fault' : 'ok'; });
+      const ev = (d, type, note, by) => u.events.push({ d, type, note, by });
+      ev(bought, '回收', `回收單 ${slip}，收購價 ${hkd(u.cost)}`, staff);
+      if (status !== 'qc') ev(bought, 'QC', faults.length ? `發現問題：${faults.map(checkName).join('、')}` : pastFix.length ? `需處理：${pastFix.map(checkName).join('、')}` : '17 點檢查全部合格', 'Dicky');
+      if (pastFix.length) ev(day(Math.max(0, ago - 1)), '翻新', `${pastFix.map(checkName).join('、')}，成本 ${hkd(u.refurb)}`, 'Dicky');
+      if (status === 'refurb') ev(bought, '送修', `${faults.map(checkName).join('、')} → ${u.tech}`, staff);
+      if (['listed', 'reserved', 'sold'].includes(status)) ev(day(Math.max(0, ago - 1)), '上架', `影相 ${photos} 張，售價 ${hkd(price)}`, 'Bonnie');
+      if (status === 'reserved') {
+        u.reserved = { by: x.by, deposit: x.deposit, channel: x.channel, date: day(Math.max(0, ago - 2)) };
+        ev(u.reserved.date, '預留', `${x.channel}，訂金 ${hkd(x.deposit)}`, x.channel === '網店' ? '網店' : 'Bonnie');
+      }
+      if (status === 'sold') {
+        u.sold = { date: day(x.soldAgo), to: x.to, channel: x.channel, pay: x.pay, price, staff: x.staff, inv: '' };
+        ev(u.sold.date, '售出', `${x.channel}，${x.pay}，${hkd(price)}`, x.staff);
+      }
+      u.events.sort((a, b) => a.d.localeCompare(b.d));
+      return u;
+    });
+  }
+
+  const EXTRA_INV = [
+    ['2026-10-29', '6234 5678', '門市', 'Carmen', 'iPhone 15 128GB 粉紅色', 3180, 3180, '轉數快', ''],
+    ['2026-10-30', '9123 4567', 'WhatsApp', 'Alan', 'Apple Watch Series 9 45mm 午夜色', 1380, 1380, '轉數快', ''],
+    ['2026-10-31', '6111 2233', 'WhatsApp', 'Bonnie', 'iPhone 14 Pro 256GB 金色', 3680, 3680, '轉數快', ''],
+    ['2026-10-31', '9444 1122', '門市', 'Carmen', 'iPhone 13 128GB 午夜色', 1880, 1880, '現金', ''],
+    ['2026-11-01', '6555 3344', 'Carousell', 'Bonnie', 'iPad mini 6 64GB 太空灰色', 1980, 1980, '轉數快', '順豐到付'],
+    ['2026-11-01', '5666 7788', '公司', 'Alan', 'iPad 9 Wi-Fi 64GB × 5', 5200, 0, '', '月結'],
+    ['2026-11-02', '9876 5432', 'WhatsApp', 'Alan', 'iPhone 14 Plus 128GB 藍色', 2780, 1000, '轉數快', '餘數取機時付'],
+  ];
+
+  function buildBooks(units) {
+    const rows = [];
+    units.filter(u => u.sold).forEach(u => {
+      const m = modelOf(u.model);
+      rows.push({ date: u.sold.date, phone: u.sold.to, channel: u.sold.channel, staff: u.sold.staff, lines: [{ code: u.code, name: `${m.name} ${u.cap} ${u.color}`, imei: u.imei || u.serial, price: u.price, grade: u.grade }], amount: u.price, received: u.price, pay: u.sold.pay, note: '', unit: u });
+    });
+    EXTRA_INV.forEach(([date, phone, channel, staff, name, amount, received, pay, note]) => rows.push({ date, phone, channel, staff, lines: [{ code: '2ND1259' + String(rows.length + 10), name, imei: makeImei(), price: amount, grade: 'A' }], amount, received, pay, note }));
+    rows.sort((a, b) => a.date.localeCompare(b.date));
+    let octI = 188, novI = 0, octR = 176, novR = 0;
+    const invoices = [], receipts = [];
+    rows.forEach(r => {
+      const nov = r.date >= '2026-11-01';
+      const no = '01SI26' + (nov ? '11' : '10') + String(nov ? ++novI : ++octI).padStart(4, '0');
+      if (r.unit) r.unit.sold.inv = no;
+      invoices.push({ no, date: r.date, phone: r.phone, name: customerName(CUSTOMERS, r.phone), channel: r.channel, staff: r.staff, lines: r.lines, amount: r.amount, received: r.received, note: r.note });
+      if (r.received > 0) receipts.push({ no: 'RV26' + (nov ? '11' : '10') + String(nov ? ++novR : ++octR).padStart(4, '0'), date: r.date, phone: r.phone, name: customerName(CUSTOMERS, r.phone), method: r.pay, amount: r.received, inv: no });
+    });
+    return { invoices: invoices.reverse(), receipts: receipts.reverse(), seq: { inv: novI, rv: novR } };
+  }
+
+  function buildSlips(units) {
+    return units.map(u => ({ no: u.slip, date: u.bought, phone: u.seller, name: customerName(CUSTOMERS, u.seller), code: u.code, price: u.cost, pay: u.cost > 3000 ? '轉數快' : '現金', staff: u.staff }))
+      .sort((a, b) => b.no.localeCompare(a.no));
+  }
+
+  function buildJobs(units) {
+    let n = 101880;
+    const jobs = [];
+    units.forEach(u => {
+      const done = u.events.find(e => e.type === '翻新');
+      if (done) jobs.push({ no: 'FIX' + (++n), code: u.code, date: u.bought, faults: CHECKS.filter(c => u.checks[c.id] === 'fixed').map(c => c.id), tech: 'Dicky', place: '店內', eta: done.d, cost: u.refurb, done: done.d, by: 'Dicky' });
+      if (u.status === 'refurb') jobs.push({ no: 'FIX' + (++n), code: u.code, date: u.fixFrom, faults: u.faults.slice(), tech: u.tech, place: u.place, eta: day(Math.max(0, daysBetween(u.fixFrom, TODAY) - 3)), cost: 0, done: '', by: '' });
+    });
+    return { jobs: jobs.sort((a, b) => b.no.localeCompare(a.no)), last: n };
+  }
+
+  const REPAIRS = [
+    { no: 'RP26110003', date: '2026-11-02', phone: '9444 1122', device: 'iPhone 12', color: '白色', imei: '356781092345671', issue: '電池健康度 72%，想換電池', faults: ['battery'], quote: 380, deposit: 0, status: 'received', tech: '', eta: '2026-11-02' },
+    { no: 'RP26110002', date: '2026-11-01', phone: '6111 2233', device: 'iPhone 14', color: '午夜色', imei: '353912118804562', issue: '熒幕碎裂，觸控正常', faults: ['screen'], quote: 1280, deposit: 300, status: 'awaiting', tech: '外判師傅 K', eta: '2026-11-04' },
+    { no: 'RP26110001', date: '2026-11-01', phone: '9876 5432', device: 'iPad Air 5', color: '藍色', imei: 'SN F9XKQ2LMN4', issue: '尾插接觸不良，充唔到電', faults: ['port'], quote: 480, deposit: 200, status: 'repairing', tech: 'Dicky', eta: '2026-11-03' },
+    { no: 'RP26100018', date: '2026-10-30', phone: '9123 4567', device: 'iPhone 13 Pro', color: '天峰藍色', imei: '352219107763418', issue: '後鏡頭對焦失靈', faults: ['rcam'], quote: 880, deposit: 300, status: 'ready', tech: 'Dicky', eta: '2026-11-01' },
+    { no: 'RP26100017', date: '2026-10-29', phone: '6555 3344', device: 'Samsung Galaxy S23', color: '黑色', imei: '358845221907735', issue: '入水，開唔到機', faults: ['screen', 'battery'], quote: 0, deposit: 0, status: 'diagnosing', tech: '外判師傅 K', eta: '2026-11-05' },
+    { no: 'RP26100015', date: '2026-10-27', phone: '5432 1098', device: 'iPhone 15', color: '藍色', imei: '356123097718203', issue: '換電池', faults: ['battery'], quote: 580, deposit: 580, status: 'done', tech: 'Dicky', eta: '2026-10-28' },
+  ];
+  const REPAIR_STATUS = [
+    ['received', '已收機'], ['diagnosing', '檢查報價'], ['awaiting', '待客戶確認'], ['repairing', '維修中'], ['ready', '待取機'], ['done', '已取機'],
+  ];
+
+  const REPAIR_PRICES = [
+    ['iPhone 16 系列', '換熒幕', 2280], ['iPhone 16 系列', '換電池', 680],
+    ['iPhone 15 系列', '換熒幕', 1880], ['iPhone 15 系列', '換電池', 580],
+    ['iPhone 14 系列', '換熒幕', 1280], ['iPhone 14 系列', '換電池', 480],
+    ['iPhone 13 系列', '換熒幕', 1080], ['iPhone 13 系列', '換電池', 420],
+    ['iPhone 12 或以前', '換熒幕', 780], ['iPhone 12 或以前', '換電池', 380],
+    ['iPad 系列', '換尾插', 480], ['所有型號', '檢查費（維修後全數扣減）', 100],
+  ];
+
+  const CMS = {
+    hero: { kicker: '17 點檢查 · 3 個月保養', title: '二手 iPhone，檢查好先上架', sub: '每部機都有獨立編號、電池健康度同實拍相，揀中即刻預留，門市取機。', cta1: '揀機', cta2: '即時回收報價' },
+    banners: [
+      { id: 'b1', title: '雙十一：iPhone 15 Pro 減 $300', from: '2026-11-08', to: '2026-11-11', on: true },
+      { id: 'b2', title: '高價回收 iPhone 16 系列', from: '2026-10-01', to: '2026-12-31', on: true },
+      { id: 'b3', title: '換電池 $380 起，即日取機', from: '2026-10-15', to: '2026-11-30', on: false },
+    ],
+    pages: [
+      { slug: 'warranty', title: '保養條款', status: '已發佈', updated: '2026-10-20', body: '所有二手機均享 3 個月保養，涵蓋機身功能故障（人為損壞、入水除外）。電池保養 1 個月。保養期內請帶同收據及機身到門市，我們會先檢查再安排維修或更換。' },
+      { slug: 'how-to-sell', title: '回收流程', status: '已發佈', updated: '2026-10-12', body: '1. 網上即時報價或直接到門市。2. 店員現場以 17 點檢查測試功能，並評定成色。3. 確認價錢後即場以現金或轉數快付款。請帶同身份證明文件，並先關閉「尋找」功能。' },
+      { slug: 'grading', title: '成色分級', status: '已發佈', updated: '2026-09-30', body: 'A★★★ 近全新；A★ 極新淨；A 新淨；B 正常使用痕；C 明顯花痕。所有成色均通過 17 點功能檢查。' },
+      { slug: 'faq', title: '常見問題', status: '草稿', updated: '2026-11-01', body: '可唔可以試機？可以，門市預留後可試機。可唔可以分期？信用卡可於門市辦理。' },
+      { slug: 'about', title: '關於手機俠', status: '已發佈', updated: '2026-08-15', body: '手機俠專營二手手機回收、銷售及維修。每部機都有獨立編號同檢查紀錄。' },
+    ],
+    store: { name: '手機俠 Phonemen', address: '九龍旺角（示範地址）', hours: '每日 12:00 – 21:00', whatsapp: '+852 5XXX XXXX（示範）' },
+    blocks: ['hero', 'usp', 'categories', 'latest', 'sell', 'grading', 'store'],
+  };
+
+  const LEADS = [
+    { id: 'Q1031', date: '2026-11-02 10:14', name: 'Kelvin', phone: '6888 1200', model: 'ip14p', cap: '128GB', grade: 'B', quote: 2050, status: '新報價' },
+    { id: 'Q1030', date: '2026-11-01 21:47', name: 'Ada', phone: '9221 7788', model: 'ip15', cap: '256GB', grade: 'A', quote: 2500, status: '已約到店' },
+  ];
+  const BOOKINGS = [
+    { id: 'BK208', date: '2026-11-03', slot: '15:00', name: 'Jason', phone: '6777 1290', device: 'iPhone 13', issue: '換電池', price: 420, status: '已預約' },
+  ];
+
+  // ---- store ----
+  const KEY = 'phonemen-demo-v1';
+  let state = null;
+  const listeners = [];
+
+  function seed() {
+    seedN = 20261102;
+    const units = buildUnits();
+    const books = buildBooks(units);
+    const fix = buildJobs(units);
+    const lastUnit = Math.max(...units.map(u => +u.code.slice(3)));
+    return {
+      v: 1,
+      units,
+      customers: CUSTOMERS.map(c => ({ ...c })),
+      invoices: books.invoices,
+      receipts: books.receipts,
+      slips: buildSlips(units),
+      jobs: fix.jobs,
+      repairs: REPAIRS.map(r => ({ ...r, faults: r.faults.slice() })),
+      repairPrices: REPAIR_PRICES.map(r => r.slice()),
+      cms: JSON.parse(JSON.stringify(CMS)),
+      matrix: {},
+      leads: LEADS.map(l => ({ ...l })),
+      bookings: BOOKINGS.map(b => ({ ...b })),
+      seq: { unit: lastUnit, slip: units.filter(u => u.bought >= '2026-11-01').length, inv: books.seq.inv, rv: books.seq.rv, fix: fix.last, rp: 3, quote: 1031, book: 208 },
+    };
+  }
+
+  function get() {
+    if (!state) {
+      try { const s = JSON.parse(localStorage.getItem(KEY) || 'null'); state = s && s.v === 1 ? s : seed(); } catch (e) { state = seed(); }
+    }
+    return state;
+  }
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) { /* private mode */ } listeners.forEach(f => f()); }
+  function reset() { state = seed(); save(); }
+  function on(f) { listeners.push(f); }
+  window.addEventListener('storage', e => { if (e.key === KEY) { state = null; get(); listeners.forEach(f => f()); } });
+
+  function nextNo(kind) {
+    const s = get().seq;
+    s[kind] = (s[kind] || 0) + 1;
+    const n = s[kind];
+    const p4 = x => String(x).padStart(4, '0');
+    return { unit: '2ND' + n, slip: '01CGR2611' + p4(n), inv: '01SI2611' + p4(n), rv: 'RV2611' + p4(n), fix: 'FIX' + n, rp: 'RP2611' + p4(n), quote: 'Q' + n, book: 'BK' + n }[kind];
+  }
+
+  // ---- derived helpers ----
+  const unit = code => get().units.find(u => u.code === code);
+  const unitTitle = u => { const m = modelOf(u.model); return `${m.name} ${u.cap} ${u.color}`; };
+  const unitAge = u => daysBetween(u.bought, TODAY);
+  const customer = phone => get().customers.find(c => c.phone === phone);
+  const buyBase = (mid, cap) => { const k = mid + '|' + cap; const m = modelOf(mid); return get().matrix[k] != null ? get().matrix[k] : r10(m.base[cap] * 0.7); };
+
+  function buyQuote(mid, cap, grade, battery, faults) {
+    const base = buyBase(mid, cap);
+    const gradeAdj = r10(base * ((BUY_MULT[grade] || 1) - 1));
+    const sub = base + gradeAdj;
+    const battAdj = battery < 80 ? -r10(sub * 0.08) : battery < 85 ? -r10(sub * 0.04) : 0;
+    const faultAdj = (faults || []).map(f => ({ id: f, name: checkName(f), amount: -r10(sub * faultCut(f)) }));
+    const total = Math.max(0, sub + battAdj + faultAdj.reduce((s, x) => s + x.amount, 0));
+    return { base, gradeAdj, battAdj, faultAdj, total: Math.floor(total / 10) * 10 };
+  }
+
+  function upsertCustomer(phone, name) {
+    const s = get();
+    let c = s.customers.find(x => x.phone === phone);
+    if (!c) { c = { phone, name: name || '新客戶', since: TODAY, note: '', consent: false }; s.customers.push(c); }
+    else if (name && c.name !== name) c.name = name;
+    return c;
+  }
+
+  window.PM = {
+    TODAY, day, daysBetween, hkd, r10, REGIONS, GRADES, gradeOf, BUY_MULT, CHECKS, checkName, FAULTS, faultCut, faultFix,
+    MODELS, modelOf, modelBySlug, FAMILIES, STAFF, TECHS, CHANNELS, PAYMENTS, REPAIR_STATUS, askPrice, makeImei, makeSerial,
+    store: { get, save, reset, on }, nextNo, unit, unitTitle, unitAge, customer, buyBase, buyQuote, upsertCustomer,
+  };
+})();
+
+</script>
+<script>
+/* Phonemen mockups: shared UI helpers — device art, QR and barcode art, toast, modal, printouts. */
+(function () {
+  'use strict';
+  const PM = window.PM;
+  const hkd = PM.hkd;
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const $ = (sel, root) => (root || document).querySelector(sel);
+  const $$ = (sel, root) => Array.from((root || document).querySelectorAll(sel));
+  const now = () => PM.TODAY + ' ' + new Date().toTimeString().slice(0, 5);
+  const maskPhone = p => (p || '').replace(/(\d{4})\s?(\d{4})/, '$1 ****');
+  let uid = 0;
+
+  // ---------- colour helpers ----------
+  function shade(hex, amt) {
+    const n = parseInt(hex.slice(1), 16);
+    const t = amt < 0 ? 0 : 255, p = Math.abs(amt);
+    const ch = v => Math.round((t - v) * p + v);
+    const r = ch(n >> 16), g = ch((n >> 8) & 255), b = ch(n & 255);
+    return '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+  }
+  const lum = hex => { const n = parseInt(hex.slice(1), 16); return (0.299 * (n >> 16) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255)) / 255; };
+
+  // ---------- device art ----------
+  const APPLE = 'M10 6C8 4.5 4 5 4 10c0 4 3 8 5 8 1 0 1.5-.5 3-.5s2 .5 3 .5c2 0 4-3.5 4.5-5.5-2-1-2.5-4-1-5.5-1-1.5-3-2-4.5-1.5S11.5 6.5 10 6zM12 4.5c0-1.5 1.5-3 3-3 0 1.5-1.5 3-3 3z';
+  const apple = (cx, cy, s, fill) => `<path d="${APPLE}" transform="translate(${cx - s} ${cy - s}) scale(${s / 10})" fill="${fill}" opacity=".55"/>`;
+  const wall = id => `<defs><linearGradient id="${id}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#1e3a8a"/><stop offset=".55" stop-color="#7c3aed"/><stop offset="1" stop-color="#f97316"/></linearGradient></defs>`;
+
+  function phone(m, hex, view) {
+    const edge = shade(hex, -0.22);
+    if (view === 'front') {
+      const g = 'w' + (++uid);
+      if (m.se) return `<svg viewBox="0 0 120 240" xmlns="http://www.w3.org/2000/svg">${wall(g)}<rect x="10" y="4" width="100" height="232" rx="18" fill="${edge}"/><rect x="12" y="6" width="96" height="228" rx="16" fill="#111"/><rect x="18" y="40" width="84" height="150" rx="2" fill="url(#${g})"/><rect x="48" y="22" width="24" height="4" rx="2" fill="#333"/><circle cx="60" cy="212" r="11" fill="none" stroke="#444" stroke-width="2"/></svg>`;
+      const hole = m.family === 'Android' ? '<circle cx="60" cy="20" r="4" fill="#000"/>' : '<rect x="44" y="15" width="32" height="10" rx="5" fill="#000"/>';
+      return `<svg viewBox="0 0 120 240" xmlns="http://www.w3.org/2000/svg">${wall(g)}<rect x="10" y="4" width="100" height="232" rx="20" fill="${edge}"/><rect x="12" y="6" width="96" height="228" rx="18" fill="#0b0b0c"/><rect x="16" y="10" width="88" height="220" rx="15" fill="url(#${g})"/>${hole}<text x="60" y="64" text-anchor="middle" font-size="18" font-family="Arial" fill="#fff" opacity=".9">10:09</text></svg>`;
+    }
+    const bump = shade(hex, lum(hex) > 0.6 ? -0.08 : 0.1);
+    let cam;
+    if (m.pixel) cam = `<rect x="12" y="44" width="96" height="22" rx="6" fill="#1d1d1f"/><circle cx="40" cy="55" r="6" fill="#0c0c0e" stroke="#555"/><circle cx="58" cy="55" r="6" fill="#0c0c0e" stroke="#555"/><circle cx="80" cy="55" r="2.5" fill="#f5f5f5"/>`;
+    else if (m.family === 'Android') cam = [26, 46, 66].map(y => `<circle cx="30" cy="${y}" r="7.5" fill="#111" stroke="${edge}" stroke-width="2"/>`).join('') + `<circle cx="50" cy="30" r="5" fill="#111" stroke="${edge}"/><circle cx="50" cy="46" r="2.5" fill="#eee"/>`;
+    else if (m.se) cam = `<circle cx="28" cy="26" r="7" fill="#111" stroke="${edge}" stroke-width="2"/><circle cx="28" cy="41" r="2.5" fill="#eee"/>`;
+    else if (m.pro) cam = `<rect x="20" y="14" width="50" height="50" rx="14" fill="${bump}" stroke="${edge}"/><circle cx="33" cy="27" r="9" fill="#141416" stroke="#4a4a4f" stroke-width="2"/><circle cx="33" cy="51" r="9" fill="#141416" stroke="#4a4a4f" stroke-width="2"/><circle cx="56" cy="39" r="9" fill="#141416" stroke="#4a4a4f" stroke-width="2"/><circle cx="57" cy="22" r="3" fill="#f3f3f3"/><circle cx="57" cy="56" r="3" fill="#2a2a2a"/>`;
+    else cam = `<rect x="20" y="14" width="40" height="50" rx="13" fill="${bump}" stroke="${edge}"/><circle cx="32" cy="27" r="8.5" fill="#141416" stroke="#4a4a4f" stroke-width="2"/><circle cx="48" cy="51" r="8.5" fill="#141416" stroke="#4a4a4f" stroke-width="2"/><circle cx="50" cy="26" r="2.8" fill="#f3f3f3"/>`;
+    const logo = m.family === 'iPhone' ? apple(60, 122, 9, edge) : m.family === 'Android' && !m.pixel ? `<text x="60" y="200" text-anchor="middle" font-size="8" font-family="Arial" fill="${edge}" opacity=".7">SAMSUNG</text>` : '';
+    return `<svg viewBox="0 0 120 240" xmlns="http://www.w3.org/2000/svg"><rect x="10" y="4" width="100" height="232" rx="20" fill="${edge}"/><rect x="12" y="6" width="96" height="228" rx="18" fill="${hex}"/>${cam}${logo}</svg>`;
+  }
+
+  function tablet(m, hex, view) {
+    const edge = shade(hex, -0.22);
+    if (view === 'front') {
+      const g = 'w' + (++uid);
+      return `<svg viewBox="0 0 170 240" xmlns="http://www.w3.org/2000/svg">${wall(g)}<rect x="6" y="4" width="158" height="232" rx="16" fill="${edge}"/><rect x="8" y="6" width="154" height="228" rx="14" fill="#0b0b0c"/><rect x="16" y="14" width="138" height="212" rx="8" fill="url(#${g})"/></svg>`;
+    }
+    return `<svg viewBox="0 0 170 240" xmlns="http://www.w3.org/2000/svg"><rect x="6" y="4" width="158" height="232" rx="16" fill="${edge}"/><rect x="8" y="6" width="154" height="228" rx="14" fill="${hex}"/><rect x="18" y="16" width="20" height="20" rx="6" fill="${shade(hex, -0.1)}"/><circle cx="28" cy="26" r="5" fill="#141416"/>${apple(85, 120, 11, edge)}</svg>`;
+  }
+
+  function laptop(m, hex, view) {
+    const edge = shade(hex, -0.22);
+    if (view === 'front') {
+      const g = 'w' + (++uid);
+      return `<svg viewBox="0 0 240 170" xmlns="http://www.w3.org/2000/svg">${wall(g)}<rect x="30" y="10" width="180" height="120" rx="8" fill="#0b0b0c" stroke="${edge}" stroke-width="2"/><rect x="38" y="18" width="164" height="104" rx="2" fill="url(#${g})"/><path d="M14 132h212l-10 16H24z" fill="${hex}" stroke="${edge}"/><rect x="104" y="132" width="32" height="4" rx="2" fill="${edge}"/></svg>`;
+    }
+    return `<svg viewBox="0 0 240 170" xmlns="http://www.w3.org/2000/svg"><rect x="20" y="16" width="200" height="138" rx="10" fill="${edge}"/><rect x="22" y="18" width="196" height="134" rx="9" fill="${hex}"/>${apple(120, 85, 12, edge)}</svg>`;
+  }
+
+  function watch(m, hex, view) {
+    const band = shade(hex, -0.05);
+    const face = view === 'front'
+      ? `<rect x="33" y="55" width="54" height="90" rx="14" fill="#000"/><text x="60" y="96" text-anchor="middle" font-size="17" font-family="Arial" fill="#fff">10:09</text><text x="60" y="114" text-anchor="middle" font-size="8" font-family="Arial" fill="#f97316">MON 2</text>`
+      : `<circle cx="60" cy="100" r="22" fill="#2a2a2c" stroke="#555"/><circle cx="60" cy="100" r="8" fill="#111"/>`;
+    return `<svg viewBox="0 0 120 200" xmlns="http://www.w3.org/2000/svg"><rect x="36" y="0" width="48" height="58" rx="8" fill="${band}"/><rect x="36" y="142" width="48" height="58" rx="8" fill="${band}"/><rect x="24" y="44" width="72" height="112" rx="22" fill="${view === 'front' ? '#1c1c1e' : shade(hex, -0.15)}" stroke="${hex}" stroke-width="5"/>${face}<rect x="97" y="80" width="6" height="18" rx="3" fill="${hex}"/></svg>`;
+  }
+
+  // view: back | front | tilt | detail
+  function deviceSVG(modelId, hex, view) {
+    const m = typeof modelId === 'string' ? PM.modelOf(modelId) : modelId;
+    const v = view === 'tilt' || view === 'detail' ? 'back' : view || 'back';
+    const fn = m.family === 'iPad' ? tablet : m.family === 'Mac' ? laptop : m.family === 'Watch' ? watch : phone;
+    let svg = fn(m, hex || m.colors[0][1], v);
+    if (view === 'tilt') svg = svg.replace(/<svg ([^>]*)>/, '<svg $1><g transform="rotate(-14 60 120) translate(0 4)">').replace(/<\/svg>$/, '</g></svg>');
+    if (view === 'detail') svg = svg.replace(/viewBox="0 0 (\d+) (\d+)"/, (s, w, h) => `viewBox="0 0 ${Math.round(w * 0.62)} ${Math.round(h * 0.38)}"`);
+    return svg;
+  }
+  const PHOTO_VIEWS = ['back', 'front', 'tilt', 'detail', 'back', 'front'];
+  const photoSVG = (u, i) => deviceSVG(u.model, u.hex, PHOTO_VIEWS[i % PHOTO_VIEWS.length]);
+
+  // ---------- QR and barcode art (look-alikes, not scannable) ----------
+  function hash(s) { let h = 2166136261; for (const c of String(s)) { h ^= c.charCodeAt(0); h = Math.imul(h, 16777619); } return h >>> 0; }
+  function qrSVG(text) {
+    const n = 25; let h = hash(text) || 1; let cells = '';
+    const inFinder = (x, y) => (x < 8 && y < 8) || (x > n - 9 && y < 8) || (x < 8 && y > n - 9);
+    for (let y = 0; y < n; y++) for (let x = 0; x < n; x++) {
+      if (inFinder(x, y)) continue;
+      h = (Math.imul(h, 1103515245) + 12345) >>> 0;
+      if ((h >>> 16) % 2 === 0) cells += `M${x} ${y}h1v1h-1z`;
+    }
+    const finder = (x, y) => `<rect x="${x}" y="${y}" width="7" height="7" fill="#000"/><rect x="${x + 1}" y="${y + 1}" width="5" height="5" fill="#fff"/><rect x="${x + 2}" y="${y + 2}" width="3" height="3" fill="#000"/>`;
+    return `<svg viewBox="-2 -2 ${n + 4} ${n + 4}" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges"><rect x="-2" y="-2" width="${n + 4}" height="${n + 4}" fill="#fff"/><path d="${cells}" fill="#000"/>${finder(0, 0)}${finder(n - 7, 0)}${finder(0, n - 7)}</svg>`;
+  }
+  function barcodeSVG(text) {
+    let bits = '11010010000';
+    for (const c of String(text)) bits += (hash(c + text.length) >>> 3).toString(2).padStart(11, '0').slice(-11) + '0';
+    bits += '1100011101011';
+    let x = 0, d = '';
+    for (const b of bits) { if (b === '1') d += `M${x} 0h1v40h-1z`; x++; }
+    return `<svg viewBox="0 0 ${x} 40" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges"><path d="${d}" fill="#000"/></svg>`;
+  }
+
+  // ---------- toast ----------
+  function toast(msg) {
+    let box = $('.pm-toasts');
+    if (!box) { box = document.createElement('div'); box.className = 'pm-toasts'; document.body.appendChild(box); }
+    const t = document.createElement('div');
+    t.className = 'pm-toast';
+    t.textContent = msg;
+    box.appendChild(t);
+    setTimeout(() => t.remove(), 2800);
+  }
+
+  // ---------- modal ----------
+  function modal({ title, body, foot, width, onClose }) {
+    const ov = document.createElement('div');
+    ov.className = 'pm-overlay';
+    ov.innerHTML = `<div class="pm-modal" style="max-width:${width || 560}px" role="dialog" aria-modal="true"><div class="pm-modal-head"><span>${title || ''}</span><button type="button" data-close aria-label="關閉">×</button></div><div class="pm-modal-body">${body || ''}</div>${foot ? `<div class="pm-modal-foot">${foot}</div>` : ''}</div>`;
+    const close = () => { ov.remove(); document.removeEventListener('keydown', onKey); if (onClose) onClose(); };
+    const onKey = e => { if (e.key === 'Escape') close(); };
+    ov.addEventListener('mousedown', e => { if (e.target === ov) close(); });
+    ov.addEventListener('click', e => { if (e.target.closest('[data-close]')) close(); });
+    document.addEventListener('keydown', onKey);
+    document.body.appendChild(ov);
+    return { el: ov.querySelector('.pm-modal'), close };
+  }
+
+  function printPreview(html, opts) {
+    opts = opts || {};
+    const m = modal({
+      title: opts.title || '列印預覽',
+      width: opts.width || 440,
+      body: `<div class="paper-stage">${html}</div><p style="margin:12px 0 0;color:#71717a;font-size:13px">${opts.hint || '一按即印：經打印代理直接送到收據打印機，唔使揀打印機。'}</p>`,
+      foot: `<button type="button" class="pm-btn" data-close>關閉</button><button type="button" class="pm-btn primary" data-print>列印</button>`,
+    });
+    m.el.querySelector('[data-print]').addEventListener('click', () => { m.close(); toast(opts.sent || '已送到收據打印機（示範）'); });
+    return m;
+  }
+
+  // ---------- printouts ----------
+  const STORE = () => PM.store.get().cms.store;
+  const head = sub => `<div class="c big">手機俠 Phonemen</div><div class="c muted">${esc(STORE().address)}</div><div class="c muted">WhatsApp ${esc(STORE().whatsapp)}</div>${sub ? `<div class="c" style="margin-top:6px;font-weight:700">${sub}</div>` : ''}<div class="rule"></div>`;
+  const row = (a, b) => `<div class="row"><span>${a}</span><span>${b}</span></div>`;
+  const plusMonths = (d, n) => { const t = new Date(d + 'T00:00:00Z'); t.setUTCMonth(t.getUTCMonth() + n); return t.toISOString().slice(0, 10); };
+
+  function receiptSale(d) {
+    const lines = d.lines.map(l => `<div style="margin-top:4px">${esc(l.title)}</div><div class="row muted"><span>${esc(l.code)} · ${esc(l.grade)}${l.battery ? ' · 電池 ' + l.battery + '%' : ''}</span></div><div class="row muted"><span>${l.imei ? (l.imei.length === 15 ? 'IMEI ' : '序號 ') + esc(l.imei) : ''}</span><span>${hkd(l.price)}</span></div>`).join('');
+    const pays = (d.payments || []).map(p => row(esc(p.method), hkd(p.amount))).join('');
+    return `<div class="receipt">${head('發票 / 收據')}${row('單號', esc(d.no))}${row('日期', esc(d.date))}${row('店員', esc(d.staff) + ' · ' + esc(d.channel))}${d.customer ? row('客戶', esc(d.customer.name) + ' ' + maskPhone(d.customer.phone)) : ''}<div class="rule"></div>${lines}<div class="rule"></div>${d.discount ? row('折扣', '-' + hkd(d.discount)) : ''}${pays}<div class="row tot"><span>合共</span><span>${hkd(d.total)}</span></div><div class="rule"></div><div class="small">保養至 ${plusMonths(d.date.slice(0, 10), 3)}（3 個月；人為損壞及入水除外）。請保留此收據。</div><div class="qr">${qrSVG(d.no)}</div><div class="c small">掃描查看保養及裝置檔案</div><div class="c" style="margin-top:6px">多謝惠顧！</div></div>`;
+  }
+
+  function slipBuyback(d) {
+    const fails = (d.faults || []).length ? d.faults.map(PM.checkName).join('、') : '全部合格';
+    return `<div class="receipt">${head('二手機回收單')}${row('單號', esc(d.no))}${row('日期', esc(d.date))}${row('店員', esc(d.staff))}<div class="rule"></div>${row('賣方', esc(d.name))}${row('電話', maskPhone(d.phone))}${d.idno ? row('證件', esc(d.idno)) : ''}<div class="rule"></div><div>${esc(d.title)}</div>${row(d.imei && d.imei.length === 15 ? 'IMEI' : '序號', esc(d.imei))}${row('成色 / 電池', esc(d.grade) + ' / ' + d.battery + '%')}${row('17 點檢查', esc(fails))}<div class="rule"></div>${row('付款方式', esc(d.pay))}<div class="row tot"><span>回收價</span><span>${hkd(d.price)}</span></div><div class="rule"></div><div class="small">本人確認上述裝置為本人合法擁有，並無任何借貸、按揭或盜竊來源，已關閉「尋找」功能及登出帳戶，並同意以上價錢出售予手機俠。</div><div class="small" style="margin-top:8px">賣方簽署</div><div class="sig">${d.signature ? `<img alt="簽署" src="${d.signature}">` : ''}</div><div class="c small" style="margin-top:8px">個人資料只用於交易紀錄，按《個人資料（私隱）條例》處理。</div></div>`;
+  }
+
+  function ticketRepair(d) {
+    return `<div class="receipt">${head('維修單')}${row('單號', esc(d.no))}${row('收機日期', esc(d.date))}${row('客戶', esc(d.name) + ' ' + maskPhone(d.phone))}<div class="rule"></div><div>${esc(d.device)} ${esc(d.color || '')}</div>${row('IMEI / 序號', esc(d.imei || '-'))}<div class="small" style="margin:4px 0">問題：${esc(d.issue)}</div><div class="rule"></div>${row('報價', d.quote ? hkd(d.quote) : '待檢查')}${row('訂金', hkd(d.deposit || 0))}${row('預計取機', esc(d.eta))}<div class="rule"></div><div class="small">取機時請出示此單。維修部分保養 30 日。機主確認已備份資料。</div><div class="qr">${qrSVG(d.no)}</div><div class="c small">掃描查看維修進度</div></div>`;
+  }
+
+  function label(u) {
+    const m = PM.modelOf(u.model);
+    return `<div class="label"><div><div class="l1">${esc(m.name)} ${esc(u.cap)}</div><div class="l2"><span>${esc(u.color)} · ${esc(u.grade)}${u.battery ? ' · 電池 ' + u.battery + '%' : ''}</span></div></div><div class="bc">${barcodeSVG(u.code)}</div><div class="l2"><span class="code">${esc(u.code)}</span><b>${hkd(u.price)}</b></div></div>`;
+  }
+
+  // ---------- signature pad ----------
+  function signaturePad(canvas) {
+    const ctx = canvas.getContext('2d');
+    let drawing = false, empty = true, last = null;
+    const pos = e => { const r = canvas.getBoundingClientRect(); const p = e.touches ? e.touches[0] : e; return [(p.clientX - r.left) * canvas.width / r.width, (p.clientY - r.top) * canvas.height / r.height]; };
+    const start = e => { drawing = true; last = pos(e); e.preventDefault(); };
+    const move = e => { if (!drawing) return; const p = pos(e); ctx.strokeStyle = '#111'; ctx.lineWidth = 2.4; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(last[0], last[1]); ctx.lineTo(p[0], p[1]); ctx.stroke(); last = p; empty = false; e.preventDefault(); };
+    const end = () => { drawing = false; };
+    canvas.addEventListener('mousedown', start); canvas.addEventListener('mousemove', move); window.addEventListener('mouseup', end);
+    canvas.addEventListener('touchstart', start, { passive: false }); canvas.addEventListener('touchmove', move, { passive: false }); canvas.addEventListener('touchend', end);
+    return {
+      clear() { ctx.clearRect(0, 0, canvas.width, canvas.height); empty = true; },
+      isEmpty: () => empty,
+      toDataURL: () => canvas.toDataURL('image/png'),
+      demo() { this.clear(); ctx.strokeStyle = '#111'; ctx.lineWidth = 2.4; ctx.lineCap = 'round'; ctx.beginPath(); const w = canvas.width, h = canvas.height; ctx.moveTo(w * .12, h * .62); for (let i = 0; i <= 40; i++) { const x = w * (.12 + i * .018); ctx.lineTo(x, h * (.55 + Math.sin(i * .7) * .18 - i * .002)); } ctx.stroke(); empty = false; },
+    };
+  }
+
+  // Links between the mockups. The single-file bundles (dist/) override these paths.
+  const LINKS = Object.assign({ hub: '../', a: '../a/', b: '../b/', shop: '../shop/' }, window.PM_LINKS || {});
+  const link = (app, hash) => LINKS[app] + (hash || '');
+  const shopURL = hash => link('shop', hash);
+
+  const STATUS = {
+    qc: { label: '待QC', tone: 'amber' },
+    refurb: { label: '翻新中', tone: 'orange' },
+    ready: { label: '可上架', tone: 'sky' },
+    listed: { label: '已上架', tone: 'green' },
+    reserved: { label: '已預留', tone: 'violet' },
+    sold: { label: '已售', tone: 'slate' },
+  };
+
+  window.UI = { esc, $, $$, now, hkd, maskPhone, shade, lum, deviceSVG, photoSVG, qrSVG, barcodeSVG, toast, modal, printPreview, receiptSale, slipBuyback, ticketRepair, label, signaturePad, STATUS, plusMonths, link, shopURL };
+})();
+
+</script>
+<script>
+/* Proposal B — modern: the admin is built around each device's lifecycle. */
+(function () {
+  'use strict';
+  const { store, hkd, modelOf, unitTitle, TODAY } = PM;
+  const { esc, $, $$, toast } = UI;
+  const S = () => store.get();
+  const nospace = p => String(p || '').replace(/\s/g, '');
+  const fmtPhone = p => { const d = nospace(p); return /^\d{8}$/.test(d) ? d.slice(0, 4) + ' ' + d.slice(4) : d; };
+  const md = d => `${+d.slice(5, 7)}月${+d.slice(8, 10)}日`;
+  const OVERDUE = 5;
+
+  let role = 'manager';
+  try { role = localStorage.getItem('pm-role') || 'manager'; } catch (e) { /* preview */ }
+  const isMgr = () => role === 'manager';
+
+  // Saves made by this page re-render explicitly; changes from other tabs re-render through the listener.
+  let muted = false;
+  const commit = () => { muted = true; store.save(); muted = false; };
+
+  // ---------------------------------------------------------------- icons and small pieces
+  const P = {
+    home: 'M3 11l9-8 9 8M5 10v10h5v-6h4v6h5V10',
+    recycle: 'M4 4v6h6M20 20v-6h-6M19.4 9A8 8 0 0 0 5.3 6.3L4 8M4.6 15a8 8 0 0 0 14.1 2.7L20 16',
+    cart: 'M3 4h2l2.5 11h10.5l2-8H6.2M9 20.5h.01M17 20.5h.01',
+    sparkle: 'M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8zM19 16l.7 2.3L22 19l-2.3.7L19 22l-.7-2.3L16 19l2.3-.7z',
+    camera: 'M4 8h3l2-3h6l2 3h3v11H4zM12 16.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z',
+    box: 'M21 8l-9-5-9 5v8l9 5 9-5zM3 8l9 5 9-5M12 13v8',
+    wrench: 'M15 4a5 5 0 0 0-4.6 6.9L3 18.3 5.7 21l7.4-7.4A5 5 0 0 0 20 9l-3 3-3-3 3-3a5 5 0 0 0-2-2z',
+    users: 'M16 20v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 10a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM22 20v-2a4 4 0 0 0-3-3.9M16 2.1a4 4 0 0 1 0 7.8',
+    globe: 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18',
+    external: 'M14 4h6v6M10 14L20 4M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5',
+    scan: 'M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3M8 8v8M11 8v8M14 8v8M17 8v8',
+    printer: 'M7 9V3h10v6M7 18H4v-7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v7h-3M7 14h10v7H7z',
+    check: 'M20 6L9 17l-5-5',
+    x: 'M18 6L6 18M6 6l12 12',
+    plus: 'M12 5v14M5 12h14',
+    arrow: 'M5 12h14M13 6l6 6-6 6',
+    back: 'M19 12H5M11 6l-6 6 6 6',
+    msg: 'M20 12a8 8 0 0 1-11.6 7.1L4 20l1-4.2A8 8 0 1 1 20 12z',
+    copy: 'M9 9h11v11H9zM5 15V4h11',
+    alert: 'M12 9v4M12 17h.01M10.3 4l-8.1 14a2 2 0 0 0 1.7 3h16.2a2 2 0 0 0 1.7-3L13.7 4a2 2 0 0 0-3.4 0z',
+    clock: 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM12 7v5l3 2',
+    tag: 'M3 3h8l10 10-8 8L3 11zM7.5 7.5h.01',
+    qr: 'M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h2v2h-2zM18 18h2v2h-2zM14 18h2M18 14h2',
+    edit: 'M4 20h4L19 9l-4-4L4 16zM14 6l4 4',
+    eye: 'M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12zM12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z',
+    up: 'M12 19V5M6 11l6-6 6 6',
+    down: 'M12 5v14M6 13l6 6 6-6',
+    shield: 'M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z',
+    lock: 'M6 11h12v10H6zM8 11V7a4 4 0 0 1 8 0v4',
+    trash: 'M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3',
+    phone: 'M8 2h8a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zM11 18h2',
+  };
+  const ic = (n, style) => `<svg class="ic" viewBox="0 0 24 24"${style ? ` style="${style}"` : ''}><path d="${P[n]}"/></svg>`;
+  const chip = (text, tone) => `<span class="chip ${tone || ''}">${text}</span>`;
+  const statusChip = s => chip(UI.STATUS[s].label, UI.STATUS[s].tone);
+  const battChip = b => chip('電池 ' + b + '%', b >= 85 ? 'green' : b >= 80 ? 'amber' : 'red');
+  const devArt = (u, view, cls) => `<div class="dev ${cls || ''}">${UI.deviceSVG(u.model, u.hex, view || 'back')}</div>`;
+  const ageChip = d => chip(d + ' 日', d > 60 ? 'red' : d > 30 ? 'amber' : 'slate');
+  const refurbDays = u => PM.daysBetween(u.fixFrom || u.bought, TODAY);
+  const overdue = () => S().units.filter(u => u.status === 'refurb' && refurbDays(u) > OVERDUE);
+  const idOf = u => u.imei ? 'IMEI ' + u.imei : '序號 ' + u.serial;
+  const cname = phone => { const c = PM.customer(phone); return c ? c.name : '散客'; };
+  const kpi = (label, value, sub, icon) => `<div class="card kpi"><div class="lb">${ic(icon)}${label}</div><div class="v num">${value}</div><div class="s">${sub}</div></div>`;
+  const bars = (rows, max) => `<div class="bars">${rows.map(r => `<div class="bar"><span>${r[0]}</span><div class="tr"><div class="fl ${r[3] || ''}" style="width:${max ? Math.max(2, Math.round(r[1] / max * 100)) : 0}%"></div></div><span class="right num">${r[2]}</span></div>`).join('')}</div>`;
+  const lockedNote = () => `<div class="locked">${ic('lock')}成本及利潤只限經理查看。右上角切換到「經理」示範。</div>`;
+
+  // ---------------------------------------------------------------- shell: nav, scan bar, role, router
+  const NAV = [
+    { path: '/dashboard', icon: 'home', label: '總覽' },
+    { sec: '營運' },
+    { path: '/buyback', icon: 'recycle', label: '回收', kbd: 'F2' },
+    { path: '/checkout', icon: 'cart', label: '收銀', kbd: 'F3' },
+    { path: '/refurb', icon: 'sparkle', label: '翻新', count: () => S().units.filter(u => u.status === 'qc' || u.status === 'refurb').length, hot: () => overdue().length > 0 },
+    { path: '/listing', icon: 'camera', label: '上架', count: () => S().units.filter(u => u.status === 'ready').length },
+    { path: '/stock', icon: 'box', label: '庫存' },
+    { path: '/repairs', icon: 'wrench', label: '維修', count: () => S().repairs.filter(r => r.status !== 'done').length },
+    { path: '/customers', icon: 'users', label: '客戶' },
+    { sec: '網站' },
+    { path: '/website', icon: 'globe', label: '網站內容' },
+    { ext: true, icon: 'external', label: '開啟網店' },
+  ];
+  function renderNav(active) {
+    $('#nav').innerHTML = NAV.map(n => {
+      if (n.sec) return `<div class="sec">${n.sec}</div>`;
+      if (n.ext) return `<a href="${UI.shopURL()}" target="_blank" rel="noopener">${ic(n.icon)}<span class="t">${n.label}</span></a>`;
+      const c = n.count ? n.count() : 0;
+      return `<a data-go="${n.path}" class="${active === n.path ? 'on' : ''}">${ic(n.icon)}<span class="t">${n.label}</span>${n.kbd ? `<kbd>${n.kbd}</kbd>` : ''}${c ? `<span class="cnt ${n.hot && n.hot() ? 'hot' : ''}">${c}</span>` : ''}</a>`;
+    }).join('');
+    $$('#role button').forEach(b => b.classList.toggle('on', b.dataset.role === role));
+  }
+
+  // Hash routing, with an in-memory fallback for pages that can't change their hash (e.g. previews).
+  let fallback = null;
+  function go(path) {
+    if (current() === path) { route(); return; }
+    try { location.hash = path; } catch (e) { /* ignore */ }
+    if (location.hash !== '#' + path) { fallback = path; route(); }
+  }
+  const current = () => fallback || (location.hash || '#/dashboard').slice(1);
+  const ROUTES = {};
+  function route() {
+    const [path, query] = current().split('?');
+    const parts = path.split('/').filter(Boolean);
+    const base = '/' + (parts[0] || 'dashboard');
+    renderNav(base === '/unit' ? '/stock' : base === '/customer' ? '/customers' : base);
+    const host = $('#view');
+    const el = document.createElement('div');
+    host.replaceChildren(el);
+    window.scrollTo(0, 0);
+    (ROUTES[base] || ROUTES['/dashboard'])(el, parts[1] ? decodeURIComponent(parts[1]) : '', new URLSearchParams(query || ''));
+  }
+  window.__go = go;
+
+  function resolveScan(q) {
+    q = String(q || '').trim();
+    if (!q) return;
+    const up = q.toUpperCase().replace(/\s/g, '');
+    const s = S();
+    const u = s.units.find(x => x.code === up || x.imei === up || x.serial === up);
+    if (u) return go('/unit/' + u.code);
+    const slip = s.slips.find(x => x.no === up);
+    if (slip) return go('/unit/' + slip.code);
+    const inv = s.invoices.find(x => x.no === up);
+    if (inv) { if (inv.lines[0] && PM.unit(inv.lines[0].code)) return go('/unit/' + inv.lines[0].code); toast(`發票 ${inv.no}：${inv.name} ${hkd(inv.amount)}`); return; }
+    const rp = s.repairs.find(x => x.no === up);
+    if (rp) return go('/repairs?open=' + rp.no);
+    const c = s.customers.find(x => nospace(x.phone) === up);
+    if (c) return go('/customer/' + encodeURIComponent(c.phone));
+    toast('搵唔到：' + q);
+  }
+
+  document.addEventListener('click', e => {
+    const g = e.target.closest('[data-go]');
+    if (g) { e.preventDefault(); go(g.dataset.go); }
+  });
+  $('#scan').addEventListener('keydown', e => { if (e.key === 'Enter') { resolveScan(e.target.value); e.target.value = ''; e.target.blur(); } });
+  $('#role').addEventListener('click', e => {
+    const b = e.target.closest('[data-role]');
+    if (!b) return;
+    role = b.dataset.role;
+    try { localStorage.setItem('pm-role', role); } catch (err) { /* preview */ }
+    route();
+    toast(role === 'manager' ? '已切換到經理：可見成本及利潤' : '已切換到店員：成本及利潤已隱藏');
+  });
+  document.addEventListener('keydown', e => {
+    const typing = /INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName) || document.activeElement.isContentEditable;
+    if (e.key === '/' && !typing) { e.preventDefault(); $('#scan').focus(); }
+    if (e.key === 'F2') { e.preventDefault(); go('/buyback'); }
+    if (e.key === 'F3') { e.preventDefault(); go('/checkout'); }
+  });
+
+  // ---------------------------------------------------------------- 總覽 dashboard
+  ROUTES['/dashboard'] = el => {
+    const s = S();
+    const units = s.units;
+    const boughtToday = units.filter(u => u.bought === TODAY);
+    const invToday = s.invoices.filter(i => i.date === TODAY);
+    const soldToday = units.filter(u => u.sold && u.sold.date === TODAY);
+    const gp = soldToday.reduce((a, u) => a + u.sold.price - u.cost - u.refurb, 0);
+    const inStock = units.filter(u => u.status !== 'sold');
+    const ask = inStock.reduce((a, u) => a + u.price, 0), cost = inStock.reduce((a, u) => a + u.cost + u.refurb, 0);
+    const count = st => units.filter(u => u.status === st).length;
+    const leadsNew = s.leads.filter(l => l.status === '新報價').length;
+    const recToday = s.receipts.filter(r => r.date === TODAY);
+    const byMethod = {};
+    recToday.forEach(r => { byMethod[r.method] = (byMethod[r.method] || 0) + r.amount; });
+    const mMax = Math.max(1, ...Object.values(byMethod));
+    const ages = [['0–7 日', u => PM.unitAge(u) <= 7, 'green'], ['8–30 日', u => PM.unitAge(u) > 7 && PM.unitAge(u) <= 30, 'sky'], ['31–60 日', u => PM.unitAge(u) > 30 && PM.unitAge(u) <= 60, 'amber'], ['60 日以上', u => PM.unitAge(u) > 60, 'red']];
+    const ageRows = ages.map(([l, f, t]) => { const n = inStock.filter(f).length; return [l, n, n + ' 部', t]; });
+    const old = inStock.filter(u => PM.unitAge(u) > 30).length;
+    const monthInv = s.invoices.filter(i => i.date >= '2026-10-02');
+    const ch = {};
+    monthInv.forEach(i => { ch[i.channel] = (ch[i.channel] || 0) + 1; });
+    const chMax = Math.max(1, ...Object.values(ch));
+    const events = [];
+    units.forEach(u => u.events.forEach(ev => events.push({ ...ev, u })));
+    events.sort((a, b) => b.d.localeCompare(a.d));
+    const q = (n, label, sub, go2, tone) => `<a data-go="${go2}"><span class="n num" style="color:${tone || 'inherit'}">${n}</span><span class="t">${label}<small>${sub}</small></span>${ic('arrow', 'color:#94a3b8')}</a>`;
+    el.innerHTML = `
+      <div class="ph"><div><h1>早晨，Alan</h1><p>2026 年 11 月 2 日（星期一）· 旺角店</p></div>
+        <div class="acts"><button class="btn" data-go="/checkout">${ic('cart')}開始收銀 <span class="kbd">F3</span></button><button class="btn pri" data-go="/buyback">${ic('recycle')}開始回收 <span class="kbd" style="background:transparent;color:#c7d2fe;border-color:#818cf8">F2</span></button></div></div>
+      <div class="grid g4">
+        ${kpi('今日回收', boughtToday.length + ' 部', `收購 <b>${hkd(boughtToday.reduce((a, u) => a + u.cost, 0))}</b>`, 'recycle')}
+        ${kpi('今日銷售', hkd(invToday.reduce((a, i) => a + i.amount, 0)), `${invToday.length} 張單` + (isMgr() ? ` · 毛利 <b>${hkd(gp)}</b>` : ''), 'cart')}
+        ${kpi('在庫', inStock.length + ' 部', isMgr() ? `成本 <b>${hkd(cost)}</b> · 售價 ${hkd(ask)}` : `售價總值 <b>${hkd(ask)}</b>`, 'box')}
+        ${kpi('網店', count('listed') + ' 部上架', `<b>${count('reserved')}</b> 部已預留 · <b>${leadsNew}</b> 個新回收報價`, 'globe')}
+      </div>
+      <div class="grid g-side" style="margin-top:16px">
+        <div class="stack">
+          <div class="card"><div class="hd"><h3>待處理</h3><span class="sub">按一下直接去處理</span></div><div class="queue">
+            ${q(count('qc'), '待 QC', '收機後未做詳細檢查及清除資料', '/refurb')}
+            ${q(overdue().length, '翻新逾期', `送修超過 ${OVERDUE} 日仍未完成`, '/refurb', overdue().length ? '#dc2626' : '')}
+            ${q(count('ready'), '待影相上架', '檢查合格，未有相片或未上架', '/listing')}
+            ${q(leadsNew, '網上回收報價', '客人網上報價，等緊到店', '/buyback')}
+            ${q(s.repairs.filter(r => r.status === 'awaiting').length, '維修待客戶確認', '已報價，等客人 WhatsApp 回覆', '/repairs')}
+            ${q(s.repairs.filter(r => r.status === 'ready').length, '維修待取機', '已完成，已通知客人', '/repairs')}
+            ${q(count('reserved'), '已預留', '網店或 WhatsApp 已付訂金', '/stock?status=reserved')}
+          </div></div>
+          <div class="grid g2">
+            <div class="card"><div class="hd"><h3>庫齡</h3><span class="sub">在庫 ${inStock.length} 部</span></div><div class="bd">${bars(ageRows, Math.max(1, ...ageRows.map(r => r[1])))}${old ? `<div class="warn" style="margin-top:14px">${ic('alert')}<span>${old} 部存放超過 30 日，建議減價或推廣。<a data-go="/stock?sort=age">查看</a></span></div>` : ''}</div></div>
+            <div class="card"><div class="hd"><h3>今日收款</h3><span class="sub">${hkd(recToday.reduce((a, r) => a + r.amount, 0))}</span></div><div class="bd">${Object.keys(byMethod).length ? bars(Object.keys(byMethod).map(k => [k, byMethod[k], hkd(byMethod[k]), k === '現金' ? 'green' : k === '轉數快' ? '' : 'violet']), mMax) : '<div class="empty">今日未有收款</div>'}<div class="small muted" style="margin-top:14px">現金回收付款今日 ${hkd(s.slips.filter(x => x.date === TODAY && x.pay === '現金').reduce((a, x) => a + x.price, 0))}，日結時自動扣減。</div></div></div>
+          </div>
+          <div class="card"><div class="hd"><h3>銷售渠道</h3><span class="sub">10 月 2 日至今 · ${monthInv.length} 張發票</span></div><div class="bd">${bars(Object.keys(ch).sort((a, b) => ch[b] - ch[a]).map(k => [k, ch[k], ch[k] + ' 張', k === '網店' ? 'green' : k === 'Carousell' ? 'amber' : k === '門市' ? 'sky' : '']), chMax)}</div></div>
+        </div>
+        <div class="card"><div class="hd"><h3>最新動態</h3><span class="sub">全部裝置</span></div><div class="bd"><div class="tl">
+          ${events.slice(0, 9).map(ev => `<div class="ev"><div class="h"><b>${ev.type}</b><span>${md(ev.d)} · ${esc(ev.by || '')}</span></div><p><a data-go="/unit/${ev.u.code}">${esc(unitTitle(ev.u))}</a><br><span class="muted">${esc(ev.note)}</span></p></div>`).join('')}
+        </div></div></div>
+      </div>`;
+  };
+
+  // ---------------------------------------------------------------- 回收 buyback wizard
+  const BB0 = () => ({ step: 1, scanning: false, scanned: false, mid: 'ip15p', cap: '256GB', color: '藍色鈦金屬', region: 'US', imei: '', findmy: false, signout: false, dup: null, checks: {}, battery: 87, grade: 'A★', photos: 0, offer: null, phone: '', name: '', idno: '', pay: '轉數快', fps: '', agree: false, lead: null, result: null });
+  let bb = BB0();
+  let sigPad = null;
+  const STEPS = ['裝置', '檢查', '報價', '客戶及付款', '完成'];
+
+  ROUTES['/buyback'] = (el, _, q) => {
+    const leadId = q.get('lead');
+    if (leadId && (!bb.lead || bb.lead !== leadId)) {
+      const l = S().leads.find(x => x.id === leadId);
+      if (l) { bb = BB0(); Object.assign(bb, { lead: l.id, mid: l.model, cap: l.cap, grade: l.grade, phone: l.phone, name: l.name, color: modelOf(l.model).colors[0][0] }); }
+    }
+    bindBuyback(el);
+    renderBuyback(el);
+  };
+
+  function bbQuote() { return PM.buyQuote(bb.mid, bb.cap, bb.grade, bb.battery, Object.keys(bb.checks).filter(k => bb.checks[k])); }
+
+  function renderBuyback(el) {
+    const m = modelOf(bb.mid);
+    const q = bbQuote();
+    if (bb.offer == null) bb.offer = q.total;
+    const faults = Object.keys(bb.checks).filter(k => bb.checks[k]);
+    const stepper = `<div class="steps">${STEPS.map((t, i) => `<div class="st ${i + 1 === bb.step ? 'on' : i + 1 < bb.step ? 'done' : ''}"><span class="b">${i + 1 < bb.step ? '✓' : i + 1}</span>${t}</div>`).join('')}</div>`;
+    const summary = `<div class="card"><div class="hd"><h3>回收摘要</h3>${bb.lead ? chip('網上報價 ' + bb.lead, 'violet') : ''}</div><div class="bd">
+      <div class="dev" style="height:150px;margin-bottom:12px">${UI.deviceSVG(bb.mid, (m.colors.find(c => c[0] === bb.color) || m.colors[0])[1], 'back')}</div>
+      <dl class="dl"><dt>型號</dt><dd>${esc(m.name)}</dd><dt>容量 · 顏色</dt><dd>${esc(bb.cap)} · ${esc(bb.color)}</dd><dt>${m.cellular === false ? '序號' : 'IMEI'}</dt><dd class="mono">${esc(bb.imei || '—')}</dd>
+      <dt>成色 · 電池</dt><dd>${bb.step > 1 ? esc(bb.grade) + ' · ' + bb.battery + '%' : '—'}</dd><dt>問題</dt><dd>${bb.step > 1 ? (faults.length ? faults.map(PM.checkName).join('、') : '無') : '—'}</dd>
+      <dt>回收價</dt><dd style="font-size:18px;font-weight:700">${bb.step > 2 ? hkd(bb.offer) : '—'}</dd></dl></div></div>`;
+    let body = '';
+    if (bb.step === 1) body = bbStep1(m);
+    if (bb.step === 2) body = bbStep2();
+    if (bb.step === 3) body = bbStep3(m, q);
+    if (bb.step === 4) body = bbStep4();
+    if (bb.step === 5) body = bbStep5();
+    el.innerHTML = `<div class="ph"><div><h1>回收</h1><p>掃描、檢查、報價、付款，一個流程完成。目標 3 分鐘內。</p></div><div class="acts">${bb.step > 1 && bb.step < 5 ? `<button class="btn ghost" data-act="restart">重新開始</button>` : ''}</div></div>${stepper}<div class="grid g-side">${body}${bb.step < 5 ? summary : ''}</div>`;
+    bindInner(el);
+  }
+
+  // Elements that are recreated on every render.
+  function bindInner(el) {
+    const sig = $('#bb-sig', el);
+    if (sig) { sigPad = UI.signaturePad(sig); if (bb.sigData) { const img = new Image(); img.onload = () => sig.getContext('2d').drawImage(img, 0, 0); img.src = bb.sigData; } }
+    const imeiIn = $('#bb-imei', el);
+    if (imeiIn) {
+      if (!bb.scanned && !bb.scanning) imeiIn.focus();
+      imeiIn.addEventListener('keydown', e => { if (e.key === 'Enter') { bb.imei = imeiIn.value.trim(); if (bb.imei) doScan(el, false); } });
+    }
+  }
+
+  function bbStep1(m) {
+    const leads = S().leads.filter(l => l.status === '新報價' || l.status === '已約到店');
+    const regionNo = { HK: 'ZP/A', US: 'LL/A', JP: 'J/A', KR: 'KH/A', AU: 'X/A', CA: 'C/A' }[bb.region];
+    const dev = bb.scanning ? `<div class="note-ok" style="background:#f8fafc;color:#475569;border-color:#e2e8f0">${ic('clock')}辨識中… 正在查詢型號資料庫</div>` : bb.scanned ? `
+      ${bb.dup ? `<div class="warn">${ic('alert')}<span>此 IMEI 曾經回收：${esc(bb.dup)}。請核實賣方身份。</span></div>` : ''}
+      <div class="devcard"><div class="dev">${UI.deviceSVG(bb.mid, (m.colors.find(c => c[0] === bb.color) || m.colors[0])[1], 'back')}</div>
+        <div class="stack"><div class="row" style="gap:8px">${chip('已辨識', 'green')}<span class="muted small">如資料有誤可直接修改</span></div>
+          <div class="grid g2" style="gap:10px">
+            <div class="field"><label>型號</label><select class="sel" data-bb="mid">${PM.MODELS.map(x => `<option value="${x.id}"${x.id === bb.mid ? ' selected' : ''}>${esc(x.name)}</option>`).join('')}</select></div>
+            <div class="field"><label>容量</label><select class="sel" data-bb="cap">${Object.keys(m.base).map(c => `<option${c === bb.cap ? ' selected' : ''}>${c}</option>`).join('')}</select></div>
+            <div class="field"><label>顏色</label><select class="sel" data-bb="color">${m.colors.map(c => `<option${c[0] === bb.color ? ' selected' : ''}>${esc(c[0])}</option>`).join('')}</select></div>
+            <div class="field"><label>產地</label><select class="sel" data-bb="region">${Object.entries(PM.REGIONS).map(([k, v]) => `<option value="${k}"${k === bb.region ? ' selected' : ''}>${v}</option>`).join('')}</select></div>
+          </div>
+          <div class="small muted">型號編號 ${esc(m.no)} · ${regionNo}${m.cellular === false ? ' · Wi-Fi 機用序號代替 IMEI' : ''}</div>
+        </div></div>
+      <div class="hr"></div>
+      <div class="stack" style="gap:10px">
+        <div class="row sb"><span><b>「尋找」功能已關閉</b><br><span class="small muted">未關閉的機唔可以回收</span></span><button class="tog ${bb.findmy ? 'on' : ''}" data-act="tog-findmy" aria-label="尋找功能已關閉"></button></div>
+        <div class="row sb"><span><b>已登出 Apple ID / Google 帳戶</b><br><span class="small muted">避免啟用鎖</span></span><button class="tog ${bb.signout ? 'on' : ''}" data-act="tog-signout" aria-label="已登出帳戶"></button></div>
+        <div class="note-ok">${ic('shield')}黑名單查詢：未發現遺失或盜竊紀錄（可整合 GSMA 查詢，示範）</div>
+      </div>` : '';
+    return `<div class="card"><div class="hd"><h3>掃描裝置</h3><span class="sub">IMEI 喺「設定 › 一般 › 關於本機」，或撥 *#06#</span></div><div class="bd stack">
+      <div class="row"><input class="inp big mono" id="bb-imei" placeholder="掃描或輸入 IMEI / 序號，按 Enter" value="${esc(bb.imei)}"><button class="btn lg dark" data-act="sim-scan">${ic('scan')}模擬掃描</button></div>
+      ${!bb.scanned && leads.length ? `<div><div class="small muted" style="margin-bottom:6px">網上報價客人到店？撳一下帶入資料</div>${leads.map(l => `<div class="row sb" style="padding:8px 0;border-top:1px solid var(--line2)"><span><b>${esc(l.name)}</b> ${esc(l.phone)} · ${esc(modelOf(l.model).name)} ${esc(l.cap)} · ${esc(l.grade)}<br><span class="small muted">${esc(l.date)} 網上報價 ${hkd(l.quote)} · ${esc(l.status)}</span></span><button class="btn sm" data-act="use-lead" data-id="${l.id}">帶入</button></div>`).join('')}</div>` : ''}
+      ${dev}
+      <div class="row sb"><span class="small muted">${bb.scanned ? '' : '未有 IMEI？先揀型號，再手動輸入序號。'}</span><button class="btn pri lg" data-act="next" ${bb.scanned && bb.findmy && bb.signout ? '' : 'disabled'}>下一步：檢查 ${ic('arrow')}</button></div>
+    </div></div>`;
+  }
+
+  function bbStep2() {
+    return `<div class="card"><div class="hd"><h3>17 點檢查</h3><span class="sub">全部預設正常，有問題就撳一下</span></div><div class="bd stack">
+      <div class="checks">${PM.CHECKS.map(c => `<button type="button" class="ck ${bb.checks[c.id] ? 'bad' : ''}" data-act="ck" data-id="${c.id}">${c.name}<span class="m">${ic(bb.checks[c.id] ? 'x' : 'check', 'width:14px;height:14px')}</span></button>`).join('')}</div>
+      <div class="grid g2" style="align-items:end">
+        <div class="field"><label>電池健康度</label><div class="row"><input type="range" min="60" max="100" value="${bb.battery}" data-bb="battery" style="flex:1"><input class="inp num" style="width:84px" value="${bb.battery}" data-bb="battery"><span>%</span></div></div>
+        <div class="field"><label>相片（可選）</label><div class="photo-slots three">${[0, 1, 2].map(i => `<div class="slot ${i < bb.photos ? 'full' : ''}" data-act="bb-photo">${i < bb.photos ? `<div class="dev">${UI.deviceSVG(bb.mid, (modelOf(bb.mid).colors.find(c => c[0] === bb.color) || modelOf(bb.mid).colors[0])[1], ['back', 'front', 'tilt'][i])}</div>` : ic('camera')}</div>`).join('')}</div></div>
+      </div>
+      <div class="field"><label>外觀成色</label><div class="grades">${PM.GRADES.map(g => `<div class="gr ${g.id === bb.grade ? 'on' : ''}" data-act="grade" data-id="${g.id}"><b>${g.id}</b><span>${g.name}：${g.desc}</span></div>`).join('')}</div></div>
+      <div class="row sb"><button class="btn ghost" data-act="prev">${ic('back')}上一步</button><button class="btn pri lg" data-act="next">下一步：報價 ${ic('arrow')}</button></div>
+    </div></div>`;
+  }
+
+  function bbStep3(m, q) {
+    const sell = PM.askPrice(m, bb.cap, bb.grade, bb.battery);
+    const faults = Object.keys(bb.checks).filter(k => bb.checks[k]);
+    const fixCost = faults.reduce((a, f) => a + PM.faultFix(f), 0);
+    const profit = sell - bb.offer - fixCost;
+    const over = bb.offer > q.total * 1.05;
+    const comps = S().units.filter(u => u.model === bb.mid && (u.sold || u.status === 'listed')).slice(0, 4);
+    return `<div class="stack">
+      <div class="card"><div class="hd"><h3>報價</h3><span class="sub">按回收價目表自動計算（網站設定 › 回收價目表）</span></div><div class="bd">
+        <div class="grid g2" style="gap:24px">
+          <div class="quote">
+            <div class="ln"><span>基本價（${esc(m.name)} ${esc(bb.cap)}，A 級）</span><span class="num">${hkd(q.base)}</span></div>
+            <div class="ln ${q.gradeAdj < 0 ? 'neg' : ''}"><span>成色 ${esc(bb.grade)}</span><span class="num">${q.gradeAdj >= 0 ? '+' : ''}${hkd(q.gradeAdj).replace('HK$-', '-HK$')}</span></div>
+            <div class="ln ${q.battAdj < 0 ? 'neg' : ''}"><span>電池 ${bb.battery}%</span><span class="num">${q.battAdj ? hkd(q.battAdj).replace('HK$-', '-HK$') : '—'}</span></div>
+            ${q.faultAdj.map(f => `<div class="ln neg"><span>問題：${esc(f.name)}</span><span class="num">${hkd(f.amount).replace('HK$-', '-HK$')}</span></div>`).join('')}
+            <div class="tot"><span>建議回收價</span><b class="num">${hkd(q.total)}</b></div>
+          </div>
+          <div class="stack">
+            <div class="field"><label>實際出價</label><div class="offer"><button class="btn lg" data-act="offer" data-d="-50">−50</button><input class="inp num" id="bb-offer" value="${bb.offer}"><button class="btn lg" data-act="offer" data-d="50">+50</button></div></div>
+            ${over ? (isMgr() ? `<div class="note-ok">${ic('check')}高於建議價超過 5%，經理已批核。</div>` : `<div class="warn">${ic('alert')}<span>高於建議價超過 5%，需要經理批核先可以完成。</span></div>`) : `<div class="note-ok">${ic('check')}在建議價範圍內，毋須批核。</div>`}
+            <button class="btn ghost sm" data-act="offer-reset" style="align-self:flex-start">還原建議價</button>
+          </div>
+        </div>
+      </div></div>
+      <div class="card"><div class="hd"><h3>利潤預算</h3><span class="sub">只限經理</span></div><div class="bd">${isMgr() ? `
+        <div class="grid g3">
+          <div><div class="small muted">預計售價</div><div style="font-size:20px;font-weight:700" class="num">${hkd(sell)}</div></div>
+          <div><div class="small muted">預計翻新成本</div><div style="font-size:20px;font-weight:700" class="num">${hkd(fixCost)}</div></div>
+          <div><div class="small muted">預計毛利</div><div style="font-size:20px;font-weight:700;color:${profit > 0 ? 'var(--green)' : 'var(--red)'}" class="num">${hkd(profit)}（${Math.round(profit / sell * 100)}%）</div></div>
+        </div>
+        <div class="comps" style="margin-top:14px"><div class="small muted" style="margin-bottom:4px">近期同款</div>${comps.length ? comps.map(u => `<div class="r"><span>${u.sold ? '已售 ' + md(u.sold.date) : '在售'} · ${esc(u.cap)} · ${esc(u.grade)} · 電池 ${u.battery}%</span><span class="num">${hkd(u.sold ? u.sold.price : u.price)}</span></div>`).join('') : '<div class="muted">未有同款紀錄</div>'}</div>` : lockedNote()}
+      </div></div>
+      <div class="row sb"><button class="btn ghost" data-act="prev">${ic('back')}上一步</button><button class="btn pri lg" data-act="next" ${over && !isMgr() ? 'disabled' : ''}>下一步：客戶及付款 ${ic('arrow')}</button></div>
+    </div>`;
+  }
+
+  function bbStep4() {
+    const c = PM.customer(fmtPhone(bb.phone));
+    const hist = c ? S().slips.filter(x => x.phone === c.phone).length + S().invoices.filter(x => x.phone === c.phone).length : 0;
+    return `<div class="card"><div class="hd"><h3>客戶及付款</h3><span class="sub">個人資料只用於交易紀錄</span></div><div class="bd stack">
+      <div class="grid g2">
+        <div class="field"><label>電話</label><input class="inp" id="bb-phone" value="${esc(bb.phone)}" placeholder="例如 9123 4567"></div>
+        <div class="field"><label>姓名</label><input class="inp" id="bb-name" value="${esc(bb.name || (c ? c.name : ''))}"></div>
+      </div>
+      ${c ? `<div class="note-ok">${ic('users')}<span>熟客：<b>${esc(c.name)}</b>，${hist} 次交易，${esc(c.since)} 起。${c.note ? esc(c.note) : ''}</span></div>` : bb.phone && nospace(bb.phone).length === 8 ? `<div class="note-ok" style="background:#f8fafc;color:#475569;border-color:#e2e8f0">${ic('plus')}新客戶，完成後自動建立客戶資料。</div>` : ''}
+      <div class="grid g2">
+        <div class="field"><label>證件號碼（選填）</label><input class="inp" id="bb-id" value="${esc(bb.idno)}" placeholder="只記錄頭 4 位，例如 A123***(*)"></div>
+        <div class="field"><label>付款方式</label><div class="seg" style="align-self:flex-start">${['轉數快', '現金'].map(p => `<button type="button" data-act="pay" data-id="${p}" class="${bb.pay === p ? 'on' : ''}">${p}</button>`).join('')}</div>${bb.pay === '轉數快' ? `<input class="inp" id="bb-fps" value="${esc(bb.fps)}" placeholder="轉數快 ID 或電話" style="margin-top:6px">` : '<span class="hint">現金會喺日結自動扣減</span>'}</div>
+      </div>
+      <label class="row" style="align-items:flex-start"><input type="checkbox" id="bb-agree" ${bb.agree ? 'checked' : ''} style="margin-top:4px"><span class="small">賣方確認此裝置為本人合法擁有，並無借貸、按揭或盜竊來源，已關閉「尋找」功能及登出帳戶，並同意以 <b>${hkd(bb.offer)}</b> 出售予手機俠。</span></label>
+      <div class="field"><div class="row sb"><label>賣方簽署</label><span class="row" style="gap:6px"><button class="btn sm ghost" data-act="sig-demo">示範簽名</button><button class="btn sm ghost" data-act="sig-clear">清除</button></span></div><canvas class="sig" id="bb-sig" width="900" height="200"></canvas></div>
+      <div class="row sb"><button class="btn ghost" data-act="prev">${ic('back')}上一步</button><button class="btn green lg" data-act="confirm">${ic('check')}確認回收 · ${bb.pay === '現金' ? '支付現金' : '轉數快支付'} ${hkd(bb.offer)}</button></div>
+    </div></div>`;
+  }
+
+  function bbStep5() {
+    const r = bb.result;
+    const u = PM.unit(r.code);
+    return `<div class="card"><div class="bd"><div class="success"><div class="ok">${ic('check')}</div><h2 style="margin:0 0 6px">回收完成</h2><p class="muted" style="margin:0 0 18px">回收單 <b class="mono">${r.slipNo}</b> · 貨品編號 <b class="mono">${r.code}</b> · 已${u.status === 'refurb' ? '送去翻新（' + u.faults.map(PM.checkName).join('、') + '）' : '放入「待 QC」'}</p>
+      <div class="row" style="justify-content:center;flex-wrap:wrap"><button class="btn" data-act="print-slip">${ic('printer')}列印回收單</button><button class="btn" data-act="print-label">${ic('tag')}列印標籤</button><button class="btn" data-go="/unit/${r.code}">${ic('eye')}查看裝置檔案</button><button class="btn pri" data-act="again">${ic('recycle')}再回收一部</button></div>
+      <p class="small muted" style="margin-top:18px">已自動完成：建立裝置檔案、記錄付款、更新客戶紀錄${u.status === 'refurb' ? '、開翻新單' : ''}。</p></div></div></div>
+      <div class="card"><div class="hd"><h3>下一步</h3></div><div class="bd stack small">
+        <div class="row">${ic('sparkle')}<span>${u.status === 'refurb' ? '師傅喺「翻新」板處理維修，完成後成本自動計入。' : '師傅喺「翻新」板做詳細 QC 及清除資料。'}</span></div>
+        <div class="row">${ic('camera')}<span>合格後喺「上架」影相，一按就上網店。</span></div>
+        <div class="row">${ic('globe')}<span>網店即時顯示，客人可以預留或購買。</span></div>
+      </div></div>`;
+  }
+
+  // Delegated listeners, attached once per screen.
+  function bindBuyback(el) {
+    el.addEventListener('input', e => {
+      const k = e.target.dataset.bb;
+      if (k === 'battery') { bb.battery = Math.max(0, Math.min(100, +e.target.value || 0)); $$('[data-bb=battery]', el).forEach(i => { if (i !== e.target) i.value = bb.battery; }); bb.offer = null; }
+      if (e.target.id === 'bb-offer') bb.offer = +e.target.value || 0;
+      if (e.target.id === 'bb-phone') bb.phone = e.target.value;
+      if (e.target.id === 'bb-name') bb.name = e.target.value;
+      if (e.target.id === 'bb-id') bb.idno = e.target.value;
+      if (e.target.id === 'bb-fps') bb.fps = e.target.value;
+    });
+    el.addEventListener('change', e => {
+      const k = e.target.dataset.bb;
+      if (k === 'mid') { bb.mid = e.target.value; const m = modelOf(bb.mid); bb.cap = Object.keys(m.base)[0]; bb.color = m.colors[0][0]; bb.offer = null; renderBuyback(el); }
+      else if (k === 'cap' || k === 'color' || k === 'region') { bb[k] = e.target.value; bb.offer = null; renderBuyback(el); }
+      else if (k === 'battery') renderBuyback(el);
+      else if (e.target.id === 'bb-offer') renderBuyback(el);
+      else if (e.target.id === 'bb-phone') { const c = PM.customer(fmtPhone(bb.phone)); if (c && !bb.name) bb.name = c.name; renderBuyback(el); }
+      else if (e.target.id === 'bb-agree') bb.agree = e.target.checked;
+    });
+    el.addEventListener('click', e => {
+      const b = e.target.closest('[data-act]');
+      if (!b || b.disabled) return;
+      const a = b.dataset.act;
+      if (a === 'restart' || a === 'again') { bb = BB0(); renderBuyback(el); return; }
+      if (a === 'sim-scan') { bb.imei = ''; doScan(el, true); return; }
+      if (a === 'use-lead') { const l = S().leads.find(x => x.id === b.dataset.id); Object.assign(bb, { lead: l.id, mid: l.model, cap: l.cap, grade: l.grade, phone: l.phone, name: l.name, color: modelOf(l.model).colors[0][0] }); toast('已帶入網上報價：' + l.name); renderBuyback(el); return; }
+      if (a === 'tog-findmy') { bb.findmy = !bb.findmy; renderBuyback(el); return; }
+      if (a === 'tog-signout') { bb.signout = !bb.signout; renderBuyback(el); return; }
+      if (a === 'ck') { const id = b.dataset.id; bb.checks[id] = !bb.checks[id]; bb.offer = null; renderBuyback(el); return; }
+      if (a === 'grade') { bb.grade = b.dataset.id; bb.offer = null; renderBuyback(el); return; }
+      if (a === 'bb-photo') { bb.photos = Math.min(3, bb.photos + 1); renderBuyback(el); return; }
+      if (a === 'offer') { bb.offer = Math.max(0, (+bb.offer || 0) + +b.dataset.d); renderBuyback(el); return; }
+      if (a === 'offer-reset') { bb.offer = null; renderBuyback(el); return; }
+      if (a === 'pay') { bb.pay = b.dataset.id; renderBuyback(el); return; }
+      if (a === 'sig-clear') { sigPad.clear(); bb.sigData = null; return; }
+      if (a === 'sig-demo') { sigPad.demo(); bb.sigData = sigPad.toDataURL(); return; }
+      if (a === 'prev') { if (bb.step === 4 && sigPad && !sigPad.isEmpty()) bb.sigData = sigPad.toDataURL(); bb.step--; renderBuyback(el); return; }
+      if (a === 'next') { bb.step++; renderBuyback(el); return; }
+      if (a === 'confirm') { if (sigPad && !sigPad.isEmpty()) bb.sigData = sigPad.toDataURL(); confirmBuyback(el); return; }
+      if (a === 'print-slip') { printBBSlip(); return; }
+      if (a === 'print-label') { UI.printPreview(UI.label(PM.unit(bb.result.code)), { title: '列印預覽 · 標籤 50×30mm', sent: '已送到標籤打印機（示範）' }); }
+    });
+  }
+
+  function doScan(el, demo) {
+    bb.scanning = true;
+    renderBuyback(el);
+    setTimeout(() => {
+      if (demo && !bb.lead) { bb.mid = 'ip15p'; bb.cap = '256GB'; bb.color = '藍色鈦金屬'; bb.region = 'US'; }
+      const m = modelOf(bb.mid);
+      if (demo || !bb.imei) bb.imei = m.cellular === false ? PM.makeSerial() : PM.makeImei();
+      const prev = S().units.find(u => u.imei === bb.imei || u.serial === bb.imei);
+      bb.dup = prev ? `${prev.bought} 回收（${prev.code}，${UI.STATUS[prev.status].label}）` : null;
+      bb.scanning = false; bb.scanned = true; bb.offer = null;
+      renderBuyback(el);
+    }, 650);
+  }
+
+  function confirmBuyback(el) {
+    const phone = fmtPhone(bb.phone);
+    if (nospace(phone).length !== 8) return toast('請輸入 8 位電話號碼');
+    if (!bb.name) { const c = PM.customer(phone); if (c) bb.name = c.name; }
+    if (!bb.name) return toast('請輸入姓名');
+    if (!bb.agree) return toast('請賣方確認聲明');
+    if (!bb.sigData) return toast('請賣方簽署');
+    const s = S();
+    const m = modelOf(bb.mid);
+    const faults = Object.keys(bb.checks).filter(k => bb.checks[k]);
+    const code = PM.nextNo('unit');
+    const slipNo = PM.nextNo('slip');
+    const price = PM.askPrice(m, bb.cap, bb.grade, bb.battery);
+    const u = {
+      code, model: bb.mid, cap: bb.cap, color: bb.color, hex: (m.colors.find(c => c[0] === bb.color) || m.colors[0])[1], grade: bb.grade, battery: bb.battery, region: bb.region, os: m.os,
+      imei: m.cellular === false ? '' : bb.imei, serial: m.cellular === false ? bb.imei : '', cost: bb.offer, refurb: 0, price, floor: PM.r10(price * 0.93),
+      status: faults.length ? 'refurb' : 'qc', photos: bb.photos, bought: TODAY, slip: slipNo, seller: phone, staff: 'Alan', faults, tech: faults.length ? 'Dicky' : '', place: faults.length ? '店內' : '', fixFrom: faults.length ? TODAY : '',
+      reserved: null, sold: null, checks: {}, events: [],
+    };
+    PM.CHECKS.forEach(c => { u.checks[c.id] = faults.includes(c.id) ? 'fault' : 'ok'; });
+    u.events.push({ d: TODAY, type: '回收', note: `回收單 ${slipNo}，${bb.pay} ${hkd(bb.offer)}`, by: 'Alan' });
+    u.events.push({ d: TODAY, type: '櫃面檢查', note: faults.length ? '發現問題：' + faults.map(PM.checkName).join('、') : '17 點檢查全部正常', by: 'Alan' });
+    if (faults.length) u.events.push({ d: TODAY, type: '送修', note: `${faults.map(PM.checkName).join('、')} → Dicky`, by: 'Alan' });
+    s.units.push(u);
+    PM.upsertCustomer(phone, bb.name);
+    s.slips.unshift({ no: slipNo, date: TODAY, phone, name: bb.name, idno: bb.idno, code, price: bb.offer, pay: bb.pay, staff: 'Alan' });
+    if (faults.length) s.jobs.unshift({ no: PM.nextNo('fix'), code, date: TODAY, faults, tech: 'Dicky', place: '店內', eta: PM.day(-2), cost: 0, done: '', by: '' });
+    if (bb.lead) { const l = s.leads.find(x => x.id === bb.lead); if (l) l.status = '已回收'; }
+    commit();
+    bb.result = { code, slipNo, sig: bb.sigData };
+    bb.step = 5;
+    renderBuyback(el);
+    renderNav('/buyback');
+    toast('回收完成：' + code);
+  }
+
+  function printBBSlip() {
+    const r = bb.result;
+    const u = PM.unit(r.code);
+    const slip = S().slips.find(x => x.no === r.slipNo);
+    UI.printPreview(UI.slipBuyback({ no: slip.no, date: UI.now(), staff: slip.staff, name: slip.name, phone: slip.phone, idno: slip.idno, title: unitTitle(u), imei: u.imei || u.serial, grade: u.grade, battery: u.battery, faults: u.faults, pay: slip.pay, price: slip.price, signature: r.sig }), { title: '列印預覽 · 回收單 80mm' });
+  }
+
+  // ---------------------------------------------------------------- 庫存 stock
+  let stF = 'all', stFam = 'all', stSort = 'new', stQ = '';
+  ROUTES['/stock'] = (el, _, q) => {
+    if (q.get('status')) stF = q.get('status');
+    if (q.get('sort')) stSort = q.get('sort');
+    const all = S().units;
+    const counts = { all: all.filter(u => u.status !== 'sold').length };
+    Object.keys(UI.STATUS).forEach(k => { counts[k] = all.filter(u => u.status === k).length; });
+    let rows = all.filter(u => (stF === 'all' ? u.status !== 'sold' : u.status === stF));
+    if (stFam !== 'all') rows = rows.filter(u => modelOf(u.model).family === stFam);
+    if (stQ) { const qq = stQ.toLowerCase(); rows = rows.filter(u => (unitTitle(u) + u.code + u.imei + u.serial).toLowerCase().includes(qq)); }
+    rows.sort(stSort === 'age' ? (a, b) => PM.unitAge(b) - PM.unitAge(a) : stSort === 'price' ? (a, b) => b.price - a.price : (a, b) => b.bought.localeCompare(a.bought) || b.code.localeCompare(a.code));
+    const mgr = isMgr();
+    el.innerHTML = `
+      <div class="ph"><div><h1>庫存</h1><p>每部機一個檔案。撳任何一行睇完整紀錄。</p></div><div class="acts"><button class="btn" data-act="export">${ic('copy')}匯出 Excel</button><button class="btn pri" data-go="/buyback">${ic('plus')}回收新機</button></div></div>
+      <div class="filters">${[['all', '在庫']].concat(Object.keys(UI.STATUS).map(k => [k, UI.STATUS[k].label])).map(([k, l]) => `<span class="chip ${stF === k ? 'sel' : 'out'}" data-act="f" data-id="${k}">${l} ${counts[k]}</span>`).join('')}
+        <span style="flex:1"></span>
+        <select class="sel" style="width:150px;height:34px" data-act-change="fam"><option value="all">全部系列</option>${PM.FAMILIES.map(f => `<option value="${f.family}"${stFam === f.family ? ' selected' : ''}>${f.name}</option>`).join('')}</select>
+        <select class="sel" style="width:130px;height:34px" data-act-change="sort"><option value="new"${stSort === 'new' ? ' selected' : ''}>最新回收</option><option value="age"${stSort === 'age' ? ' selected' : ''}>庫齡最長</option><option value="price"${stSort === 'price' ? ' selected' : ''}>售價最高</option></select>
+        <input class="inp" style="width:220px;height:34px" placeholder="搜尋型號、編號、IMEI" value="${esc(stQ)}" data-act-input="q"></div>
+      <div class="card tbl-wrap"><table class="tbl"><thead><tr><th></th><th>裝置</th><th>成色</th><th>電池</th><th>產地</th><th class="right">售價</th>${mgr ? '<th class="right">成本</th><th class="right">預計毛利</th>' : ''}<th>庫齡</th><th>狀態</th><th>相片</th></tr></thead><tbody>
+        ${rows.map(u => { const c = u.cost + u.refurb; return `<tr class="click" data-go="/unit/${u.code}"><td style="width:52px">${devArt(u, 'back', 'thumb')}</td><td><div class="t1">${esc(unitTitle(u))}</div><div class="t2 mono">${u.code} · ${esc(idOf(u))}</div></td><td>${chip(esc(u.grade), 'out')}</td><td>${battChip(u.battery)}</td><td>${PM.REGIONS[u.region]}</td><td class="right num"><b>${hkd(u.price)}</b></td>${mgr ? `<td class="right num muted">${hkd(c)}</td><td class="right num" style="color:var(--green)">${hkd(u.price - c)}</td>` : ''}<td>${ageChip(PM.unitAge(u))}</td><td>${statusChip(u.status)}</td><td class="muted">${u.photos ? u.photos + ' 張' : '—'}</td></tr>`; }).join('') || `<tr><td colspan="11"><div class="empty">冇符合條件的裝置</div></td></tr>`}
+      </tbody></table></div>`;
+    el.addEventListener('click', e => {
+      const b = e.target.closest('[data-act]');
+      if (!b) return;
+      if (b.dataset.act === 'f') { stF = b.dataset.id; route(); }
+      if (b.dataset.act === 'export') toast('已匯出 Excel（示範）');
+    });
+    el.addEventListener('change', e => { const k = e.target.dataset.actChange; if (k === 'fam') { stFam = e.target.value; route(); } if (k === 'sort') { stSort = e.target.value; route(); } });
+    const qi = $('[data-act-input=q]', el);
+    qi.addEventListener('keydown', e => { if (e.key === 'Enter') { stQ = qi.value.trim(); route(); } });
+  };
+
+  // ---------------------------------------------------------------- device passport
+  ROUTES['/unit'] = (el, code) => {
+    const u = PM.unit(code);
+    if (!u) { el.innerHTML = `<div class="empty">搵唔到 ${esc(code)}</div>`; return; }
+    const m = modelOf(u.model);
+    const c = u.cost + u.refurb;
+    const act = [];
+    act.push(`<button class="btn" data-act="label">${ic('tag')}列印標籤</button>`);
+    if (u.status === 'qc') act.push(`<button class="btn" data-act="qc-pass">${ic('check')}QC 合格</button><button class="btn" data-act="qc-fail">${ic('wrench')}送修</button>`);
+    if (u.status === 'refurb') act.push(`<button class="btn" data-act="fix-done">${ic('check')}翻新完成</button>`);
+    if (u.status === 'ready') act.push(`<button class="btn pri" data-go="/listing/${u.code}">${ic('camera')}影相上架</button>`);
+    if (u.status === 'listed') act.push(`<button class="btn" data-act="unlist">落架</button><a class="btn" href="${UI.shopURL('#/p/' + m.slug + '?u=' + u.code)}" target="_blank" rel="noopener">${ic('external')}網店頁面</a>`);
+    if (u.status === 'listed' || u.status === 'reserved') act.push(`<button class="btn pri" data-act="to-cart">${ic('cart')}加入收銀</button>`);
+    el.innerHTML = `
+      <div class="ph"><div><a data-go="/stock" class="small">${ic('back', 'width:14px;height:14px;vertical-align:-2px')} 庫存</a><h1 style="margin-top:4px">裝置檔案</h1></div></div>
+      <div class="card pass-hd">${devArt(u, 'back')}
+        <div><h2>${esc(unitTitle(u))}</h2><div class="row" style="flex-wrap:wrap;gap:6px;margin-bottom:10px">${statusChip(u.status)}${chip(esc(u.grade) + ' ' + PM.gradeOf(u.grade).name, 'out')}${battChip(u.battery)}${chip(PM.REGIONS[u.region], 'out')}${ageChip(PM.unitAge(u))}</div>
+          <div class="mono muted">${u.code} · ${esc(idOf(u))}</div>
+          ${u.reserved ? `<div class="note-ok" style="margin-top:10px">${ic('lock')}已預留給 ${esc(cname(u.reserved.by))}（${esc(u.reserved.channel)}），訂金 ${hkd(u.reserved.deposit)}</div>` : ''}
+          ${u.sold ? `<div class="note-ok" style="margin-top:10px">${ic('check')}${md(u.sold.date)} 售予 ${esc(cname(u.sold.to))}（${esc(u.sold.channel)}），發票 ${esc(u.sold.inv)}，保養至 ${UI.plusMonths(u.sold.date, 3)}</div>` : ''}
+        </div>
+        <div style="text-align:right"><div class="small muted">售價</div><div style="font-size:28px;font-weight:800" class="num">${hkd(u.sold ? u.sold.price : u.price)}</div><div class="row" style="justify-content:flex-end;flex-wrap:wrap;margin-top:12px;gap:6px">${act.join('')}</div></div>
+      </div>
+      <div class="grid g-side" style="margin-top:16px">
+        <div class="stack">
+          <div class="card"><div class="hd"><h3>17 點檢查</h3><span class="sub">${u.status === 'qc' ? '櫃面已檢查，等候師傅詳細 QC' : '最後更新 ' + md(u.events[u.events.length - 1].d)}</span></div><div class="bd"><div class="checks">${PM.CHECKS.map(ck => { const st = u.checks[ck.id] || 'ok'; return `<div class="ck static ${st === 'fault' ? 'bad' : st === 'fixed' ? 'fixed' : ''}">${ck.name}<span class="m">${ic(st === 'fault' ? 'x' : st === 'fixed' ? 'wrench' : 'check', 'width:13px;height:13px')}</span></div>`; }).join('')}</div><div class="small muted" style="margin-top:10px">${ic('check', 'width:13px;height:13px;vertical-align:-2px;color:var(--green)')} 正常　${ic('x', 'width:13px;height:13px;vertical-align:-2px;color:var(--red)')} 有問題　${ic('wrench', 'width:13px;height:13px;vertical-align:-2px;color:var(--sky)')} 已維修</div></div></div>
+          <div class="card"><div class="hd"><h3>相片</h3><span class="sub">${u.photos} 張</span></div><div class="bd"><div class="photo-slots">${Array.from({ length: 6 }, (_, i) => `<div class="slot ${i < u.photos ? 'full' : ''}">${i < u.photos ? `<div class="dev">${UI.photoSVG(u, i)}</div>` : ic('camera')}</div>`).join('')}</div></div></div>
+          <div class="card"><div class="hd"><h3>規格</h3></div><div class="bd"><dl class="dl"><dt>型號</dt><dd>${esc(m.name)}（${esc(m.no)}）</dd><dt>容量</dt><dd>${esc(u.cap)}</dd><dt>顏色</dt><dd>${esc(u.color)}</dd><dt>產地</dt><dd>${PM.REGIONS[u.region]}</dd><dt>系統版本</dt><dd>${esc(u.os)}</dd><dt>回收單</dt><dd class="mono">${esc(u.slip)}</dd><dt>賣方</dt><dd>${esc(cname(u.seller))} ${UI.maskPhone(u.seller)}</dd></dl></div></div>
+        </div>
+        <div class="stack">
+          <div class="card"><div class="hd"><h3>成本及利潤</h3></div><div class="bd">${isMgr() ? `<div class="quote"><div class="ln"><span>收購價</span><span class="num">${hkd(u.cost)}</span></div><div class="ln"><span>翻新成本</span><span class="num">${hkd(u.refurb)}</span></div><div class="ln"><span>總成本</span><span class="num"><b>${hkd(c)}</b></span></div><div class="ln"><span>${u.sold ? '成交價' : '售價'}</span><span class="num">${hkd(u.sold ? u.sold.price : u.price)}</span></div><div class="ln"><span>底價</span><span class="num">${hkd(u.floor)}</span></div><div class="tot"><span>${u.sold ? '毛利' : '預計毛利'}</span><b class="num" style="color:var(--green)">${hkd((u.sold ? u.sold.price : u.price) - c)}</b></div></div>` : lockedNote()}</div></div>
+          <div class="card"><div class="hd"><h3>時間線</h3></div><div class="bd"><div class="tl">${u.events.slice().reverse().map(ev => `<div class="ev"><div class="h"><b>${esc(ev.type)}</b><span>${md(ev.d)} · ${esc(ev.by || '')}</span></div><p>${esc(ev.note)}</p></div>`).join('')}</div></div></div>
+        </div>
+      </div>`;
+    el.addEventListener('click', e => {
+      const b = e.target.closest('[data-act]');
+      if (!b) return;
+      const a = b.dataset.act;
+      if (a === 'label') UI.printPreview(UI.label(u), { title: '列印預覽 · 標籤 50×30mm', sent: '已送到標籤打印機（示範）' });
+      if (a === 'qc-pass') passQC(u);
+      if (a === 'qc-fail') sendToFix(u);
+      if (a === 'fix-done') finishFix(u);
+      if (a === 'unlist') { u.status = 'ready'; u.events.push({ d: TODAY, type: '落架', note: '暫停在網店出售', by: 'Alan' }); commit(); route(); toast('已落架，網店即時移除'); }
+      if (a === 'to-cart') { addToCart(u.code); go('/checkout'); }
+    });
+  };
+
+  // ---------------------------------------------------------------- refurb actions shared by board and passport
+  function passQC(u) {
+    u.status = 'ready';
+    PM.CHECKS.forEach(c => { if (!u.checks[c.id]) u.checks[c.id] = 'ok'; });
+    u.events.push({ d: TODAY, type: 'QC', note: '詳細 QC 合格，已清除資料', by: 'Dicky' });
+    commit(); route(); toast('QC 合格，已移到「上架」');
+  }
+  function sendToFix(u) {
+    const m = UI.modal({ title: '送修 · ' + unitTitle(u), width: 620, body: `<div class="field"><label>問題（撳選）</label><div class="checks" id="sf-checks">${PM.CHECKS.map(c => `<button type="button" class="ck ${u.faults.includes(c.id) ? 'bad' : ''}" data-id="${c.id}">${c.name}<span class="m">${ic(u.faults.includes(c.id) ? 'x' : 'check', 'width:14px;height:14px')}</span></button>`).join('')}</div></div><div class="grid g2" style="margin-top:14px"><div class="field"><label>師傅</label><select class="sel" id="sf-tech">${PM.TECHS.map(t => `<option>${t}</option>`).join('')}</select></div><div class="field"><label>預計完成</label><input class="inp" id="sf-eta" value="${PM.day(-3)}"></div></div>`, foot: '<button class="pm-btn" data-close>取消</button><button class="pm-btn primary" data-ok>送修</button>' });
+    $('#sf-checks', m.el).addEventListener('click', e => { const b = e.target.closest('.ck'); if (!b) return; b.classList.toggle('bad'); $('.m', b).innerHTML = ic(b.classList.contains('bad') ? 'x' : 'check', 'width:14px;height:14px'); });
+    $('[data-ok]', m.el).addEventListener('click', () => {
+      const faults = $$('#sf-checks .ck.bad', m.el).map(b => b.dataset.id);
+      if (!faults.length) return toast('請揀至少一個問題');
+      const tech = $('#sf-tech', m.el).value;
+      Object.assign(u, { status: 'refurb', faults, tech, place: tech === 'Dicky' ? '店內' : '外判', fixFrom: TODAY });
+      faults.forEach(f => { u.checks[f] = 'fault'; });
+      u.events.push({ d: TODAY, type: '送修', note: `${faults.map(PM.checkName).join('、')} → ${tech}`, by: 'Dicky' });
+      S().jobs.unshift({ no: PM.nextNo('fix'), code: u.code, date: TODAY, faults, tech, place: u.place, eta: $('#sf-eta', m.el).value, cost: 0, done: '', by: '' });
+      m.close(); commit(); route(); toast('已送修：' + tech);
+    });
+  }
+  function finishFix(u) {
+    const est = u.faults.reduce((a, f) => a + PM.faultFix(f), 0);
+    const m = UI.modal({ title: '翻新完成 · ' + unitTitle(u), width: 480, body: `<div class="stack"><div>維修項目：<b>${u.faults.map(PM.checkName).join('、')}</b>（${esc(u.tech)}）</div><div class="field"><label>實際成本 (HK$)</label><input class="inp num" id="ff-cost" value="${est}"><span class="hint">成本會自動加入裝置成本，毛利即時更新。</span></div><label class="row"><input type="checkbox" id="ff-batt"> 已更換電池，電池健康度更新為 100%</label></div>`, foot: '<button class="pm-btn" data-close>取消</button><button class="pm-btn primary" data-ok>完成</button>' });
+    if (u.faults.includes('battery')) $('#ff-batt', m.el).checked = true;
+    $('[data-ok]', m.el).addEventListener('click', () => {
+      const cost = +$('#ff-cost', m.el).value || 0;
+      u.refurb += cost;
+      u.faults.forEach(f => { u.checks[f] = 'fixed'; });
+      if ($('#ff-batt', m.el).checked) u.battery = 100;
+      u.events.push({ d: TODAY, type: '翻新', note: `${u.faults.map(PM.checkName).join('、')}，成本 ${hkd(cost)}`, by: u.tech });
+      const job = S().jobs.find(j => j.code === u.code && !j.done);
+      if (job) { job.done = TODAY; job.cost = cost; job.by = u.tech; }
+      Object.assign(u, { faults: [], tech: '', place: '', status: 'ready' });
+      m.close(); commit(); route(); toast('翻新完成，成本已計入，移到「上架」');
+    });
+  }
+
+  // ---------------------------------------------------------------- 翻新 refurb board
+  ROUTES['/refurb'] = el => {
+    const s = S();
+    const cols = [['qc', '待 QC', '收機後未做詳細檢查'], ['refurb', '翻新中', '店內或外判維修'], ['ready', '完成 · 待上架', '可以影相上架']];
+    const done = s.jobs.filter(j => j.done);
+    const avg = done.length ? (done.reduce((a, j) => a + PM.daysBetween(j.date, j.done), 0) / done.length).toFixed(1) : '—';
+    const card = u => {
+      const d = u.status === 'refurb' ? refurbDays(u) : PM.unitAge(u);
+      const late = u.status === 'refurb' && d > OVERDUE;
+      return `<div class="tk ${late ? 'late' : ''}" draggable="true" data-code="${u.code}">
+        <div class="tt">${devArt(u, 'back')}<div><div class="nm">${esc(unitTitle(u))}</div><div class="cd mono">${u.code}</div></div></div>
+        <div class="ch">${chip(esc(u.grade), 'out')}${battChip(u.battery)}${u.faults.map(f => chip(PM.checkName(f), 'red')).join('')}</div>
+        <div class="ft"><span>${u.status === 'refurb' ? `${ic('wrench', 'width:13px;height:13px;vertical-align:-2px')} ${esc(u.tech)} · ` : ''}<span style="color:${late ? 'var(--red)' : 'inherit'}">${u.status === 'refurb' ? '第 ' + d + ' 日' : d + ' 日前回收'}</span></span>
+          <span class="row" style="gap:4px">${u.status === 'qc' ? `<button class="btn sm" data-act="fail" data-code="${u.code}">送修</button><button class="btn sm pri" data-act="pass" data-code="${u.code}">QC 合格</button>` : u.status === 'refurb' ? `<button class="btn sm pri" data-act="done" data-code="${u.code}">完成</button>` : `<button class="btn sm pri" data-go="/listing/${u.code}">影相上架</button>`}</span></div>
+      </div>`;
+    };
+    el.innerHTML = `
+      <div class="ph"><div><h1>翻新</h1><p>拖曳卡片或撳按鈕更新狀態。超過 ${OVERDUE} 日未完成會變紅。</p></div><div class="acts"><span class="chip out">平均翻新 ${avg} 日</span><span class="chip ${overdue().length ? 'red' : 'out'}">逾期 ${overdue().length}</span>${isMgr() ? `<span class="chip out">本月翻新成本 ${hkd(done.filter(j => j.done >= '2026-10-02').reduce((a, j) => a + j.cost, 0))}</span>` : ''}</div></div>
+      <div class="board">${cols.map(([st, t, sub]) => { const list = s.units.filter(u => u.status === st).sort((a, b) => a.bought.localeCompare(b.bought)); return `<div class="col" data-col="${st}"><div class="hd"><span>${t} <span class="c">${list.length}</span></span><span class="small muted" style="font-weight:400">${sub}</span></div>${list.map(card).join('') || '<div class="empty small">冇裝置</div>'}</div>`; }).join('')}</div>`;
+    el.addEventListener('click', e => {
+      const b = e.target.closest('[data-act]');
+      if (!b) return;
+      const u = PM.unit(b.dataset.code);
+      if (b.dataset.act === 'pass') passQC(u);
+      if (b.dataset.act === 'fail') sendToFix(u);
+      if (b.dataset.act === 'done') finishFix(u);
+    });
+    let drag = null;
+    el.addEventListener('dragstart', e => { const t = e.target.closest('.tk'); if (t) { drag = t.dataset.code; e.dataTransfer.setData('text/plain', drag); } });
+    $$('.col', el).forEach(col => {
+      col.addEventListener('dragover', e => { e.preventDefault(); col.classList.add('drop'); });
+      col.addEventListener('dragleave', () => col.classList.remove('drop'));
+      col.addEventListener('drop', e => {
+        e.preventDefault(); col.classList.remove('drop');
+        const u = PM.unit(drag || e.dataTransfer.getData('text/plain'));
+        if (!u) return;
+        const to = col.dataset.col;
+        if (u.status === to) return;
+        if (u.status === 'qc' && to === 'ready') passQC(u);
+        else if (u.status === 'qc' && to === 'refurb') sendToFix(u);
+        else if (u.status === 'refurb' && to === 'ready') finishFix(u);
+        else toast('呢個方向唔可以拖');
+      });
+    });
+  };
+
+  // ---------------------------------------------------------------- 上架 listing studio
+  let lsTab = 'ready';
+  const autoTitle = u => `${modelOf(u.model).name} ${u.cap} ${u.color} · ${u.grade} · 電池 ${u.battery}%`;
+  function autoDesc(u) {
+    const fixed = Object.keys(u.checks || {}).filter(k => u.checks[k] === 'fixed').map(PM.checkName);
+    return [`17 點檢查全部合格`, `電池健康度 ${u.battery}%`, `${PM.REGIONS[u.region]}（${modelOf(u.model).no}）`, fixed.length ? `已更換：${fixed.join('、')}` : '原裝，無拆修', '3 個月保養', `編號 ${u.code}`].map(x => '• ' + x).join('\n');
+  }
+  const postText = u => `【手機俠】${unitTitle(u)} ${u.grade}\n💲${hkd(u.price)}\n${autoDesc(u).replace(/• /g, '✅ ')}\n📍 旺角門市取機 / 順豐寄送\n💬 WhatsApp ${S().cms.store.whatsapp}\n#二手${modelOf(u.model).family} #${modelOf(u.model).name.replace(/[\s"()]/g, '')}`;
+
+  ROUTES['/listing'] = (el, code) => {
+    const s = S();
+    let sel = code ? PM.unit(code) : null;
+    if (sel && sel.status === 'listed') lsTab = 'listed';
+    if (sel && sel.status === 'ready') lsTab = 'ready';
+    const list = s.units.filter(u => u.status === lsTab).sort((a, b) => a.bought.localeCompare(b.bought) || a.code.localeCompare(b.code));
+    if (!sel || sel.status !== lsTab) sel = list[0] || null;
+    const left = `<div class="card"><div class="tabs" style="margin:0;padding:0 10px"><button class="${lsTab === 'ready' ? 'on' : ''}" data-act="tab" data-id="ready">待上架 ${s.units.filter(u => u.status === 'ready').length}</button><button class="${lsTab === 'listed' ? 'on' : ''}" data-act="tab" data-id="listed">已上架 ${s.units.filter(u => u.status === 'listed').length}</button></div>
+      <div class="ulist">${list.map(u => `<div class="ui ${sel && u.code === sel.code ? 'on' : ''}" data-go="/listing/${u.code}">${devArt(u, 'back')}<div style="flex:1;min-width:0"><div class="nm">${esc(unitTitle(u))}</div><div class="cd">${u.code} · ${u.grade} · ${hkd(u.price)}</div></div>${u.photos ? chip(u.photos + ' 張', 'out') : chip('缺相', 'amber')}</div>`).join('') || '<div class="empty small">冇裝置</div>'}</div></div>`;
+    let right = '<div class="card"><div class="empty">揀左邊一部機開始</div></div>';
+    if (sel) {
+      const u = sel;
+      const m = modelOf(u.model);
+      const sugg = PM.askPrice(m, u.cap, u.grade, u.battery);
+      const comps = s.units.filter(x => x.model === u.model && x.code !== u.code && (x.sold || x.status === 'listed' || x.status === 'reserved')).slice(0, 4);
+      right = `<div class="stack">
+        <div class="card"><div class="hd"><h3>${esc(unitTitle(u))}</h3>${statusChip(u.status)}</div><div class="bd stack">
+          <div class="row sb"><span class="small muted">相片 ${u.photos}/6 · 第一張做封面，建議至少 3 張</span><span class="row" style="gap:6px"><button class="btn sm" data-act="qr">${ic('qr')}用手機影相</button>${u.photos ? `<button class="btn sm ghost" data-act="clear-photos">${ic('trash')}清除</button>` : ''}</span></div>
+          <div class="photo-slots">${Array.from({ length: 6 }, (_, i) => `<div class="slot ${i < u.photos ? 'full' : ''}" data-act="${i < u.photos ? '' : 'qr'}">${i === 0 && u.photos ? '<span class="cover">封面</span>' : ''}${i < u.photos ? `<div class="dev">${UI.photoSVG(u, i)}</div>` : ic('plus')}</div>`).join('')}</div>
+          <div class="field"><label>標題</label><input class="inp" id="ls-title" value="${esc(autoTitle(u))}"></div>
+          <div class="field"><label>描述（自動產生，可修改）</label><textarea class="ta" id="ls-desc" rows="6">${esc(autoDesc(u))}</textarea></div>
+        </div></div>
+        <div class="grid g2">
+          <div class="card"><div class="hd"><h3>定價</h3>${chip('建議 ' + hkd(sugg), 'pri')}</div><div class="bd stack">
+            <div class="field"><label>售價 (HK$)</label><input class="inp num" id="ls-price" value="${u.price}" style="font-size:20px;font-weight:700;height:48px"></div>
+            ${isMgr() ? `<div class="small muted">底價 ${hkd(u.floor)} · 成本 ${hkd(u.cost + u.refurb)} · 毛利 <b style="color:var(--green)">${hkd(u.price - u.cost - u.refurb)}</b></div>` : ''}
+            <div class="comps"><div class="small muted">同款參考</div>${comps.length ? comps.map(x => `<div class="r"><span>${x.sold ? '已售 ' + md(x.sold.date) : UI.STATUS[x.status].label} · ${esc(x.cap)} · ${esc(x.grade)} · ${x.battery}%</span><span class="num">${hkd(x.sold ? x.sold.price : x.price)}</span></div>`).join('') : '<div class="muted small">未有同款紀錄，用建議價。</div>'}</div>
+          </div></div>
+          <div class="card"><div class="hd"><h3>發佈渠道</h3></div><div class="bd stack">
+            <div class="row sb"><span><b>網店</b><br><span class="small muted">即時上架，賣出自動落架</span></span><button class="tog on" aria-label="網店" disabled></button></div>
+            <div class="row sb"><span><b>Carousell</b><br><span class="small muted">複製帖文，貼上即可</span></span><button class="btn sm" data-act="copy-post">${ic('copy')}複製帖文</button></div>
+            <div class="row sb"><span><b>WhatsApp 目錄</b><br><span class="small muted">發俾熟客或群組</span></span><button class="btn sm" data-act="copy-post">${ic('copy')}複製</button></div>
+            <div class="post" id="ls-post">${esc(postText(u))}</div>
+          </div></div>
+        </div>
+        <div class="row sb">${u.status === 'listed' ? `<a class="btn" href="${UI.shopURL('#/p/' + m.slug + '?u=' + u.code)}" target="_blank" rel="noopener">${ic('external')}喺網店睇</a><span class="row"><button class="btn" data-act="unlist">落架</button><button class="btn pri lg" data-act="publish">${ic('check')}更新網店</button></span>` : `<span class="small muted">${u.photos < 3 ? '⚠ 建議至少 3 張相先上架' : '準備好就可以上架'}</span><button class="btn pri lg" data-act="publish">${ic('globe')}發佈到網店</button>`}</div>
+      </div>`;
+    }
+    el.innerHTML = `<div class="ph"><div><h1>上架</h1><p>影相、定價、一按發佈。網店同 Carousell 帖文一齊準備好。</p></div></div><div class="grid g-side2">${left}${right}</div>`;
+    el.addEventListener('input', e => { if (e.target.id === 'ls-price' && sel) { const p = $('#ls-post', el); if (p) p.textContent = postText({ ...sel, price: +e.target.value || sel.price }); } });
+    el.addEventListener('click', e => {
+      const b = e.target.closest('[data-act]');
+      if (!b || !b.dataset.act) return;
+      const a = b.dataset.act;
+      if (a === 'tab') { lsTab = b.dataset.id; go('/listing'); return; }
+      const u = sel;
+      if (!u) return;
+      if (a === 'qr') {
+        const m = UI.modal({ title: '用手機影相', width: 440, body: `<div style="text-align:center"><div style="width:200px;height:200px;margin:0 auto">${UI.qrSVG('upload-' + u.code)}</div><p>用手機相機掃描，相片會即時上傳到<br><b class="mono">${u.code}</b> ${esc(unitTitle(u))}</p><p class="small" style="color:#71717a">唔使裝 App，相片自動壓縮及排列。</p></div>`, foot: '<button class="pm-btn" data-close>關閉</button><button class="pm-btn primary" data-up>模擬上傳 4 張</button>' });
+        $('[data-up]', m.el).addEventListener('click', () => { u.photos = Math.min(6, u.photos + 4); u.events.push({ d: TODAY, type: '影相', note: `上傳相片，共 ${u.photos} 張`, by: 'Bonnie' }); m.close(); commit(); go('/listing/' + u.code); toast('已收到 4 張相片'); });
+        return;
+      }
+      if (a === 'clear-photos') { u.photos = 0; commit(); go('/listing/' + u.code); return; }
+      if (a === 'copy-post') { const t = postText({ ...u, price: +$('#ls-price', el).value || u.price }); try { navigator.clipboard.writeText(t).then(() => toast('已複製帖文'), () => toast('已複製帖文（示範）')); } catch (err) { toast('已複製帖文（示範）'); } return; }
+      if (a === 'unlist') { u.status = 'ready'; u.events.push({ d: TODAY, type: '落架', note: '暫停在網店出售', by: 'Bonnie' }); commit(); lsTab = 'ready'; go('/listing/' + u.code); toast('已落架'); return; }
+      if (a === 'publish') {
+        if (!u.photos) return toast('請先影相（至少 1 張）');
+        const price = +$('#ls-price', el).value || u.price;
+        const was = u.status;
+        u.price = price; u.floor = PM.r10(price * 0.93);
+        if (was !== 'listed') { u.status = 'listed'; u.events.push({ d: TODAY, type: '上架', note: `網店上架，售價 ${hkd(price)}，${u.photos} 張相`, by: 'Bonnie' }); }
+        commit();
+        const url = UI.shopURL('#/p/' + modelOf(u.model).slug + '?u=' + u.code);
+        const m = UI.modal({ title: was === 'listed' ? '已更新網店' : '已上架', width: 460, body: `<div class="stack"><div>${esc(unitTitle(u))} 已${was === 'listed' ? '更新' : '上架'}，售價 <b>${hkd(price)}</b>。網店即時顯示；賣出或預留時自動落架。</div><div class="post">${esc(postText(u))}</div></div>`, foot: `<button class="pm-btn" data-close>完成</button><a class="pm-btn primary" href="${url}" target="_blank" rel="noopener" style="text-decoration:none">喺網店睇 ↗</a>` });
+        m.el.addEventListener('click', ev => { if (ev.target.closest('a')) setTimeout(m.close, 100); });
+        lsTab = 'ready';
+        go('/listing');
+      }
+    });
+  };
+
+  // ---------------------------------------------------------------- 收銀 checkout
+  let cart = [];
+  let pays = [];
+  const ck = { phone: '', channel: '門市', staff: 'Bonnie', approved: false };
+  function addToCart(code) {
+    const u = PM.unit(code);
+    if (!u) return '搵唔到此貨品';
+    if (u.status === 'sold') return '此貨品已售出';
+    if (u.status === 'qc' || u.status === 'refurb') return '此貨品' + UI.STATUS[u.status].label + '，未可出售';
+    if (cart.some(l => l.code === code)) return '已在收銀單內';
+    cart.push({ code, price: u.price });
+    if (u.reserved && !ck.phone) ck.phone = u.reserved.by;
+    if (u.reserved && u.reserved.channel === '網店') ck.channel = '網店';
+    return '';
+  }
+  ROUTES['/checkout'] = el => {
+    const s = S();
+    const lines = cart.map(l => ({ ...l, u: PM.unit(l.code) })).filter(l => l.u && l.u.status !== 'sold');
+    cart = lines.map(l => ({ code: l.code, price: l.price }));
+    const list = lines.reduce((a, l) => a + l.u.price, 0);
+    const total = lines.reduce((a, l) => a + l.price, 0);
+    const deposit = lines.reduce((a, l) => a + (l.u.reserved ? l.u.reserved.deposit : 0), 0);
+    const due = total - deposit;
+    const paid = pays.reduce((a, p) => a + (+p.amount || 0), 0);
+    const remain = due - paid;
+    const below = lines.filter(l => l.price < l.u.floor);
+    const needApprove = below.length && !isMgr() && !ck.approved;
+    const c = PM.customer(fmtPhone(ck.phone));
+    const picks = s.units.filter(u => u.status === 'listed' && !cart.some(l => l.code === u.code)).slice(0, 4);
+    el.innerHTML = `
+      <div class="ph"><div><h1>收銀</h1><p>掃描、收款、列印，一張單完成發票同收據。</p></div>${cart.length ? '<div class="acts"><button class="btn ghost" data-act="clear">清除</button></div>' : ''}</div>
+      <div class="grid g-side">
+        <div class="stack">
+          <div class="card"><div class="bd stack">
+            <div class="row"><input class="inp big mono" id="ck-scan" placeholder="掃描貨品編號、IMEI 或標籤條碼，按 Enter"><button class="btn lg dark" data-act="scan-demo">${ic('scan')}模擬掃描</button></div>
+            <div class="hintchips">試下：${picks.map(u => `<button type="button" data-act="pick" data-code="${u.code}">${u.code}</button>`).join('')}</div>
+          </div></div>
+          <div class="card"><div class="hd"><h3>貨品</h3><span class="sub">${lines.length} 件</span></div><div class="bd">
+            ${lines.length ? lines.map(l => `<div class="cart-line">${devArt(l.u, 'back')}<div><div style="font-weight:600">${esc(unitTitle(l.u))}</div><div class="small muted mono">${l.u.code} · ${esc(idOf(l.u))}</div><div class="row" style="gap:5px;margin-top:6px;flex-wrap:wrap">${chip(esc(l.u.grade), 'out')}${battChip(l.u.battery)}${chip(PM.REGIONS[l.u.region], 'out')}${l.u.reserved ? chip('已預留 · 訂金 ' + hkd(l.u.reserved.deposit), 'violet') : ''}${l.price < l.u.floor ? chip('低於底價 ' + hkd(l.u.floor), 'red') : l.price < l.u.price ? chip('折扣 ' + hkd(l.u.price - l.price), 'amber') : ''}</div></div><input class="inp num" data-price="${l.code}" value="${l.price}"><button class="btn sm ghost" data-act="rm" data-code="${l.code}" aria-label="移除">${ic('x')}</button></div>`).join('') : '<div class="empty">掃描貨品開始收銀</div>'}
+          </div></div>
+          <div class="card"><div class="bd grid g3" style="align-items:end">
+            <div class="field"><label>客戶電話（選填）</label><input class="inp" id="ck-phone" value="${esc(ck.phone)}" placeholder="9123 4567"></div>
+            <div class="field"><label>渠道</label><select class="sel" id="ck-ch">${PM.CHANNELS.map(x => `<option${x === ck.channel ? ' selected' : ''}>${x}</option>`).join('')}</select></div>
+            <div class="field"><label>銷售員</label><select class="sel" id="ck-staff">${['Alan', 'Bonnie', 'Carmen'].map(x => `<option${x === ck.staff ? ' selected' : ''}>${x}</option>`).join('')}</select></div>
+            ${c ? `<div class="small" style="grid-column:1/-1">${ic('users', 'width:14px;height:14px;vertical-align:-2px')} ${esc(c.name)} · 熟客，${s.invoices.filter(x => x.phone === c.phone).length} 次購買</div>` : ''}
+          </div></div>
+        </div>
+        <div class="card" style="position:sticky;top:84px"><div class="hd"><h3>收款</h3></div><div class="bd stack">
+          <div class="sum"><div class="r"><span class="muted">原價</span><span class="num">${hkd(list)}</span></div>${list !== total ? `<div class="r"><span class="muted">折扣</span><span class="num">-${hkd(list - total)}</span></div>` : ''}${deposit ? `<div class="r"><span class="muted">已付訂金</span><span class="num">-${hkd(deposit)}</span></div>` : ''}<div class="r" style="align-items:baseline"><span>應收</span><span class="big num">${hkd(due)}</span></div></div>
+          ${below.length ? (isMgr() || ck.approved ? `<div class="note-ok">${ic('check')}低於底價，經理已批核。</div>` : `<div class="warn">${ic('alert')}<span>有 ${below.length} 件低於底價，需要經理批核。<button class="link" data-act="approve">輸入經理 PIN</button></span></div>`) : ''}
+          <div class="pay-methods">${['轉數快', '現金', '信用卡', '支付寶HK', 'PayMe', '銀行轉帳'].map(p => `<button type="button" class="pm" data-act="add-pay" data-m="${p}">${p}</button>`).join('')}</div>
+          <div>${pays.map((p, i) => `<div class="pay-row"><span style="font-weight:600">${p.method}</span><input class="inp num" data-pay="${i}" value="${p.amount}"><button class="btn sm ghost" data-act="rm-pay" data-i="${i}" aria-label="移除">${ic('x')}</button></div>`).join('')}</div>
+          <div class="sum"><div class="r"><span class="muted">已收</span><span class="num">${hkd(paid)}</span></div><div class="r"><span class="muted">${remain > 0 ? '尚欠' : '找贖'}</span><span class="num" style="font-weight:700;color:${remain > 0 ? 'var(--red)' : 'var(--green)'}">${hkd(Math.abs(remain))}</span></div></div>
+          <button class="btn green lg block" data-act="complete" ${!lines.length || remain > 0 || needApprove ? 'disabled' : ''}>${ic('printer')}完成收款並列印</button>
+          <div class="small muted">一張單同時建立發票及收款紀錄；賣出的機即時喺網店落架。</div>
+        </div></div>
+      </div>`;
+    const scan = $('#ck-scan', el);
+    scan.focus();
+    scan.addEventListener('keydown', e => { if (e.key === 'Enter') { const err = addToCart(scan.value.trim().toUpperCase()) || ''; if (err) toast(err); scan.value = ''; route(); } });
+    el.addEventListener('change', e => {
+      if (e.target.dataset.price) { const l = cart.find(x => x.code === e.target.dataset.price); if (l) l.price = +e.target.value || 0; ck.approved = false; route(); }
+      if (e.target.dataset.pay != null) { pays[+e.target.dataset.pay].amount = +e.target.value || 0; route(); }
+      if (e.target.id === 'ck-phone') { ck.phone = e.target.value; route(); }
+      if (e.target.id === 'ck-ch') ck.channel = e.target.value;
+      if (e.target.id === 'ck-staff') ck.staff = e.target.value;
+    });
+    el.addEventListener('click', e => {
+      const b = e.target.closest('[data-act]');
+      if (!b || b.disabled) return;
+      const a = b.dataset.act;
+      if (a === 'pick' || a === 'scan-demo') { const code = a === 'pick' ? b.dataset.code : (picks[0] || {}).code; if (!code) return; const err = addToCart(code); if (err) toast(err); route(); return; }
+      if (a === 'rm') { cart = cart.filter(l => l.code !== b.dataset.code); route(); return; }
+      if (a === 'clear') { cart = []; pays = []; ck.phone = ''; ck.approved = false; route(); return; }
+      if (a === 'add-pay') { pays.push({ method: b.dataset.m, amount: Math.max(0, remain) }); route(); return; }
+      if (a === 'rm-pay') { pays.splice(+b.dataset.i, 1); route(); return; }
+      if (a === 'approve') {
+        const m = UI.modal({ title: '經理批核', width: 380, body: '<div class="field"><label style="font-weight:600">經理 PIN</label><input class="pm-in" id="pin" type="password" inputmode="numeric" style="height:40px;border:1px solid #d4d4d8;border-radius:8px;padding:0 10px;font-size:18px;letter-spacing:.3em;width:100%"><div style="font-size:12px;color:#71717a;margin-top:6px">示範 PIN：1234</div></div>', foot: '<button class="pm-btn" data-close>取消</button><button class="pm-btn primary" data-ok>批核</button>' });
+        $('#pin', m.el).focus();
+        $('[data-ok]', m.el).addEventListener('click', () => { if ($('#pin', m.el).value === '1234') { ck.approved = true; m.close(); route(); toast('經理已批核'); } else toast('PIN 唔正確'); });
+        return;
+      }
+      if (a === 'complete') completeSale(lines, total, deposit);
+    });
+  };
+
+  function completeSale(lines, total, deposit) {
+    const s = S();
+    const phone = fmtPhone(ck.phone);
+    const name = phone ? (PM.customer(phone) || PM.upsertCustomer(phone, '新客戶')).name : '散客';
+    const no = PM.nextNo('inv');
+    const paid = pays.reduce((a, p) => a + (+p.amount || 0), 0);
+    const change = Math.max(0, paid - (total - deposit));
+    const inv = { no, date: TODAY, phone, name, channel: ck.channel, staff: ck.staff, lines: lines.map(l => ({ code: l.code, name: unitTitle(l.u), imei: l.u.imei || l.u.serial, price: l.price, grade: l.u.grade })), amount: total, received: total, note: deposit ? `已扣訂金 ${hkd(deposit)}` : '' };
+    s.invoices.unshift(inv);
+    // The books record cash net of change; the printed receipt shows cash tendered and change given.
+    const payments = [];
+    if (deposit) payments.push({ method: '已付訂金', amount: deposit });
+    pays.forEach(p => {
+      const tendered = +p.amount || 0;
+      const amt = p.method === '現金' ? Math.max(0, tendered - change) : tendered;
+      if (amt > 0) s.receipts.unshift({ no: PM.nextNo('rv'), date: TODAY, phone, name, method: p.method, amount: amt, inv: no });
+      if (tendered > 0) payments.push({ method: p.method, amount: tendered });
+    });
+    lines.forEach(l => {
+      const u = l.u;
+      u.status = 'sold';
+      u.sold = { date: TODAY, to: phone, channel: ck.channel, pay: pays.map(p => p.method).join('+'), price: l.price, staff: ck.staff, inv: no };
+      u.reserved = null;
+      u.events.push({ d: TODAY, type: '售出', note: `${ck.channel}，${pays.map(p => p.method).join('+')}，${hkd(l.price)}，發票 ${no}`, by: ck.staff });
+    });
+    commit();
+    const receipt = UI.receiptSale({ no, date: UI.now(), staff: ck.staff, channel: ck.channel, customer: phone ? { name, phone } : null, lines: lines.map(l => ({ title: unitTitle(l.u), code: l.code, grade: l.u.grade, battery: l.u.battery, imei: l.u.imei || l.u.serial, price: l.price })), payments: change ? payments.concat([{ method: '找贖', amount: change }]) : payments, total });
+    cart = []; pays = []; ck.phone = ''; ck.approved = false; ck.channel = '門市';
+    route();
+    UI.printPreview(receipt, { title: `完成 · ${no}`, hint: '已建立發票及收款紀錄，網店已即時落架。一按即印，唔使揀打印機。' });
+  }
+
+  // ---------------------------------------------------------------- 維修 repairs
+  const RS = PM.REPAIR_STATUS;
+  const rsLabel = id => (RS.find(x => x[0] === id) || [id, id])[1];
+  function waModal(r) {
+    const c = PM.customer(r.phone);
+    const n = c ? c.name : '你好';
+    const t = {
+      received: `${n}你好，已收到你的 ${r.device}（維修單 ${r.no}）。檢查後會再通知你報價。`,
+      diagnosing: `${n}你好，你的 ${r.device} 檢查中，有結果會即刻通知你。`,
+      awaiting: `${n}你好，你的 ${r.device} 維修報價 ${hkd(r.quote)}（${r.issue}）。回覆「確認」即安排維修，或撳以下連結確認：phonemen.hk/r/${r.no}`,
+      repairing: `${n}你好，你的 ${r.device} 維修中，預計 ${md(r.eta)} 完成。`,
+      ready: `${n}你好，你的 ${r.device} 已經維修好！請於${S().cms.store.hours}到門市取機，尚欠 ${hkd(Math.max(0, r.quote - r.deposit))}。維修單 ${r.no}。`,
+      done: `${n}，多謝光臨手機俠！維修部分有 30 日保養。`,
+    }[r.status];
+    const m = UI.modal({ title: 'WhatsApp 通知 · ' + (c ? c.name : r.phone), width: 480, body: `<div class="wa-wrap"><div class="wa-msg" id="wa-text" contenteditable="true">${esc(t)}</div></div><div style="font-size:12px;color:#71717a;margin-top:8px">範本按維修狀態自動揀，可以改字再發。日後可接 WhatsApp Business API 自動發送。</div>`, foot: '<button class="pm-btn" data-close>取消</button><button class="pm-btn primary" data-send>發送</button>' });
+    $('[data-send]', m.el).addEventListener('click', () => { m.close(); toast('已發送 WhatsApp（示範）'); });
+  }
+  function repairDetail(r) {
+    const c = PM.customer(r.phone);
+    const m = UI.modal({ title: r.no + ' · ' + r.device, width: 560, body: `<div class="stack" style="gap:10px"><dl class="dl" style="grid-template-columns:96px 1fr"><dt>客戶</dt><dd>${esc(c ? c.name : '')} ${esc(r.phone)}</dd><dt>裝置</dt><dd>${esc(r.device)} ${esc(r.color)}</dd><dt>IMEI / 序號</dt><dd class="mono">${esc(r.imei)}</dd><dt>問題</dt><dd>${esc(r.issue)}</dd><dt>報價 / 訂金</dt><dd>${r.quote ? hkd(r.quote) : '待檢查'} / ${hkd(r.deposit)}</dd><dt>師傅</dt><dd>${esc(r.tech || '未指派')}</dd><dt>預計取機</dt><dd>${esc(r.eta)}</dd><dt>狀態</dt><dd>${rsLabel(r.status)}</dd></dl></div>`, foot: '<button class="pm-btn" data-wa>WhatsApp</button><button class="pm-btn" data-print>列印維修單</button><button class="pm-btn primary" data-close>關閉</button>' });
+    $('[data-wa]', m.el).addEventListener('click', () => { m.close(); waModal(r); });
+    $('[data-print]', m.el).addEventListener('click', () => { m.close(); UI.printPreview(UI.ticketRepair({ ...r, name: c ? c.name : '' }), { title: '列印預覽 · 維修單 80mm' }); });
+  }
+  function newRepair(prefill) {
+    const p = prefill || {};
+    const m = UI.modal({ title: '新增維修單', width: 680, body: `<div class="stack">
+      <div class="grid g2"><div class="field"><label>客戶電話</label><input class="inp" id="nr-phone" value="${esc(p.phone || '')}" placeholder="9123 4567"></div><div class="field"><label>姓名</label><input class="inp" id="nr-name" value="${esc(p.name || '')}"></div></div>
+      <div class="grid g3"><div class="field"><label>裝置</label><input class="inp" id="nr-dev" value="${esc(p.device || '')}" placeholder="iPhone 13"></div><div class="field"><label>顏色</label><input class="inp" id="nr-color"></div><div class="field"><label>IMEI / 序號</label><input class="inp" id="nr-imei"></div></div>
+      <div class="field"><label>問題</label><input class="inp" id="nr-issue" value="${esc(p.issue || '')}" placeholder="例如：熒幕碎裂，觸控正常"></div>
+      <div class="field"><label>收機檢查（有問題就撳）</label><div class="checks" id="nr-checks">${PM.CHECKS.map(c => `<button type="button" class="ck" data-id="${c.id}">${c.name}<span class="m">${ic('check', 'width:14px;height:14px')}</span></button>`).join('')}</div></div>
+      <div class="grid g3"><div class="field"><label>報價 (HK$)</label><input class="inp num" id="nr-quote" value="${p.price || ''}"></div><div class="field"><label>訂金 (HK$)</label><input class="inp num" id="nr-dep" value="0"></div><div class="field"><label>預計取機</label><input class="inp" id="nr-eta" value="${PM.day(-2)}"></div></div>
+    </div>`, foot: '<button class="pm-btn" data-close>取消</button><button class="pm-btn primary" data-ok>建立並列印</button>' });
+    $('#nr-checks', m.el).addEventListener('click', e => { const b = e.target.closest('.ck'); if (!b) return; b.classList.toggle('bad'); $('.m', b).innerHTML = ic(b.classList.contains('bad') ? 'x' : 'check', 'width:14px;height:14px'); });
+    $('#nr-phone', m.el).addEventListener('change', e => { const c = PM.customer(fmtPhone(e.target.value)); if (c) $('#nr-name', m.el).value = c.name; });
+    $('[data-ok]', m.el).addEventListener('click', () => {
+      const v = id => $('#' + id, m.el).value.trim();
+      const phone = fmtPhone(v('nr-phone'));
+      if (nospace(phone).length !== 8 || !v('nr-dev') || !v('nr-issue')) return toast('請輸入電話、裝置及問題');
+      PM.upsertCustomer(phone, v('nr-name'));
+      const r = { no: PM.nextNo('rp'), date: TODAY, phone, device: v('nr-dev'), color: v('nr-color'), imei: v('nr-imei'), issue: v('nr-issue'), faults: $$('#nr-checks .ck.bad', m.el).map(b => b.dataset.id), quote: +v('nr-quote') || 0, deposit: +v('nr-dep') || 0, status: 'received', tech: '', eta: v('nr-eta') };
+      S().repairs.unshift(r);
+      if (p.booking) { const bk = S().bookings.find(x => x.id === p.booking); if (bk) bk.status = '已到店'; }
+      m.close(); commit(); route();
+      UI.printPreview(UI.ticketRepair({ ...r, name: v('nr-name') }), { title: '已建立 ' + r.no });
+    });
+  }
+  ROUTES['/repairs'] = (el, _, q) => {
+    const s = S();
+    const cols = RS.filter(x => x[0] !== 'done');
+    const doneN = s.repairs.filter(r => r.status === 'done').length;
+    const books = s.bookings.filter(b => b.status === '已預約');
+    el.innerHTML = `
+      <div class="ph"><div><h1>維修</h1><p>客人送修嘅機。每個狀態都可以一按 WhatsApp 通知客人。</p></div><div class="acts"><span class="chip out">已完成 ${doneN}</span><button class="btn pri" data-act="new">${ic('plus')}新增維修單</button></div></div>
+      ${books.length ? `<div class="card" style="margin-bottom:14px"><div class="hd"><h3>網上預約</h3><span class="sub">客人喺網店預約</span></div><div class="bd">${books.map(b => `<div class="row sb" style="padding:6px 0"><span><b>${esc(b.name)}</b> ${esc(b.phone)} · ${esc(b.device)} · ${esc(b.issue)} · ${hkd(b.price)}<br><span class="small muted">${md(b.date)} ${esc(b.slot)}</span></span><button class="btn sm" data-act="arrive" data-id="${b.id}">到店開單</button></div>`).join('')}</div></div>` : ''}
+      <div class="board">${cols.map(([st, t]) => { const list = s.repairs.filter(r => r.status === st); return `<div class="col" data-col="${st}"><div class="hd"><span>${t} <span class="c">${list.length}</span></span></div>${list.map(r => { const late = r.eta < TODAY && st !== 'ready'; return `<div class="tk ${late ? 'late' : ''}" data-act="open" data-no="${r.no}" style="cursor:pointer"><div class="row sb"><span class="mono small muted">${r.no}</span>${r.quote ? `<b class="num">${hkd(r.quote)}</b>` : chip('待報價', 'amber')}</div><div class="nm" style="margin-top:4px">${esc(r.device)} <span class="muted" style="font-weight:400">${esc(r.color)}</span></div><div class="small">${esc(r.issue)}</div><div class="ft"><span>${esc(cname(r.phone))} · ${r.tech ? esc(r.tech) : '未指派'}<br><span style="color:${late ? 'var(--red)' : 'inherit'}">預計 ${md(r.eta)}</span></span><span class="row" style="gap:4px"><button class="btn sm" data-act="wa" data-no="${r.no}" title="WhatsApp">${ic('msg')}</button><button class="btn sm pri" data-act="next" data-no="${r.no}">${st === 'ready' ? '已取機' : '下一步'}</button></span></div></div>`; }).join('') || '<div class="empty small">冇維修單</div>'}</div>`; }).join('')}</div>`;
+    el.addEventListener('click', e => {
+      const b = e.target.closest('[data-act]');
+      if (!b) return;
+      const a = b.dataset.act;
+      const r = b.dataset.no ? s.repairs.find(x => x.no === b.dataset.no) : null;
+      if (a === 'new') return newRepair();
+      if (a === 'arrive') { const bk = s.bookings.find(x => x.id === b.dataset.id); return newRepair({ phone: bk.phone, name: bk.name, device: bk.device, issue: bk.issue, price: bk.price, booking: bk.id }); }
+      if (a === 'wa') { e.stopPropagation(); return waModal(r); }
+      if (a === 'next') { e.stopPropagation(); const i = RS.findIndex(x => x[0] === r.status); r.status = RS[Math.min(RS.length - 1, i + 1)][0]; if (r.status === 'repairing' && !r.tech) r.tech = 'Dicky'; commit(); route(); toast(`${r.no} → ${rsLabel(r.status)}`); if (r.status === 'ready' || r.status === 'awaiting') setTimeout(() => waModal(r), 250); return; }
+      if (a === 'open') repairDetail(r);
+    });
+    if (q.get('open')) { const r = s.repairs.find(x => x.no === q.get('open')); if (r) setTimeout(() => repairDetail(r), 50); }
+  };
+
+  // ---------------------------------------------------------------- 客戶 customers
+  function custStats(phone) {
+    const s = S();
+    const sold = s.slips.filter(x => x.phone === phone);
+    const bought = s.invoices.filter(x => x.phone === phone);
+    const reps = s.repairs.filter(x => x.phone === phone);
+    return { sold, bought, reps, soldAmt: sold.reduce((a, x) => a + x.price, 0), boughtAmt: bought.reduce((a, x) => a + x.amount, 0) };
+  }
+  let cuQ = '';
+  ROUTES['/customers'] = el => {
+    const rows = S().customers.filter(c => !cuQ || (c.name + c.phone).toLowerCase().includes(cuQ.toLowerCase()));
+    el.innerHTML = `<div class="ph"><div><h1>客戶</h1><p>每位客戶的回收、購買同維修紀錄。電話就係客戶編號。</p></div><div class="acts"><input class="inp" id="cu-q" style="width:240px" placeholder="搜尋姓名或電話" value="${esc(cuQ)}"></div></div>
+      <div class="card tbl-wrap"><table class="tbl"><thead><tr><th>客戶</th><th>電話</th><th>由</th><th class="right">賣機俾我哋</th><th class="right">向我哋買機</th><th class="right">維修</th><th>推廣</th></tr></thead><tbody>
+      ${rows.map(c => { const st = custStats(c.phone); return `<tr class="click" data-go="/customer/${encodeURIComponent(c.phone)}"><td><div class="t1">${esc(c.name)}</div><div class="t2">${esc(c.note || '')}</div></td><td class="mono">${esc(c.phone)}</td><td>${esc(c.since)}</td><td class="right num">${st.sold.length} 部 · ${hkd(st.soldAmt)}</td><td class="right num">${st.bought.length} 單 · ${hkd(st.boughtAmt)}</td><td class="right num">${st.reps.length}</td><td>${c.consent ? chip('同意', 'green') : chip('未同意', 'slate')}</td></tr>`; }).join('')}
+      </tbody></table></div>`;
+    $('#cu-q', el).addEventListener('keydown', e => { if (e.key === 'Enter') { cuQ = e.target.value.trim(); route(); } });
+  };
+  ROUTES['/customer'] = (el, phone) => {
+    const c = PM.customer(phone);
+    if (!c) { el.innerHTML = '<div class="empty">搵唔到客戶</div>'; return; }
+    const st = custStats(c.phone);
+    const tl = [];
+    st.sold.forEach(x => { const u = PM.unit(x.code); tl.push({ d: x.date, t: '賣機俾我哋', n: `${u ? unitTitle(u) : x.code} · ${x.pay} ${hkd(x.price)}`, go: '/unit/' + x.code }); });
+    st.bought.forEach(x => tl.push({ d: x.date, t: '購買', n: `${x.lines.map(l => l.name).join('、')} · ${hkd(x.amount)}（${x.channel}）`, go: x.lines[0] && PM.unit(x.lines[0].code) ? '/unit/' + x.lines[0].code : '' }));
+    st.reps.forEach(x => tl.push({ d: x.date, t: '維修', n: `${x.device}：${x.issue} · ${rsLabel(x.status)}`, go: '/repairs?open=' + x.no }));
+    tl.sort((a, b) => b.d.localeCompare(a.d));
+    el.innerHTML = `<div class="ph"><div><a data-go="/customers" class="small">${ic('back', 'width:14px;height:14px;vertical-align:-2px')} 客戶</a></div></div>
+      <div class="card"><div class="bd row sb" style="flex-wrap:wrap"><div class="prof"><div class="av">${esc(c.name.slice(0, 1))}</div><div><h2 style="margin:0">${esc(c.name)}</h2><div class="muted mono">${esc(c.phone)} · 由 ${esc(c.since)} 開始</div></div></div>
+        <div class="row"><span class="row small">同意接收推廣 <button class="tog ${c.consent ? 'on' : ''}" data-act="consent" aria-label="同意接收推廣"></button></span><button class="btn" data-act="wa">${ic('msg')}WhatsApp</button></div></div></div>
+      <div class="grid g3" style="margin-top:16px">${kpi('賣機俾我哋', st.sold.length + ' 部', hkd(st.soldAmt), 'recycle')}${kpi('向我哋買機', st.bought.length + ' 單', hkd(st.boughtAmt), 'cart')}${kpi('維修', st.reps.length + ' 次', st.reps.filter(r => r.status !== 'done').length + ' 單進行中', 'wrench')}</div>
+      <div class="grid g-side" style="margin-top:16px"><div class="card"><div class="hd"><h3>紀錄</h3></div><div class="bd"><div class="tl">${tl.map(x => `<div class="ev"><div class="h"><b>${x.t}</b><span>${md(x.d)}</span></div><p>${x.go ? `<a data-go="${x.go}">${esc(x.n)}</a>` : esc(x.n)}</p></div>`).join('') || '<div class="muted">未有紀錄</div>'}</div></div></div>
+        <div class="card"><div class="hd"><h3>備註</h3></div><div class="bd"><textarea class="ta" id="cu-note">${esc(c.note || '')}</textarea><button class="btn sm" data-act="save-note" style="margin-top:8px">儲存</button></div></div></div>`;
+    el.addEventListener('click', e => {
+      const b = e.target.closest('[data-act]');
+      if (!b) return;
+      if (b.dataset.act === 'consent') { c.consent = !c.consent; commit(); route(); }
+      if (b.dataset.act === 'wa') toast('已開啟 WhatsApp 對話（示範）');
+      if (b.dataset.act === 'save-note') { c.note = $('#cu-note', el).value; commit(); toast('已儲存'); }
+    });
+  };
+
+  // ---------------------------------------------------------------- 網站 CMS
+  const BLOCKS = { hero: ['首頁橫額', '標題、內文同兩個按鈕'], usp: ['賣點', '17 點檢查、保養、取機、付款'], categories: ['系列', '自動顯示每個系列的現貨數量'], latest: ['最新上架', '自動顯示已上架的裝置'], sell: ['回收報價', '引導客人即時報價'], grading: ['成色說明', 'A★★★ 至 C'], store: ['門市資料', '地址、營業時間、WhatsApp'] };
+  let cmsTab = 'home', cmsEdit = 'hero', cmsPage = 'warranty', cmsDevice = 'desktop';
+  ROUTES['/website'] = (el, tab) => {
+    if (tab) cmsTab = tab;
+    const s = S();
+    const cms = s.cms;
+    if (!cms.hidden) cms.hidden = [];
+    const TABS = [['home', '首頁'], ['pages', '頁面'], ['banners', '橫幅及推廣'], ['matrix', '回收價目表'], ['repairs', '維修價目表'], ['settings', '網站設定']];
+    let body = '';
+    if (cmsTab === 'home') {
+      body = `<div class="grid" style="grid-template-columns:400px minmax(0,1fr);align-items:start">
+        <div class="stack">
+          <div class="card"><div class="hd"><h3>區塊</h3><span class="sub">排次序、開關、修改</span></div><div class="bd">${cms.blocks.map((id, i) => `<div class="blk ${cmsEdit === id ? 'edit' : ''}">${ic('phone', 'color:#94a3b8')}<div class="nm">${BLOCKS[id][0]}<small>${BLOCKS[id][1]}</small></div><button class="btn sm ghost" data-act="up" data-i="${i}" aria-label="上移">${ic('up')}</button><button class="btn sm ghost" data-act="down" data-i="${i}" aria-label="下移">${ic('down')}</button>${id === 'hero' ? `<button class="btn sm" data-act="edit" data-id="${id}">修改</button>` : ''}<button class="tog ${cms.hidden.includes(id) ? '' : 'on'}" data-act="vis" data-id="${id}" aria-label="顯示"></button></div>`).join('')}</div></div>
+          ${cmsEdit === 'hero' ? `<div class="card"><div class="hd"><h3>首頁橫額</h3></div><div class="bd stack">
+            <div class="field"><label>小標題</label><input class="inp" data-hero="kicker" value="${esc(cms.hero.kicker)}"></div>
+            <div class="field"><label>標題</label><input class="inp" data-hero="title" value="${esc(cms.hero.title)}"></div>
+            <div class="field"><label>內文</label><textarea class="ta" data-hero="sub" rows="3">${esc(cms.hero.sub)}</textarea></div>
+            <div class="grid g2"><div class="field"><label>按鈕一</label><input class="inp" data-hero="cta1" value="${esc(cms.hero.cta1)}"></div><div class="field"><label>按鈕二</label><input class="inp" data-hero="cta2" value="${esc(cms.hero.cta2)}"></div></div>
+          </div></div>` : ''}
+        </div>
+        <div class="stack"><div class="row sb"><div class="seg">${[['desktop', '電腦'], ['mobile', '手機']].map(([k, l]) => `<button data-act="dev" data-id="${k}" class="${cmsDevice === k ? 'on' : ''}">${l}</button>`).join('')}</div><span class="row"><span class="small muted">修改後撳發佈，網店即時更新</span><button class="btn pri" data-act="publish">${ic('globe')}發佈</button></span></div>
+          <div class="preview ${cmsDevice === 'mobile' ? 'mobile' : ''}"><div class="bar"><i></i><i></i><i></i><span>phonemen.hk</span></div><iframe id="cms-frame" title="網店預覽" src="${UI.shopURL('#/')}"></iframe></div></div>
+      </div>`;
+    }
+    if (cmsTab === 'pages') {
+      const pg = cms.pages.find(p => p.slug === cmsPage) || cms.pages[0];
+      body = `<div class="grid g-side2">
+        <div class="card"><div class="hd"><h3>頁面</h3><button class="btn sm" data-act="new-page">${ic('plus')}新增</button></div><div>${cms.pages.map(p => `<div class="ui ${p.slug === pg.slug ? 'on' : ''}" data-act="page" data-id="${p.slug}"><div style="flex:1"><div class="nm">${esc(p.title)}</div><div class="cd">/page/${esc(p.slug)} · ${esc(p.updated)}</div></div>${chip(p.status, p.status === '已發佈' ? 'green' : 'amber')}</div>`).join('')}</div></div>
+        <div class="stack"><div class="card"><div class="bd stack">
+          <div class="grid g2"><div class="field"><label>標題</label><input class="inp" id="pg-title" value="${esc(pg.title)}"></div><div class="field"><label>網址</label><input class="inp" id="pg-slug" value="${esc(pg.slug)}"></div></div>
+          <div class="field"><label>內容</label><div><div class="rte-bar"><button data-cmd="bold"><b>B</b></button><button data-cmd="italic"><i>I</i></button><button data-cmd="insertUnorderedList">•</button><button data-cmd="formatBlock" data-v="h3">H</button><button data-act="img">${ic('camera', 'width:15px;height:15px')}</button></div><div class="rte" id="pg-body" contenteditable="true">${esc(pg.body)}</div></div></div>
+        </div></div>
+        <div class="card"><div class="hd"><h3>搜尋引擎 (SEO)</h3><span class="sub">Google 結果預覽</span></div><div class="bd stack"><div class="grid g2"><div class="field"><label>SEO 標題</label><input class="inp" id="pg-seot" value="${esc(pg.title)}｜手機俠 Phonemen"></div><div class="field"><label>SEO 描述</label><input class="inp" id="pg-seod" value="${esc(pg.body.slice(0, 80))}"></div></div><div class="serp"><div class="u">phonemen.hk › page › ${esc(pg.slug)}</div><div class="t" id="serp-t">${esc(pg.title)}｜手機俠 Phonemen</div><div class="d" id="serp-d">${esc(pg.body.slice(0, 80))}</div></div></div></div>
+        <div class="row sb"><a class="btn" href="${UI.shopURL('#/page/' + pg.slug)}" target="_blank" rel="noopener">${ic('eye')}預覽</a><span class="row"><button class="btn" data-act="draft">存為草稿</button><button class="btn pri" data-act="save-page">${ic('globe')}發佈</button></span></div></div>
+      </div>`;
+    }
+    if (cmsTab === 'banners') {
+      body = `<div class="card"><div class="hd"><h3>橫幅及推廣</h3><button class="btn sm" data-act="new-banner">${ic('plus')}新增</button></div><div class="bd stack">${cms.banners.map((b, i) => `<div class="row" style="gap:14px;border:1px solid var(--line);border-radius:12px;padding:12px"><div style="width:150px;height:64px;border-radius:10px;background:${['linear-gradient(135deg,#ff5a1f,#ff2d6b)', 'linear-gradient(135deg,#111827,#374151)', 'linear-gradient(135deg,#0ea5e9,#6366f1)'][i % 3]};color:#fff;font-weight:700;font-size:12px;padding:10px;line-height:1.35">${esc(b.title)}</div><div style="flex:1" class="stack" ><input class="inp" data-banner="${i}" value="${esc(b.title)}"><span class="small muted">${esc(b.from)} 至 ${esc(b.to)} · 連結 /c/iphone</span></div><span class="row small">顯示 <button class="tog ${b.on ? 'on' : ''}" data-act="banner-on" data-i="${i}" aria-label="顯示"></button></span></div>`).join('')}<div class="row" style="justify-content:flex-end"><button class="btn pri" data-act="save-banners">${ic('globe')}發佈</button></div></div></div>`;
+    }
+    if (cmsTab === 'matrix') {
+      const fams = [...new Set(PM.MODELS.map(m => m.family))];
+      body = `<div class="card"><div class="hd"><h3>回收價目表</h3><span class="sub">輸入 A 級回收價，其他成色自動計。櫃面報價同網店「即時回收報價」共用。</span></div><div class="tbl-wrap"><table class="tbl"><thead><tr><th>型號</th><th>容量</th><th class="right">A★★★</th><th class="right">A★</th><th class="right">A（輸入）</th><th class="right">B</th><th class="right">C</th><th class="right">網店售價 A</th>${isMgr() ? '<th class="right">預計毛利 A</th>' : ''}</tr></thead><tbody>${fams.map(f => `<tr><td colspan="9" style="background:#fafbfc;font-weight:700">${f}</td></tr>` + PM.MODELS.filter(m => m.family === f).map(m => Object.keys(m.base).map(cap => { const a = PM.buyBase(m.id, cap); return `<tr><td>${esc(m.name)}</td><td>${cap}</td><td class="right num">${hkd(PM.r10(a * PM.BUY_MULT['A★★★']))}</td><td class="right num">${hkd(PM.r10(a * PM.BUY_MULT['A★']))}</td><td class="right"><input data-k="${m.id}|${cap}" value="${a}"></td><td class="right num">${hkd(PM.r10(a * PM.BUY_MULT.B))}</td><td class="right num">${hkd(PM.r10(a * PM.BUY_MULT.C))}</td><td class="right num">${hkd(m.base[cap])}</td>${isMgr() ? `<td class="right num" style="color:var(--green)">${hkd(m.base[cap] - a)}</td>` : ''}</tr>`; }).join('')).join('')).join('')}</tbody></table></div><div class="bd row" style="justify-content:flex-end"><a class="btn" href="${UI.shopURL('#/sell')}" target="_blank" rel="noopener">${ic('eye')}網店報價頁</a><button class="btn pri" data-act="save-matrix">${ic('globe')}儲存並同步網店</button></div></div>`;
+    }
+    if (cmsTab === 'repairs') {
+      body = `<div class="card"><div class="hd"><h3>維修價目表</h3><span class="sub">網店「維修預約」即時顯示</span></div><div class="tbl-wrap"><table class="tbl"><thead><tr><th>系列</th><th>項目</th><th class="right">價錢</th></tr></thead><tbody>${s.repairPrices.map((r, i) => `<tr><td>${esc(r[0])}</td><td>${esc(r[1])}</td><td class="right"><input data-rp="${i}" value="${r[2]}"></td></tr>`).join('')}</tbody></table></div><div class="bd row" style="justify-content:flex-end"><button class="btn pri" data-act="save-rp">${ic('globe')}儲存並同步網店</button></div></div>`;
+    }
+    if (cmsTab === 'settings') {
+      const st = cms.store;
+      body = `<div class="grid g2"><div class="card"><div class="hd"><h3>門市資料</h3></div><div class="bd stack"><div class="field"><label>店名</label><input class="inp" data-st="name" value="${esc(st.name)}"></div><div class="field"><label>地址</label><input class="inp" data-st="address" value="${esc(st.address)}"></div><div class="field"><label>營業時間</label><input class="inp" data-st="hours" value="${esc(st.hours)}"></div><div class="field"><label>WhatsApp</label><input class="inp" data-st="whatsapp" value="${esc(st.whatsapp)}"></div><button class="btn pri" data-act="save-store" style="align-self:flex-start">${ic('globe')}儲存</button></div></div>
+        <div class="card"><div class="hd"><h3>網店規則</h3></div><div class="bd stack small"><div class="row sb"><span>自動上架：最少相片數量</span><b>1 張（建議 3 張）</b></div><div class="row sb"><span>預留訂金</span><b>HK$200</b></div><div class="row sb"><span>預留保留時間</span><b>48 小時</b></div><div class="row sb"><span>網上付款</span><b>轉數快 · 信用卡（示範）</b></div><div class="row sb"><span>送貨</span><b>門市取機 · 順豐（示範）</b></div><div class="row sb"><span>語言</span><b>繁體中文 · English</b></div></div></div></div>`;
+    }
+    el.innerHTML = `<div class="ph"><div><h1>網站內容</h1><p>網店嘅內容同設定都喺度改，唔使另外登入 CMS。</p></div><div class="acts"><a class="btn" href="${UI.shopURL()}" target="_blank" rel="noopener">${ic('external')}開啟網店</a></div></div><div class="tabs">${TABS.map(([k, l]) => `<button data-act="tab" data-id="${k}" class="${cmsTab === k ? 'on' : ''}">${l}</button>`).join('')}</div>${body}`;
+    const reloadFrame = () => { const f = $('#cms-frame', el); if (f) { try { f.contentWindow.location.reload(); } catch (err) { f.src = f.src; } } };
+    el.addEventListener('input', e => {
+      const h = e.target.dataset.hero;
+      if (h) cms.hero[h] = e.target.value;
+      if (e.target.id === 'pg-seot') $('#serp-t', el).textContent = e.target.value;
+      if (e.target.id === 'pg-seod') $('#serp-d', el).textContent = e.target.value;
+      if (e.target.dataset.banner != null) cms.banners[+e.target.dataset.banner].title = e.target.value;
+      if (e.target.dataset.st) cms.store[e.target.dataset.st] = e.target.value;
+    });
+    el.addEventListener('mousedown', e => { const c = e.target.closest('[data-cmd]'); if (c) { e.preventDefault(); document.execCommand(c.dataset.cmd, false, c.dataset.v || null); } });
+    el.addEventListener('click', e => {
+      const b = e.target.closest('[data-act]');
+      if (!b) return;
+      const a = b.dataset.act;
+      if (a === 'tab') { cmsTab = b.dataset.id; go('/website/' + cmsTab); return; }
+      if (a === 'dev') { cmsDevice = b.dataset.id; route(); return; }
+      if (a === 'edit') { cmsEdit = cmsEdit === b.dataset.id ? '' : b.dataset.id; route(); return; }
+      if (a === 'vis') { const id = b.dataset.id; cms.hidden = cms.hidden.includes(id) ? cms.hidden.filter(x => x !== id) : cms.hidden.concat(id); commit(); route(); toast(cms.hidden.includes(id) ? '已隱藏：' + BLOCKS[id][0] : '已顯示：' + BLOCKS[id][0]); return; }
+      if (a === 'up' || a === 'down') { const i = +b.dataset.i; const j = a === 'up' ? i - 1 : i + 1; if (j < 0 || j >= cms.blocks.length) return; const t = cms.blocks[i]; cms.blocks[i] = cms.blocks[j]; cms.blocks[j] = t; commit(); route(); return; }
+      if (a === 'publish') { commit(); reloadFrame(); toast('已發佈，網店已更新'); return; }
+      if (a === 'page') { cmsPage = b.dataset.id; route(); return; }
+      if (a === 'new-page') { const p = { slug: 'new-page-' + (cms.pages.length + 1), title: '新頁面', status: '草稿', updated: TODAY, body: '' }; cms.pages.push(p); cmsPage = p.slug; commit(); route(); return; }
+      if (a === 'img') { toast('示範：插入圖片'); return; }
+      if (a === 'save-page' || a === 'draft') {
+        const pg = cms.pages.find(p => p.slug === cmsPage) || cms.pages[0];
+        pg.title = $('#pg-title', el).value; pg.slug = $('#pg-slug', el).value || pg.slug; pg.body = $('#pg-body', el).innerText.trim(); pg.updated = TODAY; pg.status = a === 'draft' ? '草稿' : '已發佈';
+        cmsPage = pg.slug; commit(); route(); toast(a === 'draft' ? '已存為草稿' : '已發佈，網店已更新'); return;
+      }
+      if (a === 'banner-on') { const bn = cms.banners[+b.dataset.i]; bn.on = !bn.on; commit(); route(); return; }
+      if (a === 'new-banner') { cms.banners.push({ id: 'b' + (cms.banners.length + 1), title: '新推廣', from: TODAY, to: '2026-12-31', on: false }); commit(); route(); return; }
+      if (a === 'save-banners') { commit(); toast('已發佈，網店已更新'); return; }
+      if (a === 'save-matrix') { $$('input[data-k]', el).forEach(i => { const v = +i.value; const [mid, cap] = i.dataset.k.split('|'); if (v && v !== PM.r10(modelOf(mid).base[cap] * 0.7)) s.matrix[i.dataset.k] = v; else delete s.matrix[i.dataset.k]; }); commit(); route(); toast('已儲存，櫃面及網店報價即時更新'); return; }
+      if (a === 'save-rp') { $$('input[data-rp]', el).forEach(i => { s.repairPrices[+i.dataset.rp][2] = +i.value || 0; }); commit(); toast('已儲存，網店已更新'); return; }
+      if (a === 'save-store') { commit(); toast('已儲存'); }
+    });
+  };
+
+  // ---------------------------------------------------------------- start
+  window.addEventListener('hashchange', () => { fallback = null; route(); });
+  store.on(() => { if (!muted && !document.querySelector('.pm-overlay')) route(); });
+  route();
+})();
+
+</script>
+</body>
+</html>

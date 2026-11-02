@@ -1,0 +1,1806 @@
+<!doctype html>
+<html lang="zh-Hant-HK">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow">
+<title>手機俠有限公司 · Proposal A</title>
+<style>
+/* Shared pieces for all three mockups: modal, toast, printouts, device art. */
+:root {
+  --font: -apple-system, "Segoe UI", "Microsoft JhengHei", "微軟正黑體", "PingFang HK", "Noto Sans TC", Arial, sans-serif;
+  --mono: "Cascadia Mono", Consolas, "SFMono-Regular", Menlo, monospace;
+}
+* { box-sizing: border-box; }
+
+/* Modal */
+.pm-overlay { position: fixed; inset: 0; background: rgba(15, 18, 25, .45); display: flex; align-items: flex-start; justify-content: center; z-index: 1000; padding: 48px 16px; overflow: auto; animation: pm-fade .12s ease-out; }
+.pm-modal { background: #fff; color: #18181b; border-radius: 14px; box-shadow: 0 24px 60px rgba(0,0,0,.25); width: 100%; max-width: 560px; font-family: var(--font); font-size: 14px; }
+.pm-modal-head { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; border-bottom: 1px solid #ececf0; font-weight: 600; font-size: 16px; }
+.pm-modal-head button { border: 0; background: none; font-size: 20px; line-height: 1; cursor: pointer; color: #71717a; }
+.pm-modal-body { padding: 20px; }
+.pm-modal-foot { padding: 14px 20px; border-top: 1px solid #ececf0; display: flex; gap: 8px; justify-content: flex-end; }
+@keyframes pm-fade { from { opacity: 0; } to { opacity: 1; } }
+.pm-btn { font: 14px var(--font); padding: 8px 14px; border-radius: 8px; border: 1px solid #d4d4d8; background: #fff; color: #18181b; cursor: pointer; }
+.pm-btn:hover { background: #f4f4f5; }
+.pm-btn.primary { background: #18181b; border-color: #18181b; color: #fff; }
+.pm-btn.primary:hover { background: #27272a; }
+
+/* Toast */
+.pm-toasts { position: fixed; left: 50%; bottom: 28px; transform: translateX(-50%); display: flex; flex-direction: column; gap: 8px; z-index: 2000; pointer-events: none; }
+.pm-toast { background: #18181b; color: #fafafa; font: 14px var(--font); padding: 10px 16px; border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,.25); animation: pm-up .18s ease-out; }
+@keyframes pm-up { from { transform: translateY(8px); opacity: 0; } to { transform: none; opacity: 1; } }
+
+/* Printouts: 80 mm thermal paper and a 50 x 30 mm label */
+.paper-stage { background: #e9e9ee; border-radius: 10px; padding: 24px; display: flex; justify-content: center; }
+.receipt { width: 302px; background: #fff; color: #111; font: 12px/1.45 var(--mono); padding: 16px 14px 22px; box-shadow: 0 2px 10px rgba(0,0,0,.12); position: relative; }
+.receipt::after { content: ''; position: absolute; left: 0; right: 0; bottom: -8px; height: 8px; background: linear-gradient(-45deg, transparent 33%, #fff 33%, #fff 66%, transparent 66%) 0 0 / 12px 8px, linear-gradient(45deg, transparent 33%, #fff 33%, #fff 66%, transparent 66%) 0 0 / 12px 8px; }
+.receipt .c { text-align: center; }
+.receipt .big { font-size: 16px; font-weight: 700; font-family: var(--font); }
+.receipt .rule { border-top: 1px dashed #777; margin: 8px 0; }
+.receipt .row { display: flex; justify-content: space-between; gap: 8px; }
+.receipt .muted { color: #555; }
+.receipt .tot { font-size: 15px; font-weight: 700; }
+.receipt .qr { width: 96px; height: 96px; margin: 8px auto 0; }
+.receipt .sig { height: 54px; border-bottom: 1px solid #333; margin-top: 6px; display: flex; align-items: flex-end; }
+.receipt .sig img { max-height: 52px; }
+.receipt .small { font-size: 10.5px; line-height: 1.4; }
+.label { width: 302px; height: 181px; background: #fff; color: #111; border-radius: 6px; padding: 12px 14px; font: 12px var(--font); box-shadow: 0 2px 10px rgba(0,0,0,.12); display: flex; flex-direction: column; justify-content: space-between; }
+.label .l1 { font-weight: 700; font-size: 15px; }
+.label .l2 { display: flex; justify-content: space-between; font-size: 12px; }
+.label .bc { height: 44px; }
+.label .bc svg { width: 100%; height: 100%; }
+.label .code { font: 12px var(--mono); text-align: center; letter-spacing: .08em; }
+
+/* Device art */
+.dev { display: flex; align-items: center; justify-content: center; background: radial-gradient(circle at 50% 35%, #fbfbfd, #eceef2); border-radius: 12px; overflow: hidden; }
+.dev svg { height: 86%; width: auto; max-width: 86%; filter: drop-shadow(0 8px 14px rgba(0,0,0,.14)); }
+
+</style>
+<style>
+/* Proposal A — mimics today's ERP look: grey menu bar, colour-coded buttons, dense grids. */
+body { margin: 0; font: 12px "Microsoft JhengHei", "微軟正黑體", "PingFang HK", "Noto Sans TC", Arial, sans-serif; color: #222; background: #fff; }
+a { color: #1a56b0; }
+
+/* Top menu bar */
+.topline { display: flex; align-items: flex-start; justify-content: space-between; padding: 0 14px; }
+.menubar { display: flex; height: 26px; background: linear-gradient(#fbfbfb, #e2e2e2); border: 1px solid #c6c6c6; border-top: 0; border-radius: 0 0 4px 4px; width: 1080px; max-width: calc(100% - 360px); user-select: none; }
+.menubar > .mi { position: relative; padding: 0 14px; line-height: 26px; cursor: default; white-space: nowrap; }
+.menubar > .mi:hover, .menubar > .mi.open { background: #d5d5d5; }
+.menubar .dd { display: none; position: absolute; top: 26px; left: 0; min-width: 168px; background: #fff; border: 1px solid #b7b7b7; box-shadow: 2px 3px 7px rgba(0,0,0,.18); z-index: 60; padding: 2px; }
+.menubar > .mi.open .dd { display: block; }
+.menubar .dd a { display: flex; align-items: center; justify-content: space-between; padding: 5px 10px; color: #222; text-decoration: none; white-space: nowrap; }
+.menubar .dd a:hover { background: #dadada; }
+.new { display: inline-block; color: #fff; background: #e53935; border-radius: 3px; font-size: 10px; padding: 0 4px; margin-left: 6px; line-height: 15px; vertical-align: 1px; }
+.menuright { display: flex; gap: 14px; align-items: center; height: 26px; color: #444; }
+.menuright .lang b { color: #1a56b0; }
+.menuright a { text-decoration: none; }
+
+/* List screen */
+#screen { padding: 10px 20px 16px; }
+.ls-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 20px; min-height: 76px; }
+.ls-filters { display: grid; grid-template-columns: auto auto auto auto auto; gap: 5px 6px; align-items: center; }
+.ls-filters label { white-space: nowrap; }
+.ls-filters input, .ls-filters select { font: inherit; height: 22px; border: 1px solid #c9c9c9; padding: 0 5px; width: 120px; background: #dff0f7; }
+.ls-filters .plain { background: #fff; }
+.ls-right { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+.ls-btns { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+.counters { display: flex; flex-direction: column; gap: 1px; }
+.counters div { background: #0b7d0b; color: #fff; padding: 1px 8px; width: 112px; }
+.counters b { font-weight: normal; margin-left: 6px; }
+.ls-note { margin: 2px 0 6px; padding: 5px 8px; background: #fff8e1; border: 1px solid #f0d58c; color: #6d5200; }
+
+.jb { min-width: 100px; height: 24px; padding: 0 12px; border-radius: 3px; border: 1px solid transparent; font: inherit; color: #fff; cursor: pointer; white-space: nowrap; }
+.jb:hover { filter: brightness(1.06); }
+.jb.blue { background: #3f7cc4; border-color: #3870b2; }
+.jb.navy { background: #2b5a95; border-color: #234c80; }
+.jb.green { background: #67b86a; border-color: #58a65b; }
+.jb.orange { background: #f0ad4e; border-color: #e09d3d; }
+.jb.red { background: #d9534f; border-color: #c9433f; }
+.jb.w { background: #fff; color: #333; border-color: #b9b9b9; }
+.jb.go { background: #3a78c3; min-width: 78px; }
+.jb.dis, .jb[disabled] { background: #e3e3e3 !important; color: #9a9a9a !important; border-color: #d0d0d0 !important; cursor: default; filter: none; }
+
+.jgrid { border: 1px solid #c4c4c4; overflow: auto; margin-top: 6px; background: #fff; }
+.jgrid table { border-collapse: separate; border-spacing: 0; width: max-content; min-width: 100%; }
+.jgrid th { position: sticky; top: 0; background: #e7e7e7; border-right: 1px solid #cdcdcd; border-bottom: 1px solid #cdcdcd; height: 26px; padding: 0 6px; font-weight: normal; text-align: left; white-space: nowrap; z-index: 2; }
+.jgrid .frow th { top: 27px; background: #f4f4f4; height: 26px; padding: 2px 3px; }
+.jgrid .frow input { width: 100%; height: 20px; border: 1px solid #cfcfcf; font: inherit; padding: 0 4px; }
+.jgrid td { height: 25px; padding: 0 6px; border-right: 1px solid #eee; border-bottom: 1px solid #eee; white-space: nowrap; max-width: 220px; overflow: hidden; text-overflow: ellipsis; cursor: default; }
+.jgrid .num { text-align: right; }
+.jgrid tbody tr:hover td { background: #eef4fc; }
+.jgrid tbody tr.sel td { background: #c8dbf3; }
+.jgrid tr.empty td { text-align: center; color: #777; height: 160px; }
+.jgrid tfoot td { position: sticky; bottom: 0; background: #ececec; border-top: 1px solid #cfcfcf; font-weight: bold; }
+.jgrid .red { color: #c62828; }
+.jgrid .ok { color: #2e7d32; }
+.jgrid .chk { text-align: center; }
+
+.ls-bottom { display: flex; justify-content: space-between; margin-top: 8px; gap: 8px; }
+.ls-bottom > div { display: flex; gap: 6px; flex-wrap: wrap; }
+.ls-bottom .jb { min-width: 116px; }
+.audit { margin-top: 9px; color: #1a4fa0; }
+.audit b { color: #c62828; font-weight: normal; margin: 0 30px 0 8px; }
+
+/* Entry window 資料錄入 */
+.ew-ov { position: fixed; inset: 0; background: rgba(0,0,0,.32); z-index: 100; display: flex; align-items: flex-start; justify-content: center; padding-top: 24px; }
+.ew { background: #fff; width: min(1280px, 97vw); max-height: calc(100vh - 40px); display: flex; flex-direction: column; border: 1px solid #a9a9a9; box-shadow: 0 6px 26px rgba(0,0,0,.3); }
+.ew-title { background: #e8e8e8; border-bottom: 1px solid #cdcdcd; padding: 3px 8px; display: flex; justify-content: space-between; align-items: center; }
+.ew-x { border: 0; background: none; font-size: 16px; line-height: 1; cursor: pointer; color: #666; }
+.ew-body { overflow: auto; padding: 8px 18px 12px; }
+.ew-head { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 10px; }
+.ew-head h1 { font-size: 26px; font-weight: normal; margin: 0; display: flex; align-items: center; gap: 10px; white-space: nowrap; }
+.ew-head .pos { border: 1px solid #ccc; width: 58px; text-align: center; font-size: 21px; padding: 1px 0; }
+.ew-btns { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+.ew-main { display: flex; gap: 28px; align-items: flex-start; }
+.ew-form { flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 0 36px; }
+.ew-col { display: grid; grid-template-columns: 92px 1fr; gap: 5px 8px; align-items: center; align-content: start; }
+.ew-col label { color: #333; }
+.ew-col label.req { color: #e00; }
+.ew input, .ew select, .ew textarea { font: inherit; height: 22px; border: 1px solid #c8c8c8; padding: 0 5px; background: #fff; width: 100%; color: #222; }
+.ew textarea { height: 58px; padding: 3px 5px; resize: vertical; }
+.ew input.num { text-align: right; }
+.ew input[readonly] { background: #fafafa; }
+.ew select[disabled] { background: #fafafa; color: #222; opacity: 1; }
+.lk { display: flex; }
+.lk input { background: #dff0f7; }
+.lk button { width: 24px; border: 1px solid #c8c8c8; border-left: 0; background: #f6f6f6; cursor: pointer; font-size: 11px; }
+.ew-side { width: 330px; flex: none; }
+.ew-sec { margin-top: 12px; }
+.ew-sec h3 { font-size: 13px; margin: 0 0 6px; padding: 3px 6px; background: #f1f1f1; border-left: 3px solid #3f7cc4; font-weight: normal; }
+.ew-foot { border-top: 1px solid #ddd; padding: 6px 18px; color: #1a4fa0; }
+.ew-foot b { color: #c62828; font-weight: normal; margin: 0 30px 0 8px; }
+.ew-tools { display: flex; gap: 4px; margin: 10px 0 4px; flex-wrap: wrap; }
+.ew-tools button { height: 22px; font: inherit; background: #f4f4f4; border: 1px solid #c8c8c8; color: #555; padding: 0 8px; cursor: pointer; }
+.ew .jgrid { margin-top: 0; }
+.ew .jgrid td input { height: 20px; border: 0; background: transparent; }
+.scanbar { display: flex; align-items: center; gap: 8px; margin-top: 12px; padding: 6px 8px; background: #f7fbff; border: 1px solid #cfe0f2; }
+.scanbar label { white-space: nowrap; color: #1a4fa0; }
+.scanbar input { width: 280px !important; background: #fff !important; }
+.scanbar .hint { color: #777; }
+.scanbar .hint a { margin-left: 6px; cursor: pointer; }
+
+.chklist { display: grid; grid-template-columns: 1fr 1fr; gap: 3px 16px; }
+.chklist label { display: flex; justify-content: space-between; align-items: center; padding: 2px 4px; border-bottom: 1px dotted #e3e3e3; }
+.chklist input { width: auto; height: auto; }
+.mini-note { color: #777; margin-top: 6px; line-height: 1.5; }
+
+.photos { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.photo { height: 96px; border: 1px solid #cfcfcf; position: relative; background: #fafafa; display: flex; align-items: center; justify-content: center; color: #999; }
+.photo .dev { width: 100%; height: 100%; border-radius: 0; }
+.photo .rm { position: absolute; top: 2px; right: 2px; border: 1px solid #ccc; background: #fff; font-size: 11px; line-height: 14px; cursor: pointer; padding: 0 3px; }
+.webbox { border: 1px solid #cfe0f2; background: #f7fbff; padding: 8px; line-height: 1.7; }
+.webbox .state { font-weight: bold; }
+.webbox .state.on { color: #2e7d32; }
+.webbox .state.off { color: #b26a00; }
+
+.rte-tools { display: flex; gap: 2px; border: 1px solid #c8c8c8; border-bottom: 0; background: #f4f4f4; padding: 3px; }
+.rte-tools button { height: 22px; min-width: 26px; font: inherit; border: 1px solid transparent; background: none; cursor: pointer; }
+.rte-tools button:hover { border-color: #c8c8c8; background: #fff; }
+.rte { border: 1px solid #c8c8c8; min-height: 180px; padding: 8px 10px; line-height: 1.7; font-size: 13px; outline: none; }
+
+/* Day-end */
+.de { display: grid; grid-template-columns: 1fr 1fr 340px; gap: 18px; margin-top: 10px; align-items: start; }
+.de h3 { font-size: 13px; margin: 0 0 6px; font-weight: normal; padding: 3px 6px; background: #f1f1f1; border-left: 3px solid #3f7cc4; }
+.de .jgrid { height: auto; }
+.cashbox { border: 1px solid #c4c4c4; padding: 10px 12px; line-height: 2; }
+.cashbox .r { display: flex; justify-content: space-between; }
+.cashbox input { width: 120px; height: 22px; font: inherit; text-align: right; border: 1px solid #c8c8c8; }
+.cashbox .diff { font-weight: bold; }
+
+.demo-badge { position: fixed; right: 12px; bottom: 10px; background: rgba(24,24,27,.86); color: #fff; padding: 5px 10px; border-radius: 999px; font-size: 12px; z-index: 90; }
+.demo-badge a { color: #c7d2fe; margin-left: 8px; }
+
+</style>
+</head>
+<body>
+<div class="topline">
+  <nav class="menubar" id="menubar" aria-label="主選單"></nav>
+  <div class="menuright"><span>新消息(0)</span><span>USR03 · 分店 01</span><span class="lang"><b>繁</b> 简 Eng</span></div>
+</div>
+<main id="screen"></main>
+<div class="demo-badge">Proposal A · 熟悉介面 · 示範資料<a href="index.html">返回示範首頁</a><a href="storefront.html" target="_blank" rel="noopener">網店 ↗</a></div>
+<script>window.PM_LINKS = {"hub": "index.html", "a": "proposal-a.html", "b": "proposal-b.html", "shop": "storefront.html"};</script>
+<script>
+/* Phonemen mockups: demo data plus a tiny shared store (localStorage).
+   Every customer, phone number, IMEI, serial number and price here is fictional. */
+(function () {
+  'use strict';
+
+  const TODAY = '2026-11-02';
+  const day = n => { const d = new Date(Date.UTC(2026, 10, 2)); d.setUTCDate(d.getUTCDate() - n); return d.toISOString().slice(0, 10); };
+  const daysBetween = (a, b) => Math.round((Date.parse(b) - Date.parse(a)) / 864e5);
+  const hkd = n => 'HK$' + Math.round(Number(n) || 0).toLocaleString('en-US');
+  const r10 = n => Math.round(n / 10) * 10;
+
+  const REGIONS = { HK: '港版', US: '美版', JP: '日版', KR: '韓版', AU: '澳洲版', CA: '加拿大版' };
+
+  const GRADES = [
+    { id: 'A★★★', name: '近全新', desc: '機身及螢幕幾乎無痕，接近全新', mult: 1.08 },
+    { id: 'A★', name: '極新淨', desc: '細看才見輕微使用痕', mult: 1.04 },
+    { id: 'A', name: '新淨', desc: '輕微使用痕，螢幕無花', mult: 1 },
+    { id: 'B', name: '正常使用痕', desc: '機身有花痕，螢幕或有細花', mult: 0.9 },
+    { id: 'C', name: '明顯花痕', desc: '機身有明顯花痕或撞痕，功能正常', mult: 0.8 },
+  ];
+  const gradeOf = id => GRADES.find(g => g.id === id) || GRADES[2];
+  const BUY_MULT = { 'A★★★': 1.06, 'A★': 1.03, A: 1, B: 0.88, C: 0.75 };
+
+  // The 17-point checklist from today's 維修記錄 screen.
+  const CHECKS = [
+    ['touch', '觸控'], ['screen', '熒幕'], ['port', '尾插'], ['sim', 'Sim 卡'], ['call', '打電話'],
+    ['earpiece', '聽筒'], ['mic', '話筒'], ['speaker', '擴音'], ['vibrate', '震機'], ['wifi', 'WIFI'],
+    ['bt', '藍牙'], ['buttons', '按鈕'], ['faceid', 'FaceID/TouchID'], ['fcam', '前鏡頭'], ['rcam', '後鏡頭'],
+    ['housing', '後殼'], ['battery', '電池'],
+  ].map(([id, name]) => ({ id, name }));
+  const checkName = id => (CHECKS.find(c => c.id === id) || { name: id }).name;
+
+  // [buyback price cut, typical refurb cost]
+  const FAULTS = { screen: [0.35, 650], touch: [0.3, 650], faceid: [0.3, 0], rcam: [0.15, 420], fcam: [0.1, 320], battery: [0.06, 280], housing: [0.1, 380], port: [0.06, 220] };
+  const faultCut = id => (FAULTS[id] || [0.05, 180])[0];
+  const faultFix = id => (FAULTS[id] || [0.05, 180])[1];
+
+  // base = asking price at grade A, by capacity
+  const MODELS = [
+    { id: 'ip16pm', family: 'iPhone', name: 'iPhone 16 Pro Max', slug: 'iphone-16-pro-max', no: 'A3084', pro: true, os: 'iOS 26.0.1', colors: [['沙漠色鈦金屬', '#C7B39B'], ['黑色鈦金屬', '#3A3A3C'], ['原色鈦金屬', '#BEB7AC']], base: { '256GB': 6680, '512GB': 7480 } },
+    { id: 'ip16p', family: 'iPhone', name: 'iPhone 16 Pro', slug: 'iphone-16-pro', no: 'A3083', pro: true, os: 'iOS 26.0.1', colors: [['白色鈦金屬', '#E5E3DE'], ['沙漠色鈦金屬', '#C7B39B'], ['黑色鈦金屬', '#3A3A3C']], base: { '128GB': 5280, '256GB': 5880 } },
+    { id: 'ip15p', family: 'iPhone', name: 'iPhone 15 Pro', slug: 'iphone-15-pro', no: 'A2848', pro: true, os: 'iOS 26.0', colors: [['原色鈦金屬', '#BDB5A9'], ['藍色鈦金屬', '#414B5A'], ['白色鈦金屬', '#E6E4DF'], ['黑色鈦金屬', '#2F2F31']], base: { '128GB': 4180, '256GB': 4680 } },
+    { id: 'ip15', family: 'iPhone', name: 'iPhone 15', slug: 'iphone-15', no: 'A2846', os: 'iOS 26.0', colors: [['粉紅色', '#F1D5D9'], ['藍色', '#CDDEE7'], ['黑色', '#35393B']], base: { '128GB': 3180, '256GB': 3580 } },
+    { id: 'ip14p', family: 'iPhone', name: 'iPhone 14 Pro', slug: 'iphone-14-pro', no: 'A2892', pro: true, os: 'iOS 18.6', colors: [['深紫色', '#4F455A'], ['太空黑色', '#2E2D2F'], ['金色', '#F1E2C5']], base: { '128GB': 3380, '256GB': 3780 } },
+    { id: 'ip14plus', family: 'iPhone', name: 'iPhone 14 Plus', slug: 'iphone-14-plus', no: 'A2888', os: 'iOS 18.6', colors: [['午夜色', '#232A31'], ['藍色', '#A6C0D8'], ['紫色', '#D7CEE0']], base: { '128GB': 2680, '256GB': 2980 } },
+    { id: 'ip13p', family: 'iPhone', name: 'iPhone 13 Pro', slug: 'iphone-13-pro', no: 'A2639', pro: true, os: 'iOS 18.5', colors: [['天峰藍色', '#9AB4CD'], ['石墨色', '#55534F'], ['松嶺青色', '#576957']], base: { '128GB': 2580, '256GB': 2880 } },
+    { id: 'ip13', family: 'iPhone', name: 'iPhone 13', slug: 'iphone-13', no: 'A2634', os: 'iOS 18.5', colors: [['午夜色', '#232A31'], ['星光色', '#F0EAE0'], ['粉紅色', '#F8DFE0']], base: { '128GB': 1880 } },
+    { id: 'ipse3', family: 'iPhone', name: 'iPhone SE (2022)', slug: 'iphone-se-2022', no: 'A2785', se: true, os: 'iOS 18.5', colors: [['午夜色', '#232A31'], ['(PRODUCT)RED', '#BE1E2D']], base: { '64GB': 980, '128GB': 1180 } },
+    { id: 'ipadpro11m4', family: 'iPad', name: 'iPad Pro 11" (M4) Wi-Fi', slug: 'ipad-pro-11-m4', no: 'A2836', cellular: false, os: 'iPadOS 18.6', colors: [['太空黑色', '#2F2F31'], ['銀色', '#E2E3E4']], base: { '256GB': 5480, '512GB': 6280 } },
+    { id: 'ipadmini6', family: 'iPad', name: 'iPad mini 6 Wi-Fi', slug: 'ipad-mini-6', no: 'A2567', cellular: false, os: 'iPadOS 18.6', colors: [['太空灰色', '#5E5E60'], ['星光色', '#F0EAE0']], base: { '64GB': 1980, '256GB': 2480 } },
+    { id: 'ipad9', family: 'iPad', name: 'iPad 9 Wi-Fi', slug: 'ipad-9', no: 'A2602', cellular: false, os: 'iPadOS 18.6', colors: [['太空灰色', '#5E5E60'], ['銀色', '#E2E3E4']], base: { '64GB': 1080 } },
+    { id: 'mbam2', family: 'Mac', name: 'MacBook Air 13" (M2)', slug: 'macbook-air-m2', no: 'A2681', cellular: false, os: 'macOS 15.6', colors: [['午夜色', '#2E3641'], ['星光色', '#E6DDD2']], base: { '256GB': 4580, '512GB': 5280 } },
+    { id: 's24u', family: 'Android', name: 'Samsung Galaxy S24 Ultra', slug: 'galaxy-s24-ultra', no: 'SM-S9280', os: 'One UI 7', colors: [['鈦灰色', '#8A8885'], ['鈦黑色', '#2C2C2C']], base: { '256GB': 4380, '512GB': 4880 } },
+    { id: 'pixel8', family: 'Android', name: 'Google Pixel 8', slug: 'pixel-8', no: 'GKWS6', pixel: true, os: 'Android 16', colors: [['曜石黑', '#2B2B2B'], ['海灣藍', '#A8C1D5']], base: { '128GB': 1880 } },
+    { id: 'aw9', family: 'Watch', name: 'Apple Watch Series 9 45mm', slug: 'apple-watch-s9-45', no: 'A2980', cellular: false, os: 'watchOS 11', colors: [['午夜色', '#232A31'], ['星光色', '#F0EAE0']], base: { 'GPS': 1380 } },
+  ];
+  const modelOf = id => MODELS.find(m => m.id === id);
+  const modelBySlug = slug => MODELS.find(m => m.slug === slug);
+  const FAMILIES = [
+    { id: 'iphone', name: 'iPhone', family: 'iPhone' },
+    { id: 'ipad', name: 'iPad', family: 'iPad' },
+    { id: 'mac', name: 'Mac', family: 'Mac' },
+    { id: 'android', name: 'Android', family: 'Android' },
+    { id: 'watch', name: 'Apple Watch', family: 'Watch' },
+  ];
+
+  const STAFF = [{ id: 'Alan', role: '經理' }, { id: 'Bonnie', role: '店員' }, { id: 'Carmen', role: '店員' }, { id: 'Dicky', role: '師傅' }];
+  const TECHS = ['Dicky', '外判師傅 K'];
+  const CHANNELS = ['門市', 'WhatsApp', 'Carousell', '網店', '公司'];
+  const PAYMENTS = ['轉數快', '現金', '信用卡', '支付寶HK', '銀行轉帳'];
+
+  const CUSTOMERS = [
+    { phone: '9123 4567', name: '陳大文', since: '2024-03-12', note: '常客，偏好 Pro 系列', consent: true },
+    { phone: '6234 5678', name: '李小美', since: '2025-08-02', note: '', consent: true },
+    { phone: '5432 1098', name: '張志明', since: '2025-11-20', note: '', consent: false },
+    { phone: '9876 5432', name: '黃家樂', since: '2023-06-30', note: '有一部 iPad 送修中', consent: true },
+    { phone: '6111 2233', name: '何嘉欣', since: '2026-01-15', note: '', consent: true },
+    { phone: '9333 4455', name: 'Tom Lee', since: '2026-05-09', note: 'Carousell 客', consent: false },
+    { phone: '5666 7788', name: 'Mandy Chan', since: '2024-09-21', note: '公司客，月結', consent: true },
+    { phone: '9444 1122', name: '林小儀', since: '2026-10-30', note: '', consent: true },
+    { phone: '6555 3344', name: '周志強', since: '2025-02-14', note: '', consent: false },
+  ];
+
+  // Deterministic pseudo-random numbers so every reset gives the same demo.
+  let seedN = 20261102;
+  const rnd = () => (seedN = (seedN * 1103515245 + 12345) % 2147483648) / 2147483648;
+  const luhn = s => { let t = 0; for (let i = 0; i < s.length; i++) { let d = +s[i]; if (i % 2 === 1) { d *= 2; if (d > 9) d -= 9; } t += d; } return (10 - (t % 10)) % 10; };
+  const makeImei = () => { let s = '35' + String(Math.floor(rnd() * 1e6)).padStart(6, '0'); while (s.length < 14) s += Math.floor(rnd() * 10); return s + luhn(s); };
+  const SN = 'CDFGHJKLMNPQRTVWXY0123456789';
+  const makeSerial = () => Array.from({ length: 10 }, () => SN[Math.floor(rnd() * SN.length)]).join('');
+
+  const askPrice = (m, cap, grade, battery) => { const p = m.base[cap] * gradeOf(grade).mult - (battery < 85 ? 100 : 0); return Math.floor(p / 100) * 100 + 80; };
+
+  // [model, capacity, colour index, grade, battery %, region, status, photos, days since buyback, faults, extra]
+  const U = [
+    ['ip16pm', '256GB', 0, 'A★', 96, 'US', 'listed', 6, 4],
+    ['ip16pm', '512GB', 1, 'A', 92, 'HK', 'listed', 5, 9],
+    ['ip16p', '128GB', 2, 'A★★★', 100, 'HK', 'listed', 6, 2],
+    ['ip16p', '256GB', 0, 'B', 88, 'JP', 'listed', 4, 12],
+    ['ip15p', '256GB', 0, 'A★', 89, 'US', 'listed', 5, 5],
+    ['ip15p', '128GB', 1, 'A', 86, 'HK', 'listed', 4, 7],
+    ['ip15p', '128GB', 3, 'B', 84, 'JP', 'listed', 4, 15],
+    ['ip15', '128GB', 1, 'A', 91, 'HK', 'listed', 4, 3],
+    ['ip15', '256GB', 2, 'C', 82, 'US', 'listed', 4, 21],
+    ['ip14p', '128GB', 0, 'A', 87, 'HK', 'listed', 5, 6, [], { pastFix: ['housing'] }],
+    ['ip14p', '256GB', 1, 'B', 83, 'US', 'listed', 4, 18],
+    ['ip14plus', '128GB', 1, 'A★', 90, 'HK', 'listed', 4, 8],
+    ['ip13p', '128GB', 0, 'A', 85, 'HK', 'listed', 4, 10],
+    ['ip13p', '256GB', 1, 'B', 81, 'JP', 'listed', 4, 26],
+    ['ip13', '128GB', 1, 'A', 88, 'HK', 'listed', 4, 4],
+    ['ipse3', '64GB', 0, 'B', 84, 'HK', 'listed', 3, 33, [], { pastFix: ['buttons'] }],
+    ['ipadpro11m4', '256GB', 0, 'A★★★', 100, 'HK', 'listed', 6, 5],
+    ['ipadmini6', '64GB', 0, 'A', 92, 'US', 'listed', 4, 14],
+    ['ipad9', '64GB', 1, 'B', 90, 'HK', 'listed', 4, 40],
+    ['mbam2', '256GB', 0, 'A★', 94, 'HK', 'listed', 5, 11],
+    ['s24u', '256GB', 0, 'A', 93, 'HK', 'listed', 4, 9],
+    ['pixel8', '128GB', 0, 'B', 88, 'HK', 'listed', 3, 37],
+    ['aw9', 'GPS', 0, 'A', 95, 'HK', 'listed', 3, 16],
+    ['ip16p', '256GB', 1, 'A★', 97, 'HK', 'reserved', 5, 3, [], { by: '6234 5678', deposit: 200, channel: '網店' }],
+    ['ip14plus', '256GB', 0, 'A', 89, 'US', 'reserved', 4, 6, [], { by: '5432 1098', deposit: 300, channel: 'WhatsApp' }],
+    ['ip15p', '128GB', 2, 'A', 90, 'HK', 'ready', 0, 1],
+    ['ip13', '128GB', 0, 'B', 86, 'JP', 'ready', 0, 2],
+    ['ipadmini6', '256GB', 1, 'A★', 98, 'HK', 'ready', 2, 2],
+    ['ip14p', '128GB', 2, 'A', 85, 'US', 'ready', 0, 1],
+    ['ip16pm', '256GB', 2, 'A', 94, 'HK', 'qc', 0, 0],
+    ['ip15', '128GB', 0, 'A', 89, 'HK', 'qc', 0, 0],
+    ['s24u', '512GB', 1, 'B', 87, 'HK', 'qc', 0, 1],
+    ['ip13p', '128GB', 2, 'B', 83, 'US', 'qc', 0, 0],
+    ['ip14p', '256GB', 0, 'B', 76, 'HK', 'refurb', 0, 3, ['battery'], { tech: '外判師傅 K', place: '外判' }],
+    ['ip13p', '128GB', 1, 'B', 84, 'JP', 'refurb', 0, 7, ['rcam'], { tech: 'Dicky', place: '店內' }],
+    ['ip15', '128GB', 2, 'A', 90, 'US', 'refurb', 0, 2, ['screen'], { tech: '外判師傅 K', place: '外判' }],
+    ['ipadpro11m4', '512GB', 1, 'A', 96, 'HK', 'refurb', 0, 1, ['port'], { tech: 'Dicky', place: '店內' }],
+    ['ip15p', '256GB', 1, 'A★', 92, 'HK', 'sold', 5, 20, [], { soldAgo: 9, to: '9123 4567', channel: 'WhatsApp', pay: '轉數快', staff: 'Alan' }],
+    ['ip13', '128GB', 2, 'A', 87, 'HK', 'sold', 4, 12, [], { soldAgo: 2, to: '9876 5432', channel: '門市', pay: '現金', staff: 'Carmen' }],
+    ['ip16p', '128GB', 0, 'A', 95, 'US', 'sold', 5, 6, [], { soldAgo: 1, to: '9333 4455', channel: 'Carousell', pay: '轉數快', staff: 'Bonnie' }],
+    ['ipad9', '64GB', 0, 'C', 85, 'HK', 'sold', 3, 30, [], { soldAgo: 0, to: '5666 7788', channel: '門市', pay: '信用卡', staff: 'Carmen' }],
+  ];
+
+  function customerName(list, phone) { const c = list.find(x => x.phone === phone); return c ? c.name : '散客'; }
+
+  function buildUnits() {
+    const order = U.map((t, i) => ({ t, i })).sort((a, b) => b.t[8] - a.t[8] || a.i - b.i);
+    let code = 126301, octSeq = 391, novSeq = 1;
+    const sellers = ['6111 2233', '9444 1122', '6555 3344', '9876 5432', '9123 4567', '5432 1098', '9333 4455'];
+    return order.map(({ t }, k) => {
+      const [mid, cap, ci, grade, battery, region, status, photos, ago, faults = [], x = {}] = t;
+      const m = modelOf(mid);
+      const bought = day(ago);
+      const seq = bought >= '2026-11-01' ? novSeq++ : octSeq++;
+      const slip = '01CGR' + bought.slice(2, 4) + bought.slice(5, 7) + String(seq).padStart(4, '0');
+      const cellular = m.cellular !== false;
+      const price = askPrice(m, cap, grade, battery);
+      const pastFix = x.pastFix || [];
+      const staff = ['Alan', 'Bonnie', 'Carmen'][k % 3];
+      const u = {
+        code: '2ND' + (code++), model: mid, cap, color: m.colors[ci][0], hex: m.colors[ci][1], grade, battery, region, os: m.os,
+        imei: cellular ? makeImei() : '', serial: cellular ? '' : makeSerial(),
+        cost: r10(price * 0.72), refurb: pastFix.reduce((s, f) => s + faultFix(f), 0), price, floor: r10(price * 0.93),
+        status, photos, bought, slip, seller: sellers[k % sellers.length], staff,
+        faults: faults.slice(), tech: x.tech || '', place: x.place || '', fixFrom: status === 'refurb' ? bought : '',
+        reserved: null, sold: null, checks: {}, events: [],
+      };
+      if (status !== 'qc') CHECKS.forEach(c => { u.checks[c.id] = pastFix.includes(c.id) ? 'fixed' : faults.includes(c.id) ? 'fault' : 'ok'; });
+      const ev = (d, type, note, by) => u.events.push({ d, type, note, by });
+      ev(bought, '回收', `回收單 ${slip}，收購價 ${hkd(u.cost)}`, staff);
+      if (status !== 'qc') ev(bought, 'QC', faults.length ? `發現問題：${faults.map(checkName).join('、')}` : pastFix.length ? `需處理：${pastFix.map(checkName).join('、')}` : '17 點檢查全部合格', 'Dicky');
+      if (pastFix.length) ev(day(Math.max(0, ago - 1)), '翻新', `${pastFix.map(checkName).join('、')}，成本 ${hkd(u.refurb)}`, 'Dicky');
+      if (status === 'refurb') ev(bought, '送修', `${faults.map(checkName).join('、')} → ${u.tech}`, staff);
+      if (['listed', 'reserved', 'sold'].includes(status)) ev(day(Math.max(0, ago - 1)), '上架', `影相 ${photos} 張，售價 ${hkd(price)}`, 'Bonnie');
+      if (status === 'reserved') {
+        u.reserved = { by: x.by, deposit: x.deposit, channel: x.channel, date: day(Math.max(0, ago - 2)) };
+        ev(u.reserved.date, '預留', `${x.channel}，訂金 ${hkd(x.deposit)}`, x.channel === '網店' ? '網店' : 'Bonnie');
+      }
+      if (status === 'sold') {
+        u.sold = { date: day(x.soldAgo), to: x.to, channel: x.channel, pay: x.pay, price, staff: x.staff, inv: '' };
+        ev(u.sold.date, '售出', `${x.channel}，${x.pay}，${hkd(price)}`, x.staff);
+      }
+      u.events.sort((a, b) => a.d.localeCompare(b.d));
+      return u;
+    });
+  }
+
+  const EXTRA_INV = [
+    ['2026-10-29', '6234 5678', '門市', 'Carmen', 'iPhone 15 128GB 粉紅色', 3180, 3180, '轉數快', ''],
+    ['2026-10-30', '9123 4567', 'WhatsApp', 'Alan', 'Apple Watch Series 9 45mm 午夜色', 1380, 1380, '轉數快', ''],
+    ['2026-10-31', '6111 2233', 'WhatsApp', 'Bonnie', 'iPhone 14 Pro 256GB 金色', 3680, 3680, '轉數快', ''],
+    ['2026-10-31', '9444 1122', '門市', 'Carmen', 'iPhone 13 128GB 午夜色', 1880, 1880, '現金', ''],
+    ['2026-11-01', '6555 3344', 'Carousell', 'Bonnie', 'iPad mini 6 64GB 太空灰色', 1980, 1980, '轉數快', '順豐到付'],
+    ['2026-11-01', '5666 7788', '公司', 'Alan', 'iPad 9 Wi-Fi 64GB × 5', 5200, 0, '', '月結'],
+    ['2026-11-02', '9876 5432', 'WhatsApp', 'Alan', 'iPhone 14 Plus 128GB 藍色', 2780, 1000, '轉數快', '餘數取機時付'],
+  ];
+
+  function buildBooks(units) {
+    const rows = [];
+    units.filter(u => u.sold).forEach(u => {
+      const m = modelOf(u.model);
+      rows.push({ date: u.sold.date, phone: u.sold.to, channel: u.sold.channel, staff: u.sold.staff, lines: [{ code: u.code, name: `${m.name} ${u.cap} ${u.color}`, imei: u.imei || u.serial, price: u.price, grade: u.grade }], amount: u.price, received: u.price, pay: u.sold.pay, note: '', unit: u });
+    });
+    EXTRA_INV.forEach(([date, phone, channel, staff, name, amount, received, pay, note]) => rows.push({ date, phone, channel, staff, lines: [{ code: '2ND1259' + String(rows.length + 10), name, imei: makeImei(), price: amount, grade: 'A' }], amount, received, pay, note }));
+    rows.sort((a, b) => a.date.localeCompare(b.date));
+    let octI = 188, novI = 0, octR = 176, novR = 0;
+    const invoices = [], receipts = [];
+    rows.forEach(r => {
+      const nov = r.date >= '2026-11-01';
+      const no = '01SI26' + (nov ? '11' : '10') + String(nov ? ++novI : ++octI).padStart(4, '0');
+      if (r.unit) r.unit.sold.inv = no;
+      invoices.push({ no, date: r.date, phone: r.phone, name: customerName(CUSTOMERS, r.phone), channel: r.channel, staff: r.staff, lines: r.lines, amount: r.amount, received: r.received, note: r.note });
+      if (r.received > 0) receipts.push({ no: 'RV26' + (nov ? '11' : '10') + String(nov ? ++novR : ++octR).padStart(4, '0'), date: r.date, phone: r.phone, name: customerName(CUSTOMERS, r.phone), method: r.pay, amount: r.received, inv: no });
+    });
+    return { invoices: invoices.reverse(), receipts: receipts.reverse(), seq: { inv: novI, rv: novR } };
+  }
+
+  function buildSlips(units) {
+    return units.map(u => ({ no: u.slip, date: u.bought, phone: u.seller, name: customerName(CUSTOMERS, u.seller), code: u.code, price: u.cost, pay: u.cost > 3000 ? '轉數快' : '現金', staff: u.staff }))
+      .sort((a, b) => b.no.localeCompare(a.no));
+  }
+
+  function buildJobs(units) {
+    let n = 101880;
+    const jobs = [];
+    units.forEach(u => {
+      const done = u.events.find(e => e.type === '翻新');
+      if (done) jobs.push({ no: 'FIX' + (++n), code: u.code, date: u.bought, faults: CHECKS.filter(c => u.checks[c.id] === 'fixed').map(c => c.id), tech: 'Dicky', place: '店內', eta: done.d, cost: u.refurb, done: done.d, by: 'Dicky' });
+      if (u.status === 'refurb') jobs.push({ no: 'FIX' + (++n), code: u.code, date: u.fixFrom, faults: u.faults.slice(), tech: u.tech, place: u.place, eta: day(Math.max(0, daysBetween(u.fixFrom, TODAY) - 3)), cost: 0, done: '', by: '' });
+    });
+    return { jobs: jobs.sort((a, b) => b.no.localeCompare(a.no)), last: n };
+  }
+
+  const REPAIRS = [
+    { no: 'RP26110003', date: '2026-11-02', phone: '9444 1122', device: 'iPhone 12', color: '白色', imei: '356781092345671', issue: '電池健康度 72%，想換電池', faults: ['battery'], quote: 380, deposit: 0, status: 'received', tech: '', eta: '2026-11-02' },
+    { no: 'RP26110002', date: '2026-11-01', phone: '6111 2233', device: 'iPhone 14', color: '午夜色', imei: '353912118804562', issue: '熒幕碎裂，觸控正常', faults: ['screen'], quote: 1280, deposit: 300, status: 'awaiting', tech: '外判師傅 K', eta: '2026-11-04' },
+    { no: 'RP26110001', date: '2026-11-01', phone: '9876 5432', device: 'iPad Air 5', color: '藍色', imei: 'SN F9XKQ2LMN4', issue: '尾插接觸不良，充唔到電', faults: ['port'], quote: 480, deposit: 200, status: 'repairing', tech: 'Dicky', eta: '2026-11-03' },
+    { no: 'RP26100018', date: '2026-10-30', phone: '9123 4567', device: 'iPhone 13 Pro', color: '天峰藍色', imei: '352219107763418', issue: '後鏡頭對焦失靈', faults: ['rcam'], quote: 880, deposit: 300, status: 'ready', tech: 'Dicky', eta: '2026-11-01' },
+    { no: 'RP26100017', date: '2026-10-29', phone: '6555 3344', device: 'Samsung Galaxy S23', color: '黑色', imei: '358845221907735', issue: '入水，開唔到機', faults: ['screen', 'battery'], quote: 0, deposit: 0, status: 'diagnosing', tech: '外判師傅 K', eta: '2026-11-05' },
+    { no: 'RP26100015', date: '2026-10-27', phone: '5432 1098', device: 'iPhone 15', color: '藍色', imei: '356123097718203', issue: '換電池', faults: ['battery'], quote: 580, deposit: 580, status: 'done', tech: 'Dicky', eta: '2026-10-28' },
+  ];
+  const REPAIR_STATUS = [
+    ['received', '已收機'], ['diagnosing', '檢查報價'], ['awaiting', '待客戶確認'], ['repairing', '維修中'], ['ready', '待取機'], ['done', '已取機'],
+  ];
+
+  const REPAIR_PRICES = [
+    ['iPhone 16 系列', '換熒幕', 2280], ['iPhone 16 系列', '換電池', 680],
+    ['iPhone 15 系列', '換熒幕', 1880], ['iPhone 15 系列', '換電池', 580],
+    ['iPhone 14 系列', '換熒幕', 1280], ['iPhone 14 系列', '換電池', 480],
+    ['iPhone 13 系列', '換熒幕', 1080], ['iPhone 13 系列', '換電池', 420],
+    ['iPhone 12 或以前', '換熒幕', 780], ['iPhone 12 或以前', '換電池', 380],
+    ['iPad 系列', '換尾插', 480], ['所有型號', '檢查費（維修後全數扣減）', 100],
+  ];
+
+  const CMS = {
+    hero: { kicker: '17 點檢查 · 3 個月保養', title: '二手 iPhone，檢查好先上架', sub: '每部機都有獨立編號、電池健康度同實拍相，揀中即刻預留，門市取機。', cta1: '揀機', cta2: '即時回收報價' },
+    banners: [
+      { id: 'b1', title: '雙十一：iPhone 15 Pro 減 $300', from: '2026-11-08', to: '2026-11-11', on: true },
+      { id: 'b2', title: '高價回收 iPhone 16 系列', from: '2026-10-01', to: '2026-12-31', on: true },
+      { id: 'b3', title: '換電池 $380 起，即日取機', from: '2026-10-15', to: '2026-11-30', on: false },
+    ],
+    pages: [
+      { slug: 'warranty', title: '保養條款', status: '已發佈', updated: '2026-10-20', body: '所有二手機均享 3 個月保養，涵蓋機身功能故障（人為損壞、入水除外）。電池保養 1 個月。保養期內請帶同收據及機身到門市，我們會先檢查再安排維修或更換。' },
+      { slug: 'how-to-sell', title: '回收流程', status: '已發佈', updated: '2026-10-12', body: '1. 網上即時報價或直接到門市。2. 店員現場以 17 點檢查測試功能，並評定成色。3. 確認價錢後即場以現金或轉數快付款。請帶同身份證明文件，並先關閉「尋找」功能。' },
+      { slug: 'grading', title: '成色分級', status: '已發佈', updated: '2026-09-30', body: 'A★★★ 近全新；A★ 極新淨；A 新淨；B 正常使用痕；C 明顯花痕。所有成色均通過 17 點功能檢查。' },
+      { slug: 'faq', title: '常見問題', status: '草稿', updated: '2026-11-01', body: '可唔可以試機？可以，門市預留後可試機。可唔可以分期？信用卡可於門市辦理。' },
+      { slug: 'about', title: '關於手機俠', status: '已發佈', updated: '2026-08-15', body: '手機俠專營二手手機回收、銷售及維修。每部機都有獨立編號同檢查紀錄。' },
+    ],
+    store: { name: '手機俠 Phonemen', address: '九龍旺角（示範地址）', hours: '每日 12:00 – 21:00', whatsapp: '+852 5XXX XXXX（示範）' },
+    blocks: ['hero', 'usp', 'categories', 'latest', 'sell', 'grading', 'store'],
+  };
+
+  const LEADS = [
+    { id: 'Q1031', date: '2026-11-02 10:14', name: 'Kelvin', phone: '6888 1200', model: 'ip14p', cap: '128GB', grade: 'B', quote: 2050, status: '新報價' },
+    { id: 'Q1030', date: '2026-11-01 21:47', name: 'Ada', phone: '9221 7788', model: 'ip15', cap: '256GB', grade: 'A', quote: 2500, status: '已約到店' },
+  ];
+  const BOOKINGS = [
+    { id: 'BK208', date: '2026-11-03', slot: '15:00', name: 'Jason', phone: '6777 1290', device: 'iPhone 13', issue: '換電池', price: 420, status: '已預約' },
+  ];
+
+  // ---- store ----
+  const KEY = 'phonemen-demo-v1';
+  let state = null;
+  const listeners = [];
+
+  function seed() {
+    seedN = 20261102;
+    const units = buildUnits();
+    const books = buildBooks(units);
+    const fix = buildJobs(units);
+    const lastUnit = Math.max(...units.map(u => +u.code.slice(3)));
+    return {
+      v: 1,
+      units,
+      customers: CUSTOMERS.map(c => ({ ...c })),
+      invoices: books.invoices,
+      receipts: books.receipts,
+      slips: buildSlips(units),
+      jobs: fix.jobs,
+      repairs: REPAIRS.map(r => ({ ...r, faults: r.faults.slice() })),
+      repairPrices: REPAIR_PRICES.map(r => r.slice()),
+      cms: JSON.parse(JSON.stringify(CMS)),
+      matrix: {},
+      leads: LEADS.map(l => ({ ...l })),
+      bookings: BOOKINGS.map(b => ({ ...b })),
+      seq: { unit: lastUnit, slip: units.filter(u => u.bought >= '2026-11-01').length, inv: books.seq.inv, rv: books.seq.rv, fix: fix.last, rp: 3, quote: 1031, book: 208 },
+    };
+  }
+
+  function get() {
+    if (!state) {
+      try { const s = JSON.parse(localStorage.getItem(KEY) || 'null'); state = s && s.v === 1 ? s : seed(); } catch (e) { state = seed(); }
+    }
+    return state;
+  }
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) { /* private mode */ } listeners.forEach(f => f()); }
+  function reset() { state = seed(); save(); }
+  function on(f) { listeners.push(f); }
+  window.addEventListener('storage', e => { if (e.key === KEY) { state = null; get(); listeners.forEach(f => f()); } });
+
+  function nextNo(kind) {
+    const s = get().seq;
+    s[kind] = (s[kind] || 0) + 1;
+    const n = s[kind];
+    const p4 = x => String(x).padStart(4, '0');
+    return { unit: '2ND' + n, slip: '01CGR2611' + p4(n), inv: '01SI2611' + p4(n), rv: 'RV2611' + p4(n), fix: 'FIX' + n, rp: 'RP2611' + p4(n), quote: 'Q' + n, book: 'BK' + n }[kind];
+  }
+
+  // ---- derived helpers ----
+  const unit = code => get().units.find(u => u.code === code);
+  const unitTitle = u => { const m = modelOf(u.model); return `${m.name} ${u.cap} ${u.color}`; };
+  const unitAge = u => daysBetween(u.bought, TODAY);
+  const customer = phone => get().customers.find(c => c.phone === phone);
+  const buyBase = (mid, cap) => { const k = mid + '|' + cap; const m = modelOf(mid); return get().matrix[k] != null ? get().matrix[k] : r10(m.base[cap] * 0.7); };
+
+  function buyQuote(mid, cap, grade, battery, faults) {
+    const base = buyBase(mid, cap);
+    const gradeAdj = r10(base * ((BUY_MULT[grade] || 1) - 1));
+    const sub = base + gradeAdj;
+    const battAdj = battery < 80 ? -r10(sub * 0.08) : battery < 85 ? -r10(sub * 0.04) : 0;
+    const faultAdj = (faults || []).map(f => ({ id: f, name: checkName(f), amount: -r10(sub * faultCut(f)) }));
+    const total = Math.max(0, sub + battAdj + faultAdj.reduce((s, x) => s + x.amount, 0));
+    return { base, gradeAdj, battAdj, faultAdj, total: Math.floor(total / 10) * 10 };
+  }
+
+  function upsertCustomer(phone, name) {
+    const s = get();
+    let c = s.customers.find(x => x.phone === phone);
+    if (!c) { c = { phone, name: name || '新客戶', since: TODAY, note: '', consent: false }; s.customers.push(c); }
+    else if (name && c.name !== name) c.name = name;
+    return c;
+  }
+
+  window.PM = {
+    TODAY, day, daysBetween, hkd, r10, REGIONS, GRADES, gradeOf, BUY_MULT, CHECKS, checkName, FAULTS, faultCut, faultFix,
+    MODELS, modelOf, modelBySlug, FAMILIES, STAFF, TECHS, CHANNELS, PAYMENTS, REPAIR_STATUS, askPrice, makeImei, makeSerial,
+    store: { get, save, reset, on }, nextNo, unit, unitTitle, unitAge, customer, buyBase, buyQuote, upsertCustomer,
+  };
+})();
+
+</script>
+<script>
+/* Phonemen mockups: shared UI helpers — device art, QR and barcode art, toast, modal, printouts. */
+(function () {
+  'use strict';
+  const PM = window.PM;
+  const hkd = PM.hkd;
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const $ = (sel, root) => (root || document).querySelector(sel);
+  const $$ = (sel, root) => Array.from((root || document).querySelectorAll(sel));
+  const now = () => PM.TODAY + ' ' + new Date().toTimeString().slice(0, 5);
+  const maskPhone = p => (p || '').replace(/(\d{4})\s?(\d{4})/, '$1 ****');
+  let uid = 0;
+
+  // ---------- colour helpers ----------
+  function shade(hex, amt) {
+    const n = parseInt(hex.slice(1), 16);
+    const t = amt < 0 ? 0 : 255, p = Math.abs(amt);
+    const ch = v => Math.round((t - v) * p + v);
+    const r = ch(n >> 16), g = ch((n >> 8) & 255), b = ch(n & 255);
+    return '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+  }
+  const lum = hex => { const n = parseInt(hex.slice(1), 16); return (0.299 * (n >> 16) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255)) / 255; };
+
+  // ---------- device art ----------
+  const APPLE = 'M10 6C8 4.5 4 5 4 10c0 4 3 8 5 8 1 0 1.5-.5 3-.5s2 .5 3 .5c2 0 4-3.5 4.5-5.5-2-1-2.5-4-1-5.5-1-1.5-3-2-4.5-1.5S11.5 6.5 10 6zM12 4.5c0-1.5 1.5-3 3-3 0 1.5-1.5 3-3 3z';
+  const apple = (cx, cy, s, fill) => `<path d="${APPLE}" transform="translate(${cx - s} ${cy - s}) scale(${s / 10})" fill="${fill}" opacity=".55"/>`;
+  const wall = id => `<defs><linearGradient id="${id}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#1e3a8a"/><stop offset=".55" stop-color="#7c3aed"/><stop offset="1" stop-color="#f97316"/></linearGradient></defs>`;
+
+  function phone(m, hex, view) {
+    const edge = shade(hex, -0.22);
+    if (view === 'front') {
+      const g = 'w' + (++uid);
+      if (m.se) return `<svg viewBox="0 0 120 240" xmlns="http://www.w3.org/2000/svg">${wall(g)}<rect x="10" y="4" width="100" height="232" rx="18" fill="${edge}"/><rect x="12" y="6" width="96" height="228" rx="16" fill="#111"/><rect x="18" y="40" width="84" height="150" rx="2" fill="url(#${g})"/><rect x="48" y="22" width="24" height="4" rx="2" fill="#333"/><circle cx="60" cy="212" r="11" fill="none" stroke="#444" stroke-width="2"/></svg>`;
+      const hole = m.family === 'Android' ? '<circle cx="60" cy="20" r="4" fill="#000"/>' : '<rect x="44" y="15" width="32" height="10" rx="5" fill="#000"/>';
+      return `<svg viewBox="0 0 120 240" xmlns="http://www.w3.org/2000/svg">${wall(g)}<rect x="10" y="4" width="100" height="232" rx="20" fill="${edge}"/><rect x="12" y="6" width="96" height="228" rx="18" fill="#0b0b0c"/><rect x="16" y="10" width="88" height="220" rx="15" fill="url(#${g})"/>${hole}<text x="60" y="64" text-anchor="middle" font-size="18" font-family="Arial" fill="#fff" opacity=".9">10:09</text></svg>`;
+    }
+    const bump = shade(hex, lum(hex) > 0.6 ? -0.08 : 0.1);
+    let cam;
+    if (m.pixel) cam = `<rect x="12" y="44" width="96" height="22" rx="6" fill="#1d1d1f"/><circle cx="40" cy="55" r="6" fill="#0c0c0e" stroke="#555"/><circle cx="58" cy="55" r="6" fill="#0c0c0e" stroke="#555"/><circle cx="80" cy="55" r="2.5" fill="#f5f5f5"/>`;
+    else if (m.family === 'Android') cam = [26, 46, 66].map(y => `<circle cx="30" cy="${y}" r="7.5" fill="#111" stroke="${edge}" stroke-width="2"/>`).join('') + `<circle cx="50" cy="30" r="5" fill="#111" stroke="${edge}"/><circle cx="50" cy="46" r="2.5" fill="#eee"/>`;
+    else if (m.se) cam = `<circle cx="28" cy="26" r="7" fill="#111" stroke="${edge}" stroke-width="2"/><circle cx="28" cy="41" r="2.5" fill="#eee"/>`;
+    else if (m.pro) cam = `<rect x="20" y="14" width="50" height="50" rx="14" fill="${bump}" stroke="${edge}"/><circle cx="33" cy="27" r="9" fill="#141416" stroke="#4a4a4f" stroke-width="2"/><circle cx="33" cy="51" r="9" fill="#141416" stroke="#4a4a4f" stroke-width="2"/><circle cx="56" cy="39" r="9" fill="#141416" stroke="#4a4a4f" stroke-width="2"/><circle cx="57" cy="22" r="3" fill="#f3f3f3"/><circle cx="57" cy="56" r="3" fill="#2a2a2a"/>`;
+    else cam = `<rect x="20" y="14" width="40" height="50" rx="13" fill="${bump}" stroke="${edge}"/><circle cx="32" cy="27" r="8.5" fill="#141416" stroke="#4a4a4f" stroke-width="2"/><circle cx="48" cy="51" r="8.5" fill="#141416" stroke="#4a4a4f" stroke-width="2"/><circle cx="50" cy="26" r="2.8" fill="#f3f3f3"/>`;
+    const logo = m.family === 'iPhone' ? apple(60, 122, 9, edge) : m.family === 'Android' && !m.pixel ? `<text x="60" y="200" text-anchor="middle" font-size="8" font-family="Arial" fill="${edge}" opacity=".7">SAMSUNG</text>` : '';
+    return `<svg viewBox="0 0 120 240" xmlns="http://www.w3.org/2000/svg"><rect x="10" y="4" width="100" height="232" rx="20" fill="${edge}"/><rect x="12" y="6" width="96" height="228" rx="18" fill="${hex}"/>${cam}${logo}</svg>`;
+  }
+
+  function tablet(m, hex, view) {
+    const edge = shade(hex, -0.22);
+    if (view === 'front') {
+      const g = 'w' + (++uid);
+      return `<svg viewBox="0 0 170 240" xmlns="http://www.w3.org/2000/svg">${wall(g)}<rect x="6" y="4" width="158" height="232" rx="16" fill="${edge}"/><rect x="8" y="6" width="154" height="228" rx="14" fill="#0b0b0c"/><rect x="16" y="14" width="138" height="212" rx="8" fill="url(#${g})"/></svg>`;
+    }
+    return `<svg viewBox="0 0 170 240" xmlns="http://www.w3.org/2000/svg"><rect x="6" y="4" width="158" height="232" rx="16" fill="${edge}"/><rect x="8" y="6" width="154" height="228" rx="14" fill="${hex}"/><rect x="18" y="16" width="20" height="20" rx="6" fill="${shade(hex, -0.1)}"/><circle cx="28" cy="26" r="5" fill="#141416"/>${apple(85, 120, 11, edge)}</svg>`;
+  }
+
+  function laptop(m, hex, view) {
+    const edge = shade(hex, -0.22);
+    if (view === 'front') {
+      const g = 'w' + (++uid);
+      return `<svg viewBox="0 0 240 170" xmlns="http://www.w3.org/2000/svg">${wall(g)}<rect x="30" y="10" width="180" height="120" rx="8" fill="#0b0b0c" stroke="${edge}" stroke-width="2"/><rect x="38" y="18" width="164" height="104" rx="2" fill="url(#${g})"/><path d="M14 132h212l-10 16H24z" fill="${hex}" stroke="${edge}"/><rect x="104" y="132" width="32" height="4" rx="2" fill="${edge}"/></svg>`;
+    }
+    return `<svg viewBox="0 0 240 170" xmlns="http://www.w3.org/2000/svg"><rect x="20" y="16" width="200" height="138" rx="10" fill="${edge}"/><rect x="22" y="18" width="196" height="134" rx="9" fill="${hex}"/>${apple(120, 85, 12, edge)}</svg>`;
+  }
+
+  function watch(m, hex, view) {
+    const band = shade(hex, -0.05);
+    const face = view === 'front'
+      ? `<rect x="33" y="55" width="54" height="90" rx="14" fill="#000"/><text x="60" y="96" text-anchor="middle" font-size="17" font-family="Arial" fill="#fff">10:09</text><text x="60" y="114" text-anchor="middle" font-size="8" font-family="Arial" fill="#f97316">MON 2</text>`
+      : `<circle cx="60" cy="100" r="22" fill="#2a2a2c" stroke="#555"/><circle cx="60" cy="100" r="8" fill="#111"/>`;
+    return `<svg viewBox="0 0 120 200" xmlns="http://www.w3.org/2000/svg"><rect x="36" y="0" width="48" height="58" rx="8" fill="${band}"/><rect x="36" y="142" width="48" height="58" rx="8" fill="${band}"/><rect x="24" y="44" width="72" height="112" rx="22" fill="${view === 'front' ? '#1c1c1e' : shade(hex, -0.15)}" stroke="${hex}" stroke-width="5"/>${face}<rect x="97" y="80" width="6" height="18" rx="3" fill="${hex}"/></svg>`;
+  }
+
+  // view: back | front | tilt | detail
+  function deviceSVG(modelId, hex, view) {
+    const m = typeof modelId === 'string' ? PM.modelOf(modelId) : modelId;
+    const v = view === 'tilt' || view === 'detail' ? 'back' : view || 'back';
+    const fn = m.family === 'iPad' ? tablet : m.family === 'Mac' ? laptop : m.family === 'Watch' ? watch : phone;
+    let svg = fn(m, hex || m.colors[0][1], v);
+    if (view === 'tilt') svg = svg.replace(/<svg ([^>]*)>/, '<svg $1><g transform="rotate(-14 60 120) translate(0 4)">').replace(/<\/svg>$/, '</g></svg>');
+    if (view === 'detail') svg = svg.replace(/viewBox="0 0 (\d+) (\d+)"/, (s, w, h) => `viewBox="0 0 ${Math.round(w * 0.62)} ${Math.round(h * 0.38)}"`);
+    return svg;
+  }
+  const PHOTO_VIEWS = ['back', 'front', 'tilt', 'detail', 'back', 'front'];
+  const photoSVG = (u, i) => deviceSVG(u.model, u.hex, PHOTO_VIEWS[i % PHOTO_VIEWS.length]);
+
+  // ---------- QR and barcode art (look-alikes, not scannable) ----------
+  function hash(s) { let h = 2166136261; for (const c of String(s)) { h ^= c.charCodeAt(0); h = Math.imul(h, 16777619); } return h >>> 0; }
+  function qrSVG(text) {
+    const n = 25; let h = hash(text) || 1; let cells = '';
+    const inFinder = (x, y) => (x < 8 && y < 8) || (x > n - 9 && y < 8) || (x < 8 && y > n - 9);
+    for (let y = 0; y < n; y++) for (let x = 0; x < n; x++) {
+      if (inFinder(x, y)) continue;
+      h = (Math.imul(h, 1103515245) + 12345) >>> 0;
+      if ((h >>> 16) % 2 === 0) cells += `M${x} ${y}h1v1h-1z`;
+    }
+    const finder = (x, y) => `<rect x="${x}" y="${y}" width="7" height="7" fill="#000"/><rect x="${x + 1}" y="${y + 1}" width="5" height="5" fill="#fff"/><rect x="${x + 2}" y="${y + 2}" width="3" height="3" fill="#000"/>`;
+    return `<svg viewBox="-2 -2 ${n + 4} ${n + 4}" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges"><rect x="-2" y="-2" width="${n + 4}" height="${n + 4}" fill="#fff"/><path d="${cells}" fill="#000"/>${finder(0, 0)}${finder(n - 7, 0)}${finder(0, n - 7)}</svg>`;
+  }
+  function barcodeSVG(text) {
+    let bits = '11010010000';
+    for (const c of String(text)) bits += (hash(c + text.length) >>> 3).toString(2).padStart(11, '0').slice(-11) + '0';
+    bits += '1100011101011';
+    let x = 0, d = '';
+    for (const b of bits) { if (b === '1') d += `M${x} 0h1v40h-1z`; x++; }
+    return `<svg viewBox="0 0 ${x} 40" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges"><path d="${d}" fill="#000"/></svg>`;
+  }
+
+  // ---------- toast ----------
+  function toast(msg) {
+    let box = $('.pm-toasts');
+    if (!box) { box = document.createElement('div'); box.className = 'pm-toasts'; document.body.appendChild(box); }
+    const t = document.createElement('div');
+    t.className = 'pm-toast';
+    t.textContent = msg;
+    box.appendChild(t);
+    setTimeout(() => t.remove(), 2800);
+  }
+
+  // ---------- modal ----------
+  function modal({ title, body, foot, width, onClose }) {
+    const ov = document.createElement('div');
+    ov.className = 'pm-overlay';
+    ov.innerHTML = `<div class="pm-modal" style="max-width:${width || 560}px" role="dialog" aria-modal="true"><div class="pm-modal-head"><span>${title || ''}</span><button type="button" data-close aria-label="關閉">×</button></div><div class="pm-modal-body">${body || ''}</div>${foot ? `<div class="pm-modal-foot">${foot}</div>` : ''}</div>`;
+    const close = () => { ov.remove(); document.removeEventListener('keydown', onKey); if (onClose) onClose(); };
+    const onKey = e => { if (e.key === 'Escape') close(); };
+    ov.addEventListener('mousedown', e => { if (e.target === ov) close(); });
+    ov.addEventListener('click', e => { if (e.target.closest('[data-close]')) close(); });
+    document.addEventListener('keydown', onKey);
+    document.body.appendChild(ov);
+    return { el: ov.querySelector('.pm-modal'), close };
+  }
+
+  function printPreview(html, opts) {
+    opts = opts || {};
+    const m = modal({
+      title: opts.title || '列印預覽',
+      width: opts.width || 440,
+      body: `<div class="paper-stage">${html}</div><p style="margin:12px 0 0;color:#71717a;font-size:13px">${opts.hint || '一按即印：經打印代理直接送到收據打印機，唔使揀打印機。'}</p>`,
+      foot: `<button type="button" class="pm-btn" data-close>關閉</button><button type="button" class="pm-btn primary" data-print>列印</button>`,
+    });
+    m.el.querySelector('[data-print]').addEventListener('click', () => { m.close(); toast(opts.sent || '已送到收據打印機（示範）'); });
+    return m;
+  }
+
+  // ---------- printouts ----------
+  const STORE = () => PM.store.get().cms.store;
+  const head = sub => `<div class="c big">手機俠 Phonemen</div><div class="c muted">${esc(STORE().address)}</div><div class="c muted">WhatsApp ${esc(STORE().whatsapp)}</div>${sub ? `<div class="c" style="margin-top:6px;font-weight:700">${sub}</div>` : ''}<div class="rule"></div>`;
+  const row = (a, b) => `<div class="row"><span>${a}</span><span>${b}</span></div>`;
+  const plusMonths = (d, n) => { const t = new Date(d + 'T00:00:00Z'); t.setUTCMonth(t.getUTCMonth() + n); return t.toISOString().slice(0, 10); };
+
+  function receiptSale(d) {
+    const lines = d.lines.map(l => `<div style="margin-top:4px">${esc(l.title)}</div><div class="row muted"><span>${esc(l.code)} · ${esc(l.grade)}${l.battery ? ' · 電池 ' + l.battery + '%' : ''}</span></div><div class="row muted"><span>${l.imei ? (l.imei.length === 15 ? 'IMEI ' : '序號 ') + esc(l.imei) : ''}</span><span>${hkd(l.price)}</span></div>`).join('');
+    const pays = (d.payments || []).map(p => row(esc(p.method), hkd(p.amount))).join('');
+    return `<div class="receipt">${head('發票 / 收據')}${row('單號', esc(d.no))}${row('日期', esc(d.date))}${row('店員', esc(d.staff) + ' · ' + esc(d.channel))}${d.customer ? row('客戶', esc(d.customer.name) + ' ' + maskPhone(d.customer.phone)) : ''}<div class="rule"></div>${lines}<div class="rule"></div>${d.discount ? row('折扣', '-' + hkd(d.discount)) : ''}${pays}<div class="row tot"><span>合共</span><span>${hkd(d.total)}</span></div><div class="rule"></div><div class="small">保養至 ${plusMonths(d.date.slice(0, 10), 3)}（3 個月；人為損壞及入水除外）。請保留此收據。</div><div class="qr">${qrSVG(d.no)}</div><div class="c small">掃描查看保養及裝置檔案</div><div class="c" style="margin-top:6px">多謝惠顧！</div></div>`;
+  }
+
+  function slipBuyback(d) {
+    const fails = (d.faults || []).length ? d.faults.map(PM.checkName).join('、') : '全部合格';
+    return `<div class="receipt">${head('二手機回收單')}${row('單號', esc(d.no))}${row('日期', esc(d.date))}${row('店員', esc(d.staff))}<div class="rule"></div>${row('賣方', esc(d.name))}${row('電話', maskPhone(d.phone))}${d.idno ? row('證件', esc(d.idno)) : ''}<div class="rule"></div><div>${esc(d.title)}</div>${row(d.imei && d.imei.length === 15 ? 'IMEI' : '序號', esc(d.imei))}${row('成色 / 電池', esc(d.grade) + ' / ' + d.battery + '%')}${row('17 點檢查', esc(fails))}<div class="rule"></div>${row('付款方式', esc(d.pay))}<div class="row tot"><span>回收價</span><span>${hkd(d.price)}</span></div><div class="rule"></div><div class="small">本人確認上述裝置為本人合法擁有，並無任何借貸、按揭或盜竊來源，已關閉「尋找」功能及登出帳戶，並同意以上價錢出售予手機俠。</div><div class="small" style="margin-top:8px">賣方簽署</div><div class="sig">${d.signature ? `<img alt="簽署" src="${d.signature}">` : ''}</div><div class="c small" style="margin-top:8px">個人資料只用於交易紀錄，按《個人資料（私隱）條例》處理。</div></div>`;
+  }
+
+  function ticketRepair(d) {
+    return `<div class="receipt">${head('維修單')}${row('單號', esc(d.no))}${row('收機日期', esc(d.date))}${row('客戶', esc(d.name) + ' ' + maskPhone(d.phone))}<div class="rule"></div><div>${esc(d.device)} ${esc(d.color || '')}</div>${row('IMEI / 序號', esc(d.imei || '-'))}<div class="small" style="margin:4px 0">問題：${esc(d.issue)}</div><div class="rule"></div>${row('報價', d.quote ? hkd(d.quote) : '待檢查')}${row('訂金', hkd(d.deposit || 0))}${row('預計取機', esc(d.eta))}<div class="rule"></div><div class="small">取機時請出示此單。維修部分保養 30 日。機主確認已備份資料。</div><div class="qr">${qrSVG(d.no)}</div><div class="c small">掃描查看維修進度</div></div>`;
+  }
+
+  function label(u) {
+    const m = PM.modelOf(u.model);
+    return `<div class="label"><div><div class="l1">${esc(m.name)} ${esc(u.cap)}</div><div class="l2"><span>${esc(u.color)} · ${esc(u.grade)}${u.battery ? ' · 電池 ' + u.battery + '%' : ''}</span></div></div><div class="bc">${barcodeSVG(u.code)}</div><div class="l2"><span class="code">${esc(u.code)}</span><b>${hkd(u.price)}</b></div></div>`;
+  }
+
+  // ---------- signature pad ----------
+  function signaturePad(canvas) {
+    const ctx = canvas.getContext('2d');
+    let drawing = false, empty = true, last = null;
+    const pos = e => { const r = canvas.getBoundingClientRect(); const p = e.touches ? e.touches[0] : e; return [(p.clientX - r.left) * canvas.width / r.width, (p.clientY - r.top) * canvas.height / r.height]; };
+    const start = e => { drawing = true; last = pos(e); e.preventDefault(); };
+    const move = e => { if (!drawing) return; const p = pos(e); ctx.strokeStyle = '#111'; ctx.lineWidth = 2.4; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(last[0], last[1]); ctx.lineTo(p[0], p[1]); ctx.stroke(); last = p; empty = false; e.preventDefault(); };
+    const end = () => { drawing = false; };
+    canvas.addEventListener('mousedown', start); canvas.addEventListener('mousemove', move); window.addEventListener('mouseup', end);
+    canvas.addEventListener('touchstart', start, { passive: false }); canvas.addEventListener('touchmove', move, { passive: false }); canvas.addEventListener('touchend', end);
+    return {
+      clear() { ctx.clearRect(0, 0, canvas.width, canvas.height); empty = true; },
+      isEmpty: () => empty,
+      toDataURL: () => canvas.toDataURL('image/png'),
+      demo() { this.clear(); ctx.strokeStyle = '#111'; ctx.lineWidth = 2.4; ctx.lineCap = 'round'; ctx.beginPath(); const w = canvas.width, h = canvas.height; ctx.moveTo(w * .12, h * .62); for (let i = 0; i <= 40; i++) { const x = w * (.12 + i * .018); ctx.lineTo(x, h * (.55 + Math.sin(i * .7) * .18 - i * .002)); } ctx.stroke(); empty = false; },
+    };
+  }
+
+  // Links between the mockups. The single-file bundles (dist/) override these paths.
+  const LINKS = Object.assign({ hub: '../', a: '../a/', b: '../b/', shop: '../shop/' }, window.PM_LINKS || {});
+  const link = (app, hash) => LINKS[app] + (hash || '');
+  const shopURL = hash => link('shop', hash);
+
+  const STATUS = {
+    qc: { label: '待QC', tone: 'amber' },
+    refurb: { label: '翻新中', tone: 'orange' },
+    ready: { label: '可上架', tone: 'sky' },
+    listed: { label: '已上架', tone: 'green' },
+    reserved: { label: '已預留', tone: 'violet' },
+    sold: { label: '已售', tone: 'slate' },
+  };
+
+  window.UI = { esc, $, $$, now, hkd, maskPhone, shade, lum, deviceSVG, photoSVG, qrSVG, barcodeSVG, toast, modal, printPreview, receiptSale, slipBuyback, ticketRepair, label, signaturePad, STATUS, plusMonths, link, shopURL };
+})();
+
+</script>
+<script>
+/* Proposal A — familiar: today's ERP screens rebuilt one-for-one, plus the new modules in the same style. */
+(function () {
+  'use strict';
+  const { store, hkd, modelOf, unitTitle, TODAY } = PM;
+  const { esc, $, $$, toast } = UI;
+  const S = () => store.get();
+  const NEW = '<span class="new">新</span>';
+  const nospace = p => String(p || '').replace(/\s/g, '');
+  const fmtPhone = p => { const d = nospace(p); return /^\d{8}$/.test(d) ? d.slice(0, 4) + ' ' + d.slice(4) : d; };
+  const money = n => Number(n || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const SALES = ['Alan', 'Bonnie', 'Carmen'];
+  const ME = 'USR03';
+
+  // ---------------------------------------------------------------- menu
+  const MENU = [
+    { name: '二手機管理', items: [['收機', '/buyback', 1], ['賣二手機', '/invoice'], ['二手機資料', '/units', 1], ['二手機庫存', '/stock'], ['二手機銷售報表', ''], ['維修記錄', '/refurb'], ['標籤打印', '/labels', 1]] },
+    { name: '維修管理', isNew: 1, items: [['客戶維修單', '/repair', 1], ['維修預約', '/bookings', 1], ['維修報表', '', 1]] },
+    { name: '網店管理', isNew: 1, items: [['網頁內容', '/cms-pages', 1], ['橫幅及推廣', '/cms-banners', 1], ['回收價目表', '/cms-matrix', 1], ['網店訂單', '/web-orders', 1], ['網上回收報價', '/leads', 1]] },
+    { name: '會計管理', items: [['收款傳票', '/receipts'], ['日結報表', '/dayend', 1]] },
+    { name: '代碼設定', items: [['客戶', ''], ['平台', ''], ['業務員', '']] },
+  ];
+  function renderMenu() {
+    const bar = $('#menubar');
+    bar.innerHTML = MENU.map((g, i) => `<div class="mi" data-i="${i}">${g.name}${g.isNew ? NEW : ''}<div class="dd">${g.items.map(([label, path, isNew]) => `<a href="#${path}" data-path="${path}">${label}${isNew ? NEW : ''}</a>`).join('')}</div></div>`).join('');
+    const closeAll = () => $$('.mi.open', bar).forEach(m => m.classList.remove('open'));
+    bar.addEventListener('click', e => {
+      const a = e.target.closest('a');
+      if (a) { e.preventDefault(); closeAll(); if (a.dataset.path) go(a.dataset.path); else toast('此畫面未包括在示範內'); return; }
+      const mi = e.target.closest('.mi');
+      if (!mi) return;
+      const open = mi.classList.contains('open');
+      closeAll();
+      if (!open) mi.classList.add('open');
+    });
+    bar.addEventListener('mouseover', e => { const mi = e.target.closest('.mi'); if (mi && $('.mi.open', bar) && !mi.classList.contains('open')) { closeAll(); mi.classList.add('open'); } });
+    document.addEventListener('click', e => { if (!e.target.closest('.menubar')) closeAll(); });
+  }
+
+  // ---------------------------------------------------------------- generic list screen
+  const dateFilters = (label, from) => `<label>${label} 從</label><input value="${from || '2026-10-02'}"><span>至</span><input value="${TODAY}"><span><button type="button" class="jb go" data-act="go">GO</button></span>`;
+  const lkRow = (label, value) => `<label>${label}</label><div class="lk"><input class="plain" value="${esc(value || '')}"><button type="button" tabindex="-1">🔍</button></div><span></span><span></span><span></span>`;
+
+  // Each screen renders into a fresh container so old listeners never pile up.
+  function fresh() { const host = $('#screen'); const el = document.createElement('div'); host.replaceChildren(el); return el; }
+
+  function listScreen(cfg) {
+    document.title = cfg.name + '(手機俠有限公司)';
+    const el = fresh();
+    const rows = cfg.rows;
+    const cols = cfg.columns;
+    let sel = null;
+    const btn = b => `<button type="button" class="jb ${b.c || 'w'}" data-act="${b.id}">${b.label}${b.isNew ? NEW : ''}</button>`;
+    el.innerHTML = `
+      <div class="ls-top">
+        <div class="ls-filters">${cfg.filters || dateFilters('日期')}</div>
+        <div class="ls-right"><div class="ls-btns">${(cfg.buttons || []).map(btn).join('')}</div>
+          <div class="counters"><div>總記錄數<b class="n-all">${rows.length}</b></div><div>當前記錄數<b class="n-cur">${rows.length}</b></div></div></div>
+      </div>
+      ${cfg.note ? `<div class="ls-note">${cfg.note}</div>` : ''}
+      <div class="jgrid" style="height:${cfg.height || 'calc(100vh - 236px)'}"><table>
+        <thead><tr>${cols.map(c => `<th class="${c.num ? 'num' : ''}" style="min-width:${c.w || 90}px">${c.t}</th>`).join('')}</tr>
+        <tr class="frow">${cols.map((c, i) => `<th>${c.nofilter ? '' : `<input data-col="${i}" aria-label="篩選${esc(c.t)}">`}</th>`).join('')}</tr></thead>
+        <tbody></tbody><tfoot><tr>${cols.map(c => `<td class="${c.num ? 'num' : ''}"></td>`).join('')}</tr></tfoot>
+      </table></div>
+      <div class="ls-bottom"><div>${(cfg.bottomLeft || []).map(b => btn({ c: 'w', ...b })).join('')}</div>
+        <div>${btn({ id: 'cols', label: '選擇欄位' })}${btn({ id: 'filter', label: '過濾' })}${btn({ id: 'excel', label: '導出Excel' })}${btn({ id: 'listprint', label: '列表打印' })}</div></div>
+      <div class="audit">建立人<b class="a1">-</b>建立時間<b class="a2">-</b>修改人<b class="a3">-</b>修改時間<b class="a4">-</b></div>`;
+    const tbody = $('tbody', el);
+    const val = (c, r) => (typeof c.f === 'function' ? c.f(r) : r[c.f]);
+    const cell = (c, r) => {
+      if (c.html) return c.html(r);
+      const v = val(c, r);
+      return c.num ? (v === '' || v == null ? '' : money(v)) : esc(v == null ? '' : v);
+    };
+    let shown = rows;
+    function draw() {
+      const fs = $$('.frow input', el).map(i => [+i.dataset.col, i.value.trim().toLowerCase()]).filter(x => x[1]);
+      shown = rows.filter(r => fs.every(([i, q]) => String(val(cols[i], r) == null ? '' : val(cols[i], r)).toLowerCase().includes(q)));
+      tbody.innerHTML = shown.length ? shown.map(r => `<tr data-i="${rows.indexOf(r)}" class="${r === sel ? 'sel' : ''}">${cols.map(c => `<td class="${c.num ? 'num' : ''} ${c.cls ? c.cls(r) : ''}">${cell(c, r)}</td>`).join('')}</tr>`).join('') : `<tr class="empty"><td colspan="${cols.length}">No data to display</td></tr>`;
+      $('.n-cur', el).textContent = shown.length;
+      const tds = $$('tfoot td', el);
+      cols.forEach((c, i) => { tds[i].textContent = c.sum ? money(shown.reduce((s, r) => s + (Number(val(c, r)) || 0), 0)) : ''; });
+      if (!cols[0].sum) tds[0].textContent = shown.length;
+    }
+    function select(r) {
+      sel = r;
+      $$('tbody tr', el).forEach(tr => tr.classList.toggle('sel', rows[+tr.dataset.i] === r));
+      const a = cfg.audit ? cfg.audit(r) : [r.staff || ME, (r.date || r.bought || TODAY) + ' 12:00:00', ME, TODAY + ' ' + UI.now().slice(11) + ':00'];
+      ['.a1', '.a2', '.a3', '.a4'].forEach((k, i) => { $(k, el).textContent = a[i] || '-'; });
+    }
+    el.addEventListener('input', e => { if (e.target.closest('.frow')) draw(); });
+    tbody.addEventListener('click', e => { const tr = e.target.closest('tr[data-i]'); if (tr) select(rows[+tr.dataset.i]); });
+    tbody.addEventListener('dblclick', e => { const tr = e.target.closest('tr[data-i]'); if (tr && cfg.onOpen) cfg.onOpen(rows[+tr.dataset.i]); });
+    el.addEventListener('click', e => {
+      const b = e.target.closest('[data-act]');
+      if (!b) return;
+      const id = b.dataset.act;
+      const need = () => { if (!sel) { toast('請先選擇一條記錄'); return false; } return true; };
+      if (cfg.onAction && cfg.onAction(id, sel, api) === true) return;
+      if (id === 'go') { draw(); toast('已重新查詢'); }
+      else if (id === 'add') cfg.onAdd ? cfg.onAdd() : toast('示範未包括');
+      else if (id === 'view') { if (need()) cfg.onOpen ? cfg.onOpen(sel) : toast('示範未包括'); }
+      else if (id === 'print') { if (need()) cfg.onPrint ? cfg.onPrint(sel) : toast('示範未包括'); }
+      else if (id === 'del' || id === 'void') { if (need()) toast('示範：不會刪除或註銷資料'); }
+      else if (id === 'copy') { if (need()) toast('示範：已複製為新單'); }
+      else if (id === 'excel') toast('已匯出 Excel（示範）');
+      else if (id === 'listprint') toast('列表已送到打印機（示範）');
+      else if (id === 'cols') toast('示範：選擇顯示欄位');
+      else if (id === 'filter') { const i = $('.frow input', el); if (i) i.focus(); }
+      else toast('示範未包括');
+    });
+    const api = { redraw: draw, get selected() { return sel; }, select };
+    draw();
+    return api;
+  }
+
+  // ---------------------------------------------------------------- generic entry window (資料錄入)
+  function fieldHTML(f) {
+    const id = f.id ? ` id="${f.id}"` : '';
+    let ctl;
+    if (f.html != null) ctl = f.html;
+    else if (f.type === 'select') ctl = `<select${id}${f.ro ? ' disabled' : ''}>${f.options.map(o => { const [v, t] = Array.isArray(o) ? o : [o, o]; return `<option value="${esc(v)}"${String(v) === String(f.value) ? ' selected' : ''}>${esc(t)}</option>`; }).join('')}</select>`;
+    else if (f.type === 'textarea') ctl = `<textarea${id}${f.ro ? ' readonly' : ''}>${esc(f.value || '')}</textarea>`;
+    else ctl = `<input${id}${f.ro ? ' readonly' : ''} value="${esc(f.value == null ? '' : f.value)}"${f.num ? ' class="num"' : ''}${f.ph ? ` placeholder="${esc(f.ph)}"` : ''}>`;
+    if (f.lookup) ctl = `<div class="lk">${ctl}<button type="button" tabindex="-1" data-btn="lookup-${f.id || ''}">🔍</button></div>`;
+    return `<label class="${f.req ? 'req' : ''}">${f.label}</label><div>${ctl}</div>`;
+  }
+  const formHTML = (left, right) => `<div class="ew-form"><div class="ew-col">${(left || []).map(fieldHTML).join('')}</div><div class="ew-col">${(right || []).map(fieldHTML).join('')}</div></div>`;
+
+  function entryWindow(cfg) {
+    const ov = document.createElement('div');
+    ov.className = 'ew-ov';
+    const btns = (cfg.buttons || []).map(b => `<button type="button" class="jb ${b.c}" data-btn="${b.id}"${b.disabled ? ' disabled' : ''}>${b.label}${b.isNew ? NEW : ''}</button>`).join('');
+    const audit = cfg.audit || [ME, UI.now() + ':00', '', ''];
+    ov.innerHTML = `<div class="ew"${cfg.width ? ` style="width:min(${cfg.width}px,97vw)"` : ''}>
+      <div class="ew-title"><span>${cfg.winTitle || '資料錄入'}</span><button type="button" class="ew-x" data-btn="back" aria-label="關閉">×</button></div>
+      <div class="ew-body">
+        <div class="ew-head"><h1>位置 <span class="pos">01</span> ${cfg.title}</h1><div class="ew-btns">${btns}</div></div>
+        <div class="ew-main">${formHTML(cfg.left, cfg.right)}${cfg.side != null ? `<div class="ew-side">${cfg.side}</div>` : ''}</div>
+        ${cfg.below || ''}
+      </div>
+      ${cfg.footer === false ? '' : `<div class="ew-foot">建立人<b>${esc(audit[0])}</b>建立時間<b>${esc(audit[1])}</b>修改人<b>${esc(audit[2])}</b>修改時間<b>${esc(audit[3])}</b></div>`}
+    </div>`;
+    document.body.appendChild(ov);
+    const api = {
+      el: $('.ew', ov),
+      close() { ov.remove(); if (cfg.onClose) cfg.onClose(); },
+      val: id => { const x = $('#' + id, ov); return x ? x.value : ''; },
+      set: (id, v) => { const x = $('#' + id, ov); if (x) x.value = v; },
+      side: html => { const s = $('.ew-side', ov); if (s) s.innerHTML = html; },
+    };
+    ov.addEventListener('click', e => {
+      const b = e.target.closest('[data-btn]');
+      if (!b || b.disabled) return;
+      if (b.dataset.btn === 'back') { api.close(); return; }
+      if (cfg.onButton) cfg.onButton(b.dataset.btn, api, b);
+    });
+    if (cfg.after) cfg.after(api);
+    return api;
+  }
+
+  function promptWin(title, fields, okLabel, onOk) {
+    entryWindow({ title, width: 720, footer: false, winTitle: title, buttons: [{ id: 'ok', label: okLabel || '確定', c: 'blue' }, { id: 'back', label: '返回', c: 'orange' }], left: fields, right: [], onButton(id, api) { if (id === 'ok' && onOk(api) !== false) api.close(); } });
+  }
+
+  const gridHTML = (cols, rowsHTML, height) => `<div class="jgrid" style="height:${height || 'auto'};min-height:120px"><table><thead><tr>${cols.map(c => `<th class="${c.num ? 'num' : ''}" style="min-width:${c.w || 80}px">${c.t}</th>`).join('')}</tr></thead><tbody>${rowsHTML}</tbody></table></div>`;
+  const checklistHTML = (state, ro) => `<div class="chklist">${PM.CHECKS.map(c => `<label>${c.name}<input type="checkbox" data-chk="${c.id}"${state[c.id] ? ' checked' : ''}${ro ? ' disabled' : ''}></label>`).join('')}</div>`;
+  const readChecks = api => $$('[data-chk]', api.el).filter(i => i.checked).map(i => i.dataset.chk);
+
+  // ---------------------------------------------------------------- listing rule (Proposal A)
+  function webState(u) {
+    if (u.status === 'listed') return '已上架';
+    if (u.status === 'reserved') return '已預留';
+    if (u.status === 'refurb') return '維修中';
+    if (u.status === 'qc') return '待檢查';
+    if (u.status === 'sold') return '已售';
+    return !u.photos ? '待影相' : u.hold ? '暫停上架' : '待上架';
+  }
+  // A unit with photos and a price lists itself automatically unless staff untick 上架.
+  function syncListing(u) {
+    if (!['ready', 'listed'].includes(u.status)) return;
+    const before = u.status;
+    u.status = u.photos > 0 && u.price > 0 && !u.hold ? 'listed' : 'ready';
+    if (before !== u.status) u.events.push({ d: TODAY, type: u.status === 'listed' ? '上架' : '落架', note: u.status === 'listed' ? `網店自動上架，售價 ${hkd(u.price)}` : '暫停上架', by: ME });
+  }
+  const shopLink = u => UI.shopURL(`#/p/${modelOf(u.model).slug}?u=${u.code}`);
+
+  // ---------------------------------------------------------------- 賣二手機
+  function saleData(inv) {
+    const pays = S().receipts.filter(r => r.inv === inv.no).map(r => ({ method: r.method, amount: r.amount }));
+    if (inv.received < inv.amount) pays.push({ method: '未收', amount: inv.amount - inv.received });
+    return {
+      no: inv.no, date: inv.date + ' ' + UI.now().slice(11), staff: inv.staff, channel: inv.channel,
+      customer: inv.phone ? { name: inv.name, phone: inv.phone } : null,
+      lines: inv.lines.map(l => { const u = PM.unit(l.code); return { title: l.name, code: l.code, grade: l.grade || (u ? u.grade : ''), battery: u ? u.battery : '', imei: l.imei, price: l.price }; }),
+      payments: pays, total: inv.amount,
+    };
+  }
+  const printInvoice = inv => UI.printPreview(UI.receiptSale(saleData(inv)), { title: '列印預覽 · 發票/收據 80mm' });
+
+  function invoiceList() {
+    listScreen({
+      name: '賣二手機',
+      rows: S().invoices,
+      filters: dateFilters('發票日期') + lkRow('客戶編號') + lkRow('分店', '01'),
+      buttons: [{ id: 'copy', label: '複製', c: 'blue' }, { id: 'add', label: '新增', c: 'green' }, { id: 'view', label: '查看', c: 'orange' }, { id: 'del', label: '刪除', c: 'red' }, { id: 'print', label: '打印', c: 'w' }],
+      columns: [
+        { t: '發票單號', f: 'no', w: 106 }, { t: '發票日期', f: 'date', w: 86 }, { t: '客戶編號', f: r => nospace(r.phone), w: 84 },
+        { t: '客戶名稱', f: 'name', w: 96 }, { t: '平台', f: 'channel', w: 76 }, { t: '業務員', f: 'staff', w: 64 },
+        { t: '貨品內容', f: r => r.lines.map(l => l.code).join(' '), w: 92 }, { t: '貨品名稱', f: r => r.lines.map(l => l.name).join('、'), w: 210 },
+        { t: 'IMEI', f: r => r.lines.map(l => l.imei).join(' '), w: 132 }, { t: '貨幣', f: () => 'HKD', w: 48 },
+        { t: '共金額(HKD)', f: 'amount', num: true, sum: true, w: 96 }, { t: '備註', f: 'note', w: 110 },
+        { t: '已收金額', f: 'received', num: true, sum: true, w: 92, cls: r => (r.received < r.amount ? 'red' : '') },
+      ],
+      bottomLeft: [{ id: 'r1', label: '客戶匯總' }, { id: 'r2', label: '貨品匯總' }, { id: 'r3', label: '發票明細' }],
+      onAction(id) { if (/^r\d$/.test(id)) { toast('示範：開啟匯總報表'); return true; } },
+      onAdd: () => invoiceWindow(),
+      onOpen: r => invoiceWindow(r),
+      onPrint: printInvoice,
+    });
+  }
+
+  const lineFromUnit = u => ({ code: u.code, name: unitTitle(u), imei: u.imei || u.serial, price: u.price, grade: u.grade, cap: u.cap, color: u.color, region: PM.REGIONS[u.region], battery: u.battery });
+  const findUnit = q => { q = String(q || '').trim().toUpperCase(); return q ? S().units.find(u => u.code === q || u.imei === q || u.serial === q) : null; };
+
+  function invoiceWindow(inv, prefill) {
+    const isNew = !inv;
+    const p = prefill || {};
+    const lines = inv ? inv.lines.map(l => { const u = PM.unit(l.code); return u ? lineFromUnit(Object.assign({}, u, { price: l.price })) : { ...l, cap: '', color: '', region: '', battery: '' }; }) : (p.lines || []);
+    const samples = S().units.filter(u => u.status === 'listed').slice(0, 3);
+    const lineCols = [
+      { t: '<span style="color:#e00">貨品編號</span>', w: 92 }, { t: 'IMEI', w: 128 }, { t: '貨品名稱', w: 220 }, { t: '單位', w: 40 }, { t: '數量', w: 44, num: true },
+      { t: '單價', w: 80, num: true }, { t: '折扣(%)', w: 60, num: true }, { t: '折扣後單價', w: 84, num: true }, { t: '貨幣金額', w: 84, num: true },
+      { t: '新舊', w: 50 }, { t: '容量', w: 56 }, { t: '產地', w: 54 }, { t: '電池', w: 48 },
+    ];
+    let selLine = -1;
+    const w = entryWindow({
+      title: '賣二手機',
+      audit: inv ? [inv.staff, inv.date + ' 12:10:48', ME, inv.date + ' 12:10:48'] : null,
+      buttons: [
+        { id: 'print', label: '打印', c: 'blue' }, { id: 'addnew', label: '加單', c: 'w' }, { id: 'edit', label: '修改', c: 'blue', disabled: isNew },
+        { id: 'save', label: '保存', c: isNew ? 'green' : 'dis', disabled: !isNew },
+        { id: 'savepay', label: '保存並收款', c: isNew ? 'navy' : 'dis', disabled: !isNew, isNew: true },
+        { id: 'back', label: '返回', c: 'orange' },
+      ],
+      left: [
+        { label: '訂單單號', lookup: true, id: 'f-so', ro: !isNew },
+        { label: '發票單號', value: inv ? inv.no : 'NEW', ro: true },
+        { label: '客戶編號', req: true, id: 'f-cust', lookup: true, value: inv ? nospace(inv.phone) : nospace(p.phone), ph: '輸入電話號碼', ro: !isNew },
+        { label: '客戶名稱', id: 'f-name', value: inv ? inv.name : p.name || '', ro: !isNew },
+        { label: '平台', req: true, id: 'f-ch', type: 'select', options: PM.CHANNELS, value: inv ? inv.channel : p.channel || '門市', ro: !isNew },
+        { label: '倉庫編號', req: true, value: '001', lookup: true, ro: true },
+        { label: '電話', id: 'f-tel', value: inv ? inv.phone : p.phone || '', ro: !isNew },
+        { label: '備註', id: 'f-note', type: 'textarea', value: inv ? inv.note : p.note || '', ro: !isNew },
+      ],
+      right: [
+        { label: '發票日期', req: true, id: 'f-date', value: inv ? inv.date : TODAY, ro: !isNew },
+        { label: '業務員', id: 'f-staff', type: 'select', options: SALES, value: inv ? inv.staff : 'Bonnie', ro: !isNew },
+        { label: '交貨日期', value: inv ? inv.date : TODAY, ro: !isNew },
+        { label: '應付日期', req: true, value: inv ? inv.date : TODAY, ro: !isNew },
+        { label: '貨幣', req: true, value: 'HKD', lookup: true, ro: true },
+        { label: '匯率', value: '1.0000', num: true, ro: true },
+        { label: '貨品總額', id: 'f-goods', num: true, ro: true },
+        { label: '其他費用', value: '0.00', num: true, ro: !isNew },
+        { label: '共金額(HKD)', id: 'f-total', num: true, ro: true },
+        { label: '已收金額', id: 'f-recv', value: money(inv ? inv.received : 0), num: true, ro: true },
+      ],
+      below: (isNew ? `<div class="scanbar"><label>掃描 IMEI / 貨品編號</label><input id="f-scan" placeholder="用掃描槍掃描，或輸入後按 Enter"><span class="hint">示範：${samples.map(u => `<a data-btn="sample" data-code="${u.code}">${u.code}</a>`).join('')}</span></div>` : '') +
+        `<div class="ew-tools"><button type="button" data-btn="noop">增加十行</button><button type="button" data-btn="delline">刪除一行</button><button type="button" data-btn="noop">插入一行</button><button type="button" data-btn="noop">複製上一行</button><button type="button" data-btn="noop">編輯</button><button type="button" data-btn="noop">序列號</button></div>` +
+        gridHTML(lineCols, '', '210px'),
+      after(api) {
+        drawLines(api);
+        const scan = $('#f-scan', api.el);
+        if (scan) {
+          scan.focus();
+          scan.addEventListener('keydown', e => { if (e.key === 'Enter') { addByCode(api, scan.value); scan.value = ''; } });
+        }
+        const cust = $('#f-cust', api.el);
+        if (cust && isNew) cust.addEventListener('change', () => {
+          const c = S().customers.find(x => nospace(x.phone) === nospace(cust.value));
+          if (c) { api.set('f-name', c.name); api.set('f-tel', c.phone); toast('已帶出客戶資料：' + c.name); }
+        });
+        $('tbody', api.el).addEventListener('click', e => { const tr = e.target.closest('tr[data-l]'); if (!tr) return; selLine = +tr.dataset.l; $$('tbody tr', api.el).forEach(t => t.classList.toggle('sel', t === tr)); });
+      },
+      onButton(id, api, b) {
+        if (id === 'sample') { addByCode(api, b.dataset.code); return; }
+        if (id === 'delline') { if (!isNew) return toast('請先按修改'); if (selLine < 0) return toast('請先選擇一行'); lines.splice(selLine, 1); selLine = -1; drawLines(api); return; }
+        if (id === 'noop') { toast('示範：表格工具'); return; }
+        if (id === 'addnew') { api.close(); invoiceWindow(); return; }
+        if (id === 'edit') { toast('示範：已進入修改模式'); return; }
+        if (id === 'lookup-f-cust') { toast('示範：客戶查詢視窗'); return; }
+        if (id.startsWith('lookup')) { toast('示範：查詢視窗'); return; }
+        if (id === 'print') { if (isNew) toast('請先保存'); else printInvoice(inv); return; }
+        if (id === 'save' || id === 'savepay') {
+          const saved = saveInvoice(api, lines);
+          if (!saved) return;
+          api.close();
+          route();
+          if (id === 'save') { toast('已保存 ' + saved.no); invoiceWindow(saved); }
+          else payWindow(saved, () => printInvoice(saved));
+        }
+      },
+    });
+
+    function addByCode(api, code) {
+      const u = findUnit(code);
+      if (!u) return toast('找不到此貨品編號或 IMEI');
+      if (u.status === 'sold') return toast('此貨品已售出');
+      if (u.status === 'qc' || u.status === 'refurb') return toast('此貨品' + UI.STATUS[u.status].label + '，未可出售');
+      if (lines.some(l => l.code === u.code)) return toast('此貨品已在發票內');
+      if (u.status === 'reserved') { const c = PM.customer(u.reserved.by); toast(`注意：此機已預留給 ${c ? c.name : u.reserved.by}，訂金 ${hkd(u.reserved.deposit)}`); }
+      lines.push(lineFromUnit(u));
+      drawLines(api);
+    }
+    function drawLines(api) {
+      $('tbody', api.el).innerHTML = lines.map((l, i) => `<tr data-l="${i}"><td>${esc(l.code)}</td><td>${esc(l.imei)}</td><td>${esc(l.name)}</td><td>PCS</td><td class="num">1</td><td class="num">${money(l.price)}</td><td class="num">0.00</td><td class="num">${money(l.price)}</td><td class="num">${money(l.price)}</td><td>${esc(l.grade)}</td><td>${esc(l.cap)}</td><td>${esc(l.region)}</td><td>${l.battery ? l.battery + '%' : ''}</td></tr>`).join('') || '<tr class="empty"><td colspan="13" style="height:120px">掃描或輸入 IMEI 加入貨品</td></tr>';
+      const total = lines.reduce((s, l) => s + l.price, 0);
+      api.set('f-goods', money(total));
+      api.set('f-total', money(total));
+    }
+  }
+
+  function saveInvoice(api, lines) {
+    if (!lines.length) { toast('請先加入貨品'); return null; }
+    const phone = fmtPhone(api.val('f-cust'));
+    const name = api.val('f-name') || (phone ? '新客戶' : '散客');
+    if (phone) PM.upsertCustomer(phone, name);
+    const inv = { no: PM.nextNo('inv'), date: api.val('f-date') || TODAY, phone, name, channel: api.val('f-ch'), staff: api.val('f-staff'), lines: lines.map(l => ({ code: l.code, name: l.name, imei: l.imei, price: l.price, grade: l.grade })), amount: lines.reduce((s, l) => s + l.price, 0), received: 0, note: api.val('f-note') };
+    S().invoices.unshift(inv);
+    lines.forEach(l => {
+      const u = PM.unit(l.code);
+      if (!u) return;
+      u.status = 'sold';
+      u.sold = { date: inv.date, to: phone, channel: inv.channel, pay: '', price: l.price, staff: inv.staff, inv: inv.no };
+      u.reserved = null;
+      u.events.push({ d: inv.date, type: '售出', note: `${inv.channel}，發票 ${inv.no}，${hkd(l.price)}`, by: inv.staff });
+    });
+    store.save();
+    return inv;
+  }
+
+  function payWindow(inv, after) {
+    promptWin('收款傳票', [
+      { label: '收款傳票號', value: 'NEW', ro: true },
+      { label: '發票號碼', value: inv.no, ro: true },
+      { label: '客戶編碼', value: nospace(inv.phone) || '散客', ro: true },
+      { label: '銀行編號', req: true, id: 'p-m', type: 'select', options: PM.PAYMENTS },
+      { label: '金額', req: true, id: 'p-amt', value: (inv.amount - inv.received).toFixed(2), num: true },
+      { label: '支票號碼', value: '' },
+    ], '確定收款', api => {
+      const amount = parseFloat(api.val('p-amt')) || 0;
+      if (amount <= 0) { toast('請輸入金額'); return false; }
+      const method = api.val('p-m');
+      S().receipts.unshift({ no: PM.nextNo('rv'), date: inv.date, phone: inv.phone, name: inv.name, method, amount, inv: inv.no });
+      inv.received += amount;
+      inv.lines.forEach(l => { const u = PM.unit(l.code); if (u && u.sold) u.sold.pay = method; });
+      store.save();
+      toast('已建立收款傳票，發票已收 ' + hkd(inv.received));
+      route();
+      if (after) setTimeout(after, 50);
+    });
+  }
+
+  // ---------------------------------------------------------------- 收機 (new)
+  function buybackList() {
+    listScreen({
+      name: '收機',
+      rows: S().slips,
+      filters: dateFilters('收機日期') + lkRow('客戶編號') + lkRow('分店', '01'),
+      buttons: [{ id: 'copy', label: '複製', c: 'blue' }, { id: 'add', label: '新增', c: 'green' }, { id: 'view', label: '查看', c: 'orange' }, { id: 'del', label: '刪除', c: 'red' }, { id: 'print', label: '打印', c: 'w' }],
+      note: '新畫面：收機時即建立貨品資料，打印回收單（附聲明及簽署位）。版面同其他畫面一樣。',
+      columns: [
+        { t: '單號', f: 'no', w: 110 }, { t: '日期', f: 'date', w: 86 }, { t: '客戶編號', f: r => nospace(r.phone), w: 84 }, { t: '客戶名稱', f: 'name', w: 90 },
+        { t: '貨品編號', f: 'code', w: 88 }, { t: '貨品名稱', f: r => { const u = PM.unit(r.code); return u ? unitTitle(u) : ''; }, w: 210 },
+        { t: 'IMEI/序號', f: r => { const u = PM.unit(r.code); return u ? u.imei || u.serial : ''; }, w: 130 },
+        { t: '新舊', f: r => { const u = PM.unit(r.code); return u ? u.grade : ''; }, w: 50 },
+        { t: '電池', f: r => { const u = PM.unit(r.code); return u ? u.battery + '%' : ''; }, w: 48 },
+        { t: '收購價', f: 'price', num: true, sum: true, w: 86 }, { t: '付款方式', f: 'pay', w: 70 }, { t: '經手人', f: 'staff', w: 64 },
+      ],
+      onAdd: () => buybackWindow(),
+      onOpen: r => buybackWindow(r),
+      onPrint: r => printSlip(r),
+    });
+  }
+
+  function printSlip(slip, signature) {
+    const u = PM.unit(slip.code);
+    UI.printPreview(UI.slipBuyback({ no: slip.no, date: slip.date + ' ' + UI.now().slice(11), staff: slip.staff, name: slip.name, phone: slip.phone, idno: slip.idno, title: unitTitle(u), imei: u.imei || u.serial, grade: u.grade, battery: u.battery, faults: u.faults.length ? u.faults : Object.keys(u.checks).filter(k => u.checks[k] !== 'ok'), pay: slip.pay, price: slip.price, signature }), { title: '列印預覽 · 回收單 80mm' });
+  }
+
+  function buybackWindow(slip, prefill) {
+    const isNew = !slip;
+    const u = slip ? PM.unit(slip.code) : null;
+    const p = prefill || {};
+    let mid = u ? u.model : p.model || 'ip15p';
+    const m = () => modelOf(mid);
+    const capOpts = () => Object.keys(m().base);
+    const colorOpts = () => m().colors.map(c => c[0]);
+    let priceTouched = false;
+    const checks = {};
+    if (u) Object.keys(u.checks).forEach(k => { if (u.checks[k] !== 'ok') checks[k] = true; });
+    (u ? u.faults : []).forEach(f => { checks[f] = true; });
+    const productLeft = () => [
+      { label: '貨品名稱', req: true, id: 'b-model', type: 'select', options: PM.MODELS.map(x => [x.id, x.name]), value: mid, ro: !isNew },
+      { label: '容量', id: 'b-cap', type: 'select', options: capOpts(), value: u ? u.cap : p.cap || capOpts()[0], ro: !isNew },
+      { label: '顏色', id: 'b-color', type: 'select', options: colorOpts(), value: u ? u.color : colorOpts()[0], ro: !isNew },
+      { label: '產地', id: 'b-region', type: 'select', options: Object.entries(PM.REGIONS), value: u ? u.region : 'HK', ro: !isNew },
+      { label: 'IMEI/序號', req: true, id: 'b-imei', value: u ? u.imei || u.serial : '', html: isNew ? `<div class="lk"><input id="b-imei" placeholder="掃描或輸入"><button type="button" data-btn="scanimei" title="模擬掃描">掃</button></div>` : null, ro: !isNew },
+    ];
+    const productRight = () => [
+      { label: '新舊', req: true, id: 'b-grade', type: 'select', options: PM.GRADES.map(g => [g.id, g.id + ' ' + g.name]), value: u ? u.grade : p.grade || 'A', ro: !isNew },
+      { label: '電池 (%)', id: 'b-batt', value: u ? u.battery : 88, num: true, ro: !isNew },
+      { label: '版本', id: 'b-os', value: u ? u.os : m().os, ro: !isNew },
+      { label: '參考收購價', id: 'b-ref', num: true, ro: true },
+      { label: '預設售價', id: 'b-sell', num: true, value: u ? u.price : '', ro: !isNew },
+    ];
+    const w = entryWindow({
+      title: '收機',
+      audit: slip ? [slip.staff, slip.date + ' 13:05:12', ME, slip.date + ' 13:05:12'] : null,
+      buttons: [{ id: 'print', label: '打印', c: 'blue' }, { id: 'addnew', label: '加單', c: 'w' }, { id: 'edit', label: '修改', c: 'blue', disabled: isNew }, { id: 'save', label: '保存', c: isNew ? 'green' : 'dis', disabled: !isNew }, { id: 'back', label: '返回', c: 'orange' }],
+      left: [
+        { label: '單號', value: slip ? slip.no : 'NEW', ro: true },
+        { label: '客戶編號', req: true, id: 'b-phone', lookup: true, value: slip ? nospace(slip.phone) : nospace(p.phone), ph: '輸入電話號碼', ro: !isNew },
+        { label: '客戶名稱', req: true, id: 'b-name', value: slip ? slip.name : p.name || '', ro: !isNew },
+        { label: '證件號碼', id: 'b-id', value: slip ? slip.idno || '' : '', ph: '選填，例如 A123***(*)', ro: !isNew },
+      ],
+      right: [
+        { label: '收機日期', req: true, value: slip ? slip.date : TODAY, ro: true },
+        { label: '付款方式', req: true, id: 'b-pay', type: 'select', options: ['現金', '轉數快'], value: slip ? slip.pay : '現金', ro: !isNew },
+        { label: '經手人', id: 'b-staff', type: 'select', options: SALES, value: slip ? slip.staff : 'Bonnie', ro: !isNew },
+        { label: '收購價', req: true, id: 'b-price', value: slip ? slip.price : '', num: true, ro: !isNew },
+      ],
+      side: `<div class="ew-sec" style="margin-top:0"><h3>17 點檢查（剔選 = 有問題）</h3>${checklistHTML(checks, !isNew)}<div class="mini-note">有剔選的項目會自動開維修記錄，貨品標記「維修中」。</div></div>`,
+      below: `<div class="ew-sec"><h3>貨品資料</h3><div id="b-product">${formHTML(productLeft(), productRight())}</div></div>`,
+      after(api) { if (isNew) bind(api); recalc(api); },
+      onButton(id, api) {
+        if (id === 'scanimei') { api.set('b-imei', m().cellular === false ? PM.makeSerial() : PM.makeImei()); toast('已讀取 IMEI（示範）'); return; }
+        if (id === 'addnew') { api.close(); buybackWindow(); return; }
+        if (id === 'edit') { toast('示範：已進入修改模式'); return; }
+        if (id.startsWith('lookup')) { toast('示範：客戶查詢視窗'); return; }
+        if (id === 'print') { if (isNew) toast('請先保存'); else printSlip(slip); return; }
+        if (id === 'save') save(api);
+      },
+    });
+    function bind(api) {
+      const box = $('#b-product', api.el);
+      box.addEventListener('change', e => {
+        if (e.target.id === 'b-model') {
+          mid = e.target.value;
+          const keep = { grade: api.val('b-grade'), batt: api.val('b-batt'), region: api.val('b-region'), imei: api.val('b-imei') };
+          box.innerHTML = formHTML(productLeft(), productRight());
+          api.set('b-grade', keep.grade); api.set('b-batt', keep.batt); api.set('b-region', keep.region); api.set('b-imei', keep.imei); api.set('b-os', m().os);
+        }
+        recalc(api);
+      });
+      box.addEventListener('input', e => { if (e.target.id === 'b-batt') recalc(api); });
+      $('.ew-side', api.el).addEventListener('change', () => recalc(api));
+      $('#b-price', api.el).addEventListener('input', () => { priceTouched = true; });
+      $('#b-phone', api.el).addEventListener('change', e => { const c = S().customers.find(x => nospace(x.phone) === nospace(e.target.value)); if (c) { api.set('b-name', c.name); toast('已帶出客戶資料：' + c.name); } });
+    }
+    function recalc(api) {
+      const cap = api.val('b-cap'), grade = api.val('b-grade'), batt = +api.val('b-batt') || 0;
+      const q = PM.buyQuote(mid, cap, grade, batt, readChecks(api));
+      api.set('b-ref', money(q.total));
+      if (isNew) {
+        if (!priceTouched) api.set('b-price', q.total);
+        api.set('b-sell', PM.askPrice(m(), cap, grade, batt));
+      }
+    }
+    function save(api) {
+      const phone = fmtPhone(api.val('b-phone'));
+      const name = api.val('b-name');
+      const imei = api.val('b-imei').trim();
+      const price = parseFloat(api.val('b-price')) || 0;
+      if (!phone || !name) return toast('請輸入客戶編號及名稱');
+      if (!imei) return toast('請掃描或輸入 IMEI / 序號');
+      if (!price) return toast('請輸入收購價');
+      const faults = readChecks(api);
+      const mm = m();
+      const color = api.val('b-color');
+      const sell = parseFloat(api.val('b-sell')) || PM.askPrice(mm, api.val('b-cap'), api.val('b-grade'), +api.val('b-batt'));
+      const code = PM.nextNo('unit');
+      const slipNo = PM.nextNo('slip');
+      const staff = api.val('b-staff');
+      PM.upsertCustomer(phone, name);
+      const unit = {
+        code, model: mid, cap: api.val('b-cap'), color, hex: (mm.colors.find(c => c[0] === color) || mm.colors[0])[1], grade: api.val('b-grade'), battery: +api.val('b-batt') || 0,
+        region: api.val('b-region'), os: api.val('b-os'), imei: mm.cellular === false ? '' : imei, serial: mm.cellular === false ? imei : '',
+        cost: price, refurb: 0, price: sell, floor: PM.r10(sell * 0.93), status: faults.length ? 'refurb' : 'ready', photos: 0, bought: TODAY, slip: slipNo,
+        seller: phone, staff, faults, tech: faults.length ? 'Dicky' : '', place: faults.length ? '店內' : '', fixFrom: faults.length ? TODAY : '',
+        reserved: null, sold: null, checks: {}, events: [], hold: false,
+      };
+      PM.CHECKS.forEach(c => { unit.checks[c.id] = faults.includes(c.id) ? 'fault' : 'ok'; });
+      unit.events.push({ d: TODAY, type: '回收', note: `回收單 ${slipNo}，收購價 ${hkd(price)}`, by: staff });
+      unit.events.push({ d: TODAY, type: 'QC', note: faults.length ? '發現問題：' + faults.map(PM.checkName).join('、') : '17 點檢查全部合格', by: staff });
+      S().units.push(unit);
+      const newSlip = { no: slipNo, date: TODAY, phone, name, idno: api.val('b-id'), code, price, pay: api.val('b-pay'), staff };
+      S().slips.unshift(newSlip);
+      if (faults.length) S().jobs.unshift({ no: PM.nextNo('fix'), code, date: TODAY, faults, tech: 'Dicky', place: '店內', eta: PM.day(-2), cost: 0, done: '', by: '' });
+      store.save();
+      api.close();
+      route();
+      toast(`已保存 ${slipNo}，貨品編號 ${code}`);
+      printSlip(newSlip);
+    }
+  }
+
+  // ---------------------------------------------------------------- 二手機資料 (new) and 二手機庫存 (as today)
+  function unitList(asToday) {
+    const rows = S().units.filter(u => u.status !== 'sold').sort((a, b) => b.bought.localeCompare(a.bought));
+    if (asToday) {
+      listScreen({
+        name: '二手機庫存',
+        rows,
+        filters: `<label>購買日期 從</label><input value="2020-01-01"><span>至</span><input value="${TODAY}"><span><button type="button" class="jb go" data-act="go">GO(查庫存)</button> <button type="button" class="jb go" data-act="go">GO(查全部)</button></span>`,
+        note: '此畫面保留今日的樣子；新嘅相片、上架功能放在「二手機資料」。',
+        columns: [
+          { t: '購買日期', f: 'bought', w: 86 }, { t: 'IMEI', f: u => u.imei || u.serial, w: 130 }, { t: '貨品名稱', f: u => modelOf(u.model).name, w: 170 }, { t: '品牌', f: u => modelOf(u.model).family === 'Android' ? (u.model === 'pixel8' ? 'Google' : 'Samsung') : 'Apple', w: 64 },
+          { t: '購買價', f: 'cost', num: true, sum: true, w: 84 }, { t: '維修成本', f: 'refurb', num: true, sum: true, w: 78 }, { t: '售價', f: 'price', num: true, sum: true, w: 84 },
+          { t: '新舊', f: 'grade', w: 52 }, { t: '顏色', f: 'color', w: 90 }, { t: '容量', f: 'cap', w: 58 }, { t: '配件', f: () => '', w: 50 }, { t: '產地', f: u => PM.REGIONS[u.region], w: 58 },
+          { t: '網絡', f: () => '', w: 50 }, { t: '電池', f: u => u.battery + '%', w: 50 }, { t: '版本', f: 'os', w: 90 }, { t: '描述', f: u => modelOf(u.model).no, w: 80 }, { t: '現金購貨單號', f: 'slip', w: 110 },
+          { t: '維修中', f: u => (u.status === 'refurb' ? 'Y' : ''), w: 54 },
+        ],
+        bottomLeft: [{ id: 'photos', label: '相片' }],
+        onAction(id, sel) { if (id === 'photos') { if (!sel) toast('請先選擇一條記錄'); else unitWindow(sel); return true; } },
+        onOpen: u => unitWindow(u),
+      });
+      return;
+    }
+    listScreen({
+      name: '二手機資料',
+      rows,
+      filters: `<label>購買日期 從</label><input value="2020-01-01"><span>至</span><input value="${TODAY}"><span><button type="button" class="jb go" data-act="go">GO(查庫存)</button></span>` + lkRow('網店狀態', '全部'),
+      buttons: [{ id: 'add', label: '新增', c: 'green' }, { id: 'view', label: '查看', c: 'orange' }, { id: 'print', label: '打印標籤', c: 'w' }],
+      note: '新畫面：有相片及售價的貨品會自動上架網店；取消剔選「上架」可暫停。',
+      columns: [
+        { t: '購買日期', f: 'bought', w: 86 }, { t: '貨品編號', f: 'code', w: 86 }, { t: 'IMEI/序號', f: u => u.imei || u.serial, w: 128 }, { t: '貨品名稱', f: u => modelOf(u.model).name, w: 170 },
+        { t: '容量', f: 'cap', w: 56 }, { t: '顏色', f: 'color', w: 86 }, { t: '新舊', f: 'grade', w: 50 }, { t: '電池', f: u => u.battery + '%', w: 48 }, { t: '產地', f: u => PM.REGIONS[u.region], w: 56 },
+        { t: '購買價', f: 'cost', num: true, sum: true, w: 82 }, { t: '維修成本', f: 'refurb', num: true, sum: true, w: 76 }, { t: '售價', f: 'price', num: true, sum: true, w: 82 },
+        { t: '相片', f: u => (u.photos ? u.photos + ' 張' : ''), w: 48 },
+        { t: '上架', f: u => (u.status === 'listed' || u.status === 'reserved' ? '✓' : ''), cls: () => 'chk ok', w: 42 },
+        { t: '網店狀態', f: webState, cls: u => (u.status === 'listed' ? 'ok' : u.status === 'refurb' ? 'red' : ''), w: 74 },
+        { t: '現金購貨單號', f: 'slip', w: 108 },
+      ],
+      bottomLeft: [{ id: 'photos', label: '相片' }, { id: 'shop', label: '網店預覽', isNew: true }],
+      onAction(id, sel) {
+        if (id === 'photos' || id === 'shop') {
+          if (!sel) { toast('請先選擇一條記錄'); return true; }
+          if (id === 'photos') unitWindow(sel);
+          else if (sel.status === 'listed' || sel.status === 'reserved') window.open(shopLink(sel), '_blank');
+          else toast('此貨品未上架網店：' + webState(sel));
+          return true;
+        }
+      },
+      onAdd: () => buybackWindow(),
+      onOpen: u => unitWindow(u),
+      onPrint: u => UI.printPreview(UI.label(u), { title: '列印預覽 · 標籤 50×30mm', sent: '已送到標籤打印機（示範）' }),
+    });
+  }
+
+  function unitWindow(u) {
+    const sideHTML = () => `
+      <div class="ew-sec" style="margin-top:0"><h3>網店</h3><div class="webbox">
+        <div>網店狀態：<span class="state ${u.status === 'listed' ? 'on' : 'off'}">${webState(u)}</span></div>
+        <label><input type="checkbox" id="u-list" style="width:auto;height:auto"${u.hold ? '' : ' checked'}${['ready', 'listed'].includes(u.status) ? '' : ' disabled'}> 上架（有相片及售價即自動上架）</label>
+        <div>${u.status === 'listed' || u.status === 'reserved' ? `<a href="${shopLink(u)}" target="_blank" rel="noopener">網店預覽 ↗</a>` : '<span style="color:#888">上架後可預覽網店頁面</span>'}</div>
+      </div></div>
+      <div class="ew-sec"><h3>相片（${u.photos}/6）</h3><div class="photos">${Array.from({ length: 6 }, (_, i) => i < u.photos ? `<div class="photo"><div class="dev">${UI.photoSVG(u, i)}</div><button type="button" class="rm" data-btn="rm" title="刪除相片">✕</button></div>` : `<div class="photo">${i === u.photos ? '<button type="button" class="jb w" data-btn="upload" style="min-width:0">上載相片</button>' : ''}</div>`).join('')}</div>
+      <div class="mini-note">拖放相片到此處亦可上載。相片會顯示在網店產品頁。</div></div>`;
+    entryWindow({
+      title: '二手機資料',
+      audit: [u.staff, u.bought + ' 14:22:05', ME, TODAY + ' ' + UI.now().slice(11) + ':00'],
+      buttons: [{ id: 'label', label: '打印標籤', c: 'blue' }, { id: 'edit', label: '修改', c: 'blue' }, { id: 'save', label: '保存', c: 'green' }, { id: 'back', label: '返回', c: 'orange' }],
+      left: [
+        { label: '貨品編號', value: u.code, ro: true }, { label: 'IMEI/序號', value: u.imei || u.serial, ro: true }, { label: '貨品名稱', value: modelOf(u.model).name, ro: true },
+        { label: '容量', value: u.cap, ro: true }, { label: '顏色', value: u.color, ro: true }, { label: '產地', value: PM.REGIONS[u.region], ro: true },
+        { label: '版本', value: u.os, ro: true }, { label: '描述', value: modelOf(u.model).no + ' / ' + (u.imei ? 'NanoSIM + eSIM' : 'Wi-Fi'), ro: true },
+      ],
+      right: [
+        { label: '購買日期', value: u.bought, ro: true }, { label: '現金購貨單號', value: u.slip, ro: true },
+        { label: '購買價', value: money(u.cost), num: true, ro: true }, { label: '維修成本', value: money(u.refurb), num: true, ro: true },
+        { label: '售價', req: true, id: 'u-price', value: u.price, num: true }, { label: '最低售價', value: money(u.floor), num: true, ro: true },
+        { label: '新舊', id: 'u-grade', type: 'select', options: PM.GRADES.map(g => g.id), value: u.grade }, { label: '電池 (%)', id: 'u-batt', value: u.battery, num: true },
+      ],
+      side: sideHTML(),
+      onButton(id, api) {
+        if (id === 'label') { UI.printPreview(UI.label(u), { title: '列印預覽 · 標籤 50×30mm', sent: '已送到標籤打印機（示範）' }); return; }
+        if (id === 'edit') { toast('可直接修改售價、新舊及電池'); return; }
+        if (id === 'upload') { u.photos = Math.min(6, u.photos + 1); after('已上載相片'); return; }
+        if (id === 'rm') { u.photos = Math.max(0, u.photos - 1); after('已刪除相片'); return; }
+        if (id === 'save') {
+          u.price = parseFloat(api.val('u-price')) || u.price;
+          u.grade = api.val('u-grade');
+          u.battery = +api.val('u-batt') || u.battery;
+          after('已保存 ' + u.code);
+        }
+        function after(msg) { syncListing(u); store.save(); api.side(sideHTML()); bindSide(api); toast(msg + (u.status === 'listed' ? '，網店已更新' : '')); }
+      },
+      after: bindSide,
+      onClose: () => route(),
+    });
+    function bindSide(api) {
+      const cb = $('#u-list', api.el);
+      if (cb) cb.addEventListener('change', () => {
+        if (cb.checked && !u.photos) { cb.checked = false; toast('請先上載相片'); return; }
+        u.hold = !cb.checked;
+        syncListing(u);
+        store.save();
+        api.side(sideHTML());
+        bindSide(api);
+        toast(u.status === 'listed' ? '已上架，網店即時顯示' : '已暫停上架');
+      });
+      const ph = $('.photos', api.el);
+      if (ph) {
+        ph.addEventListener('dragover', e => e.preventDefault());
+        ph.addEventListener('drop', e => { e.preventDefault(); u.photos = Math.min(6, u.photos + Math.max(1, (e.dataTransfer.files || []).length)); syncListing(u); store.save(); api.side(sideHTML()); bindSide(api); toast('已上載相片'); });
+      }
+    }
+  }
+
+  // ---------------------------------------------------------------- 維修記錄 (refurb, as today plus 確定完成)
+  function refurbList() {
+    const ls = listScreen({
+      name: '維修記錄',
+      rows: S().jobs,
+      filters: dateFilters('送修日期', '2026-10-02') + '<label>包註銷</label><input type="checkbox" style="width:auto;height:auto"><span></span><span></span><span></span>',
+      buttons: [{ id: 'add', label: '新增', c: 'green' }, { id: 'view', label: '查看', c: 'orange' }, { id: 'void', label: '註銷', c: 'red' }, { id: 'print', label: '打印', c: 'w' }],
+      columns: [
+        { t: '單號', f: 'no', w: 80 }, { t: '型號', f: r => { const u = PM.unit(r.code); return u ? modelOf(u.model).name : ''; }, w: 180 },
+        { t: '顏色', f: r => { const u = PM.unit(r.code); return u ? u.color : ''; }, w: 86 }, { t: '內存', f: r => { const u = PM.unit(r.code); return u ? u.cap : ''; }, w: 60 },
+        { t: 'IMEI', f: r => { const u = PM.unit(r.code); return u ? u.imei || u.serial : ''; }, w: 128 }, { t: '送修日期', f: 'date', w: 86 },
+        { t: '維修地點', f: 'place', w: 70 }, { t: '維修師傅', f: 'tech', w: 84 }, { t: '預計完成時間', f: 'eta', w: 96 },
+        { t: '價錢', f: 'cost', num: true, sum: true, w: 70 }, { t: '完成日期', f: 'done', w: 86 }, { t: '完成人', f: 'by', w: 60 },
+        { t: '備註', f: r => r.faults.map(PM.checkName).join('、'), w: 140 },
+      ],
+      bottomLeft: [{ id: 'finish', label: '確定完成' }, { id: 'undo', label: '撤銷完成' }],
+      onAdd: () => toast('示範：維修記錄由「收機」或「二手機資料」建立'),
+      onOpen: r => refurbWindow(r),
+      onPrint: () => toast('示範：打印維修單'),
+      onAction(id, sel) {
+        if (id === 'undo') { if (!sel) toast('請先選擇一條記錄'); else toast('示範：已撤銷完成'); return true; }
+        if (id !== 'finish') return;
+        if (!sel) { toast('請先選擇一條記錄'); return true; }
+        if (sel.done) { toast('此維修記錄已完成'); return true; }
+        promptWin('確定完成', [{ label: '單號', value: sel.no, ro: true }, { label: '價錢', req: true, id: 'fx-cost', value: sel.faults.reduce((s, f) => s + PM.faultFix(f), 0), num: true }, { label: '完成人', id: 'fx-by', type: 'select', options: ['Dicky', ME] }], '確定', api => {
+          const cost = parseFloat(api.val('fx-cost')) || 0;
+          sel.done = TODAY; sel.cost = cost; sel.by = api.val('fx-by');
+          const u = PM.unit(sel.code);
+          if (u) {
+            u.refurb += cost;
+            u.faults.forEach(f => { u.checks[f] = 'fixed'; });
+            u.events.push({ d: TODAY, type: '翻新', note: `${u.faults.map(PM.checkName).join('、')}，成本 ${hkd(cost)}`, by: sel.by });
+            u.faults = []; u.tech = ''; u.status = 'ready';
+            syncListing(u);
+          }
+          store.save();
+          route();
+          toast('已完成，維修成本已加入貨品成本');
+        });
+        return true;
+      },
+    });
+    return ls;
+  }
+
+  function refurbWindow(job) {
+    const u = PM.unit(job.code);
+    const st = {};
+    job.faults.forEach(f => { st[f] = true; });
+    entryWindow({
+      title: '維修記錄',
+      buttons: [{ id: 'print', label: '打印', c: 'blue' }, { id: 'edit', label: '修改', c: 'blue' }, { id: 'save', label: '保存', c: 'dis', disabled: true }, { id: 'back', label: '返回', c: 'orange' }],
+      left: [
+        { label: '單號', value: job.no, ro: true, req: true }, { label: '型號', value: u ? modelOf(u.model).name : '', ro: true, req: true }, { label: '顏色', value: u ? u.color : '', ro: true },
+        { label: '內存', value: u ? u.cap : '', ro: true }, { label: 'IMEI', value: u ? u.imei || u.serial : '', ro: true }, { label: '送修日期', value: job.date, ro: true, req: true },
+        { label: '維修地點', value: job.place, ro: true }, { label: '維修師傅', value: job.tech, ro: true }, { label: '預計完成時間', value: job.eta, ro: true },
+        { label: '價錢', value: money(job.cost), num: true, ro: true }, { label: '完成日期', value: job.done, ro: true }, { label: '備註', type: 'textarea', value: job.faults.map(PM.checkName).join('、'), ro: true },
+      ],
+      right: [],
+      side: `<div class="ew-sec" style="margin-top:0"><h3>問題項目</h3>${checklistHTML(st, true)}</div>`,
+      onButton(id) { toast(id === 'print' ? '示範：打印維修單' : '示範：已進入修改模式'); },
+    });
+  }
+
+  // ---------------------------------------------------------------- 標籤打印 (new)
+  function labelList() {
+    const rows = S().units.filter(u => u.status !== 'sold').sort((a, b) => b.bought.localeCompare(a.bought));
+    const ls = listScreen({
+      name: '標籤打印',
+      rows,
+      filters: dateFilters('購買日期'),
+      buttons: [{ id: 'all', label: '全選', c: 'w' }, { id: 'none', label: '全清', c: 'w' }, { id: 'printlabels', label: '打印標籤', c: 'green' }],
+      note: '新畫面：選擇貨品後一次打印標籤（50×30mm，條碼為貨品編號）。',
+      columns: [
+        { t: '選擇', html: u => `<input type="checkbox" data-code="${u.code}">`, cls: () => 'chk', w: 44, nofilter: true },
+        { t: '貨品編號', f: 'code', w: 88 }, { t: '貨品名稱', f: u => unitTitle(u), w: 260 }, { t: '新舊', f: 'grade', w: 50 }, { t: '電池', f: u => u.battery + '%', w: 50 },
+        { t: '售價', f: 'price', num: true, w: 84 }, { t: '網店狀態', f: webState, w: 80 },
+      ],
+      onAction(id) {
+        const boxes = $$('#screen tbody input[type=checkbox]');
+        if (id === 'all' || id === 'none') { boxes.forEach(b => { b.checked = id === 'all'; }); return true; }
+        if (id === 'printlabels') {
+          const codes = boxes.filter(b => b.checked).map(b => b.dataset.code);
+          if (!codes.length) { toast('請先剔選貨品'); return true; }
+          UI.printPreview(codes.map(c => UI.label(PM.unit(c))).join('<div style="height:12px"></div>').replace(/^/, '<div style="display:flex;flex-direction:column;align-items:center">') + '</div>', { title: `列印預覽 · 標籤 × ${codes.length}`, sent: `已送出 ${codes.length} 張標籤（示範）` });
+          return true;
+        }
+      },
+    });
+    return ls;
+  }
+
+  // ---------------------------------------------------------------- 客戶維修單 (new)
+  const rstatus = id => (PM.REPAIR_STATUS.find(s => s[0] === id) || [id, id])[1];
+  function waText(r) {
+    const c = PM.customer(r.phone);
+    const n = c ? c.name : '客戶';
+    const t = {
+      received: `${n}你好，已收到你的 ${r.device}（維修單 ${r.no}），檢查後會再通知你報價。`,
+      diagnosing: `${n}你好，你的 ${r.device} 正在檢查中，有結果會第一時間通知你。`,
+      awaiting: `${n}你好，你的 ${r.device} 維修報價為 ${hkd(r.quote)}（${r.issue}）。回覆「確認」即安排維修。`,
+      repairing: `${n}你好，你的 ${r.device} 正在維修，預計 ${r.eta} 完成。`,
+      ready: `${n}你好，你的 ${r.device} 已維修好，可於${S().cms.store.hours}到門市取機。維修單號 ${r.no}，尚欠 ${hkd(Math.max(0, r.quote - r.deposit))}。`,
+      done: `${n}你好，多謝光臨手機俠！維修部分有 30 日保養。`,
+    };
+    return t[r.status] || '';
+  }
+  function sendWhatsApp(r) {
+    const c = PM.customer(r.phone);
+    const m = UI.modal({ title: 'WhatsApp 通知', body: `<div style="font-size:13px;color:#555;margin-bottom:8px">發送到 ${esc(c ? c.name : '')} ${esc(r.phone)}</div><textarea id="wa-t" style="width:100%;height:110px;font:14px var(--font);padding:10px;border:1px solid #d4d4d8;border-radius:8px">${esc(waText(r))}</textarea><div style="font-size:12px;color:#71717a;margin-top:6px">範本按維修狀態自動選擇，可修改後發送。</div>`, foot: '<button class="pm-btn" data-close>取消</button><button class="pm-btn primary" data-send>發送</button>' });
+    $('[data-send]', m.el).addEventListener('click', () => { m.close(); toast('已發送 WhatsApp（示範）'); });
+  }
+
+  function repairList() {
+    listScreen({
+      name: '客戶維修單',
+      rows: S().repairs,
+      filters: dateFilters('收機日期') + `<label>狀態</label><select class="plain"><option>全部</option>${PM.REPAIR_STATUS.map(s => `<option>${s[1]}</option>`).join('')}</select><span></span><span></span><span></span>`,
+      buttons: [{ id: 'add', label: '新增', c: 'green' }, { id: 'view', label: '查看', c: 'orange' }, { id: 'void', label: '註銷', c: 'red' }, { id: 'print', label: '打印', c: 'w' }],
+      note: '新畫面：客戶送修的手機（唔係店內翻新）。有狀態、報價、訂金同 WhatsApp 通知。',
+      columns: [
+        { t: '維修單號', f: 'no', w: 100 }, { t: '收機日期', f: 'date', w: 86 }, { t: '客戶編號', f: r => nospace(r.phone), w: 84 }, { t: '客戶名稱', f: r => { const c = PM.customer(r.phone); return c ? c.name : ''; }, w: 90 },
+        { t: '機種', f: 'device', w: 140 }, { t: '顏色', f: 'color', w: 70 }, { t: 'IMEI/序號', f: 'imei', w: 128 }, { t: '問題', f: 'issue', w: 200 },
+        { t: '報價', f: 'quote', num: true, sum: true, w: 76 }, { t: '訂金', f: 'deposit', num: true, sum: true, w: 70 },
+        { t: '狀態', f: r => rstatus(r.status), cls: r => (r.status === 'ready' ? 'ok' : r.status === 'awaiting' ? 'red' : ''), w: 80 }, { t: '師傅', f: 'tech', w: 84 }, { t: '預計取機', f: 'eta', w: 86 },
+      ],
+      bottomLeft: [{ id: 'status', label: '更改狀態', isNew: true }, { id: 'wa', label: 'WhatsApp 通知', isNew: true }],
+      onAction(id, sel) {
+        if (id !== 'status' && id !== 'wa') return;
+        if (!sel) { toast('請先選擇一條記錄'); return true; }
+        if (id === 'wa') sendWhatsApp(sel);
+        else promptWin('更改狀態', [{ label: '維修單號', value: sel.no, ro: true }, { label: '狀態', id: 'rs', type: 'select', options: PM.REPAIR_STATUS, value: sel.status }, { label: '報價', id: 'rq', value: sel.quote, num: true }], '確定', api => { sel.status = api.val('rs'); sel.quote = parseFloat(api.val('rq')) || 0; store.save(); route(); toast('已更新狀態：' + rstatus(sel.status)); });
+        return true;
+      },
+      onAdd: () => repairWindow(),
+      onOpen: r => repairWindow(r),
+      onPrint: r => printRepair(r),
+    });
+  }
+  function printRepair(r) {
+    const c = PM.customer(r.phone);
+    UI.printPreview(UI.ticketRepair({ ...r, name: c ? c.name : '' }), { title: '列印預覽 · 維修單 80mm' });
+  }
+  function repairWindow(r, prefill) {
+    const isNew = !r;
+    const p = prefill || {};
+    const st = {};
+    (r ? r.faults : []).forEach(f => { st[f] = true; });
+    entryWindow({
+      title: '客戶維修單',
+      buttons: [{ id: 'print', label: '打印', c: 'blue' }, { id: 'addnew', label: '加單', c: 'w' }, { id: 'save', label: '保存', c: isNew ? 'green' : 'dis', disabled: !isNew }, { id: 'wa', label: 'WhatsApp 通知', c: 'w', isNew: true, disabled: isNew }, { id: 'back', label: '返回', c: 'orange' }],
+      left: [
+        { label: '維修單號', value: r ? r.no : 'NEW', ro: true },
+        { label: '客戶編號', req: true, id: 'r-phone', lookup: true, value: r ? nospace(r.phone) : nospace(p.phone), ph: '輸入電話號碼', ro: !isNew },
+        { label: '客戶名稱', req: true, id: 'r-name', value: r ? (PM.customer(r.phone) || {}).name || '' : p.name || '', ro: !isNew },
+        { label: '機種', req: true, id: 'r-dev', value: r ? r.device : p.device || '', ph: '例如 iPhone 13', ro: !isNew },
+        { label: '顏色', id: 'r-color', value: r ? r.color : '', ro: !isNew },
+        { label: 'IMEI/序號', id: 'r-imei', value: r ? r.imei : '', ro: !isNew },
+        { label: '問題描述', req: true, id: 'r-issue', type: 'textarea', value: r ? r.issue : p.issue || '', ro: !isNew },
+      ],
+      right: [
+        { label: '收機日期', value: r ? r.date : TODAY, ro: true },
+        { label: '報價', id: 'r-quote', value: r ? r.quote : p.price || '', num: true, ro: !isNew },
+        { label: '訂金', id: 'r-dep', value: r ? r.deposit : 0, num: true, ro: !isNew },
+        { label: '收款方式', type: 'select', options: ['現金', '轉數快', '信用卡'], ro: !isNew },
+        { label: '預計取機', id: 'r-eta', value: r ? r.eta : PM.day(-2), ro: !isNew },
+        { label: '師傅', id: 'r-tech', type: 'select', options: ['', ...PM.TECHS], value: r ? r.tech : '', ro: !isNew },
+        { label: '狀態', id: 'r-status', type: 'select', options: PM.REPAIR_STATUS, value: r ? r.status : 'received', ro: !isNew },
+      ],
+      side: `<div class="ew-sec" style="margin-top:0"><h3>檢查項目（剔選 = 有問題）</h3>${checklistHTML(st, !isNew)}</div><div class="ew-sec"><h3>收機時附件</h3><div class="chklist"><label>Sim 卡托<input type="checkbox"${isNew ? '' : ' disabled'}></label><label>手機殼<input type="checkbox"${isNew ? '' : ' disabled'}></label><label>充電器<input type="checkbox"${isNew ? '' : ' disabled'}></label><label>記憶卡<input type="checkbox"${isNew ? '' : ' disabled'}></label></div></div>`,
+      onButton(id, api) {
+        if (id === 'addnew') { api.close(); repairWindow(); return; }
+        if (id === 'wa') { sendWhatsApp(r); return; }
+        if (id.startsWith('lookup')) { toast('示範：客戶查詢視窗'); return; }
+        if (id === 'print') { if (isNew) toast('請先保存'); else printRepair(r); return; }
+        if (id === 'save') {
+          const phone = fmtPhone(api.val('r-phone'));
+          if (!phone || !api.val('r-dev') || !api.val('r-issue')) return toast('請輸入客戶、機種及問題');
+          PM.upsertCustomer(phone, api.val('r-name'));
+          const rec = { no: PM.nextNo('rp'), date: TODAY, phone, device: api.val('r-dev'), color: api.val('r-color'), imei: api.val('r-imei'), issue: api.val('r-issue'), faults: readChecks(api), quote: parseFloat(api.val('r-quote')) || 0, deposit: parseFloat(api.val('r-dep')) || 0, status: api.val('r-status'), tech: api.val('r-tech'), eta: api.val('r-eta') };
+          S().repairs.unshift(rec);
+          store.save();
+          api.close();
+          go('/repair');
+          toast('已建立維修單 ' + rec.no);
+          printRepair(rec);
+        }
+      },
+    });
+  }
+
+  function bookingList() {
+    listScreen({
+      name: '維修預約',
+      rows: S().bookings,
+      filters: dateFilters('預約日期'),
+      buttons: [{ id: 'view', label: '查看', c: 'orange' }, { id: 'void', label: '註銷', c: 'red' }],
+      note: '新畫面：網店「維修預約」提交的預約會出現在這裡。',
+      columns: [{ t: '編號', f: 'id', w: 70 }, { t: '日期', f: 'date', w: 86 }, { t: '時間', f: 'slot', w: 60 }, { t: '姓名', f: 'name', w: 90 }, { t: '電話', f: 'phone', w: 90 }, { t: '機種', f: 'device', w: 130 }, { t: '問題', f: 'issue', w: 150 }, { t: '價錢', f: 'price', num: true, w: 76 }, { t: '狀態', f: 'status', w: 80 }],
+      bottomLeft: [{ id: 'convert', label: '轉為維修單', isNew: true }],
+      onOpen: () => toast('雙擊後可轉為維修單'),
+      onAction(id, sel) {
+        if (id !== 'convert') return;
+        if (!sel) { toast('請先選擇一條記錄'); return true; }
+        sel.status = '已到店';
+        store.save();
+        repairWindow(null, { phone: sel.phone, name: sel.name, device: sel.device, issue: sel.issue, price: sel.price });
+        return true;
+      },
+    });
+  }
+
+  // ---------------------------------------------------------------- 網店管理 (new)
+  function cmsPages() {
+    listScreen({
+      name: '網頁內容',
+      rows: S().cms.pages,
+      filters: lkRow('標題'),
+      buttons: [{ id: 'add', label: '新增', c: 'green' }, { id: 'view', label: '查看', c: 'orange' }, { id: 'del', label: '刪除', c: 'red' }],
+      note: '新畫面：網店的內容頁。保存後網店即時更新。',
+      columns: [{ t: '網址', f: r => '/page/' + r.slug, w: 150 }, { t: '標題', f: 'title', w: 180 }, { t: '狀態', f: 'status', cls: r => (r.status === '草稿' ? 'red' : 'ok'), w: 70 }, { t: '最後更新', f: 'updated', w: 90 }, { t: '內容', f: 'body', w: 420 }],
+      onAdd: () => pageWindow({ slug: 'new-page', title: '', status: '草稿', updated: TODAY, body: '' }, true),
+      onOpen: r => pageWindow(r),
+    });
+  }
+  function pageWindow(pg, isNew) {
+    entryWindow({
+      title: '網頁內容',
+      buttons: [{ id: 'preview', label: '預覽', c: 'w' }, { id: 'save', label: '保存', c: 'green' }, { id: 'back', label: '返回', c: 'orange' }],
+      left: [{ label: '標題', req: true, id: 'pg-title', value: pg.title }, { label: '網址', id: 'pg-slug', value: pg.slug }, { label: '狀態', id: 'pg-status', type: 'select', options: ['已發佈', '草稿'], value: pg.status }],
+      right: [{ label: 'SEO 標題', value: pg.title + '｜手機俠 Phonemen' }, { label: 'SEO 描述', type: 'textarea', value: pg.body.slice(0, 70) }, { label: '最後更新', value: pg.updated, ro: true }],
+      below: `<div class="ew-sec"><h3>內容</h3><div class="rte-tools"><button type="button" data-btn="cmd" data-cmd="bold"><b>B</b></button><button type="button" data-btn="cmd" data-cmd="italic"><i>I</i></button><button type="button" data-btn="cmd" data-cmd="underline"><u>U</u></button><button type="button" data-btn="cmd" data-cmd="insertUnorderedList">• 列表</button><button type="button" data-btn="noop">連結</button><button type="button" data-btn="noop">插入圖片</button></div><div class="rte" id="pg-body" contenteditable="true">${esc(pg.body)}</div></div>`,
+      onButton(id, api, b) {
+        if (id === 'cmd') { document.execCommand(b.dataset.cmd); return; }
+        if (id === 'noop') { toast('示範：插入連結或圖片'); return; }
+        if (id === 'preview') { window.open(UI.shopURL('#/page/' + pg.slug), '_blank'); return; }
+        if (id === 'save') {
+          pg.title = api.val('pg-title') || pg.title; pg.slug = api.val('pg-slug') || pg.slug; pg.status = api.val('pg-status');
+          pg.body = $('#pg-body', api.el).innerText.trim(); pg.updated = TODAY;
+          if (isNew) S().cms.pages.push(pg);
+          store.save(); api.close(); route(); toast('已保存，網店已更新');
+        }
+      },
+    });
+  }
+
+  function cmsBanners() {
+    const cms = S().cms;
+    const rows = [{ id: 'hero', title: cms.hero.title, from: '-', to: '-', on: true, hero: true }].concat(cms.banners);
+    listScreen({
+      name: '橫幅及推廣',
+      rows,
+      filters: lkRow('標題'),
+      buttons: [{ id: 'add', label: '新增', c: 'green' }, { id: 'view', label: '查看', c: 'orange' }, { id: 'del', label: '刪除', c: 'red' }],
+      note: '新畫面：第一行是首頁主橫額，其他是推廣橫幅。',
+      columns: [{ t: '編號', f: 'id', w: 60 }, { t: '標題', f: 'title', w: 260 }, { t: '開始', f: 'from', w: 90 }, { t: '結束', f: 'to', w: 90 }, { t: '顯示', f: r => (r.on ? '✓' : ''), cls: () => 'chk ok', w: 50 }],
+      onAdd: () => toast('示範：新增橫幅'),
+      onOpen(r) {
+        if (r.hero) {
+          entryWindow({ title: '首頁主橫額', buttons: [{ id: 'preview', label: '預覽', c: 'w' }, { id: 'save', label: '保存', c: 'green' }, { id: 'back', label: '返回', c: 'orange' }],
+            left: [{ label: '小標題', id: 'h-k', value: cms.hero.kicker }, { label: '標題', req: true, id: 'h-t', value: cms.hero.title }, { label: '內文', id: 'h-s', type: 'textarea', value: cms.hero.sub }],
+            right: [{ label: '按鈕一', id: 'h-c1', value: cms.hero.cta1 }, { label: '按鈕二', id: 'h-c2', value: cms.hero.cta2 }, { label: '背景圖', value: 'hero-2026-11.jpg', lookup: true }],
+            onButton(id, api) {
+              if (id === 'preview') { window.open(UI.shopURL(), '_blank'); return; }
+              if (id === 'save') { Object.assign(cms.hero, { kicker: api.val('h-k'), title: api.val('h-t'), sub: api.val('h-s'), cta1: api.val('h-c1'), cta2: api.val('h-c2') }); store.save(); api.close(); route(); toast('已保存，網店首頁已更新'); }
+              if (id.startsWith('lookup')) toast('示範：選擇圖片');
+            } });
+          return;
+        }
+        entryWindow({ title: '推廣橫幅', buttons: [{ id: 'save', label: '保存', c: 'green' }, { id: 'back', label: '返回', c: 'orange' }],
+          left: [{ label: '標題', req: true, id: 'bn-t', value: r.title }, { label: '開始', id: 'bn-f', value: r.from }, { label: '結束', id: 'bn-to', value: r.to }],
+          right: [{ label: '顯示', id: 'bn-on', type: 'select', options: [['1', '是'], ['0', '否']], value: r.on ? '1' : '0' }, { label: '連結', value: '/c/iphone' }, { label: '圖片', value: r.id + '.jpg', lookup: true }],
+          onButton(id, api) { if (id === 'save') { r.title = api.val('bn-t'); r.from = api.val('bn-f'); r.to = api.val('bn-to'); r.on = api.val('bn-on') === '1'; store.save(); api.close(); route(); toast('已保存，網店已更新'); } else if (id.startsWith('lookup')) toast('示範：選擇圖片'); } });
+      },
+    });
+  }
+
+  function cmsMatrix() {
+    document.title = '回收價目表(手機俠有限公司)';
+    const rows = [];
+    PM.MODELS.forEach(m => Object.keys(m.base).forEach(cap => rows.push({ m, cap })));
+    const el = fresh();
+    el.innerHTML = `<div class="ls-top"><div class="ls-filters"><label>系列</label><select class="plain"><option>全部</option>${PM.FAMILIES.map(f => `<option>${f.name}</option>`).join('')}</select><span></span><span></span><span></span></div>
+      <div class="ls-right"><div class="ls-btns"><button type="button" class="jb green" data-act="save">保存並同步網店</button><button type="button" class="jb w" data-act="preview">網店預覽</button></div><div class="counters"><div>總記錄數<b>${rows.length}</b></div><div>當前記錄數<b>${rows.length}</b></div></div></div></div>
+      <div class="ls-note">新畫面：輸入 A 級回收價，其他成色按比例計算。同一份價目表用於收機參考價及網店「即時回收報價」。</div>
+      <div class="jgrid" style="height:calc(100vh - 220px)"><table><thead><tr><th style="min-width:220px">型號</th><th style="min-width:70px">容量</th><th class="num" style="min-width:90px">A★★★</th><th class="num" style="min-width:90px">A★</th><th class="num" style="min-width:110px">A（輸入）</th><th class="num" style="min-width:90px">B</th><th class="num" style="min-width:90px">C</th><th class="num" style="min-width:100px">網店售價(A)</th></tr></thead>
+      <tbody>${rows.map(({ m, cap }) => { const a = PM.buyBase(m.id, cap); return `<tr><td>${esc(m.name)}</td><td>${cap}</td><td class="num">${money(PM.r10(a * PM.BUY_MULT['A★★★']))}</td><td class="num">${money(PM.r10(a * PM.BUY_MULT['A★']))}</td><td class="num"><input data-k="${m.id}|${cap}" value="${a}" style="width:90px;text-align:right;height:20px;border:1px solid #c8c8c8;font:inherit;background:#fffde7"></td><td class="num">${money(PM.r10(a * PM.BUY_MULT.B))}</td><td class="num">${money(PM.r10(a * PM.BUY_MULT.C))}</td><td class="num">${money(m.base[cap])}</td></tr>`; }).join('')}</tbody></table></div>`;
+    el.onclick = e => {
+      const b = e.target.closest('[data-act]');
+      if (!b) return;
+      if (b.dataset.act === 'preview') { window.open(UI.shopURL('#/sell'), '_blank'); return; }
+      $$('input[data-k]', el).forEach(i => { const v = parseFloat(i.value); const [mid, cap] = i.dataset.k.split('|'); if (v && v !== PM.r10(modelOf(mid).base[cap] * 0.7)) S().matrix[i.dataset.k] = v; });
+      store.save(); cmsMatrix(); toast('已保存，網店回收報價已更新');
+    };
+  }
+
+  function webOrders() {
+    const rows = S().units.filter(u => u.status === 'reserved');
+    listScreen({
+      name: '網店訂單',
+      rows,
+      filters: dateFilters('訂單日期'),
+      buttons: [{ id: 'view', label: '查看', c: 'orange' }, { id: 'void', label: '取消預留', c: 'red' }],
+      note: '新畫面：網店及 WhatsApp 的預留訂單。客人到店付款時「轉為發票」。',
+      columns: [
+        { t: '預留日期', f: u => u.reserved.date, w: 86 }, { t: '渠道', f: u => u.reserved.channel, w: 76 }, { t: '客戶編號', f: u => nospace(u.reserved.by), w: 84 },
+        { t: '客戶名稱', f: u => { const c = PM.customer(u.reserved.by); return c ? c.name : ''; }, w: 90 }, { t: '貨品編號', f: 'code', w: 88 }, { t: '貨品名稱', f: u => unitTitle(u), w: 230 },
+        { t: '售價', f: 'price', num: true, sum: true, w: 84 }, { t: '已付訂金', f: u => u.reserved.deposit, num: true, sum: true, w: 84 }, { t: '尚欠', f: u => u.price - u.reserved.deposit, num: true, sum: true, w: 84 },
+      ],
+      bottomLeft: [{ id: 'toinv', label: '轉為發票', isNew: true }],
+      onOpen: u => unitWindow(u),
+      onAction(id, sel) {
+        if (id !== 'toinv') return;
+        if (!sel) { toast('請先選擇一條記錄'); return true; }
+        const c = PM.customer(sel.reserved.by);
+        invoiceWindow(null, { phone: sel.reserved.by, name: c ? c.name : '', channel: sel.reserved.channel, note: `網店預留，已付訂金 ${hkd(sel.reserved.deposit)}`, lines: [lineFromUnit(sel)] });
+        return true;
+      },
+    });
+  }
+
+  function leadList() {
+    listScreen({
+      name: '網上回收報價',
+      rows: S().leads,
+      filters: dateFilters('報價日期'),
+      buttons: [{ id: 'view', label: '查看', c: 'orange' }, { id: 'void', label: '註銷', c: 'red' }],
+      note: '新畫面：客人在網店「即時回收報價」提交的資料。到店時「轉為收機」，資料自動帶入。',
+      columns: [{ t: '編號', f: 'id', w: 70 }, { t: '時間', f: 'date', w: 120 }, { t: '姓名', f: 'name', w: 90 }, { t: '電話', f: 'phone', w: 90 }, { t: '型號', f: l => modelOf(l.model).name, w: 170 }, { t: '容量', f: 'cap', w: 60 }, { t: '成色', f: 'grade', w: 50 }, { t: '網上報價', f: 'quote', num: true, w: 90 }, { t: '狀態', f: 'status', w: 80 }],
+      bottomLeft: [{ id: 'tobuy', label: '轉為收機', isNew: true }],
+      onOpen: () => toast('選擇後按「轉為收機」'),
+      onAction(id, sel) {
+        if (id !== 'tobuy') return;
+        if (!sel) { toast('請先選擇一條記錄'); return true; }
+        sel.status = '已到店';
+        store.save();
+        buybackWindow(null, { model: sel.model, cap: sel.cap, grade: sel.grade, phone: sel.phone, name: sel.name });
+        return true;
+      },
+    });
+  }
+
+  // ---------------------------------------------------------------- 會計管理
+  function receiptList() {
+    listScreen({
+      name: '收款傳票',
+      rows: S().receipts,
+      filters: dateFilters('日期') + lkRow('收款傳票號碼') + lkRow('客戶'),
+      buttons: [{ id: 'add', label: '新增', c: 'green' }, { id: 'view', label: '查看', c: 'orange' }, { id: 'void', label: '註銷', c: 'red' }, { id: 'print', label: '打印', c: 'w' }],
+      columns: [{ t: '收款傳票號', f: 'no', w: 100 }, { t: '日期', f: 'date', w: 86 }, { t: '客戶編碼', f: r => nospace(r.phone), w: 84 }, { t: '客戶名稱', f: 'name', w: 96 }, { t: '銀行名稱', f: 'method', w: 80 }, { t: '金額', f: 'amount', num: true, sum: true, w: 96 }, { t: '發票資料', f: 'inv', w: 110 }],
+      bottomLeft: [{ id: 'receipt', label: '打印收據' }],
+      onAdd: () => toast('示範：新增收款傳票'),
+      onOpen: r => { const inv = S().invoices.find(i => i.no === r.inv); if (inv) invoiceWindow(inv); },
+      onPrint: r => { const inv = S().invoices.find(i => i.no === r.inv); if (inv) printInvoice(inv); },
+      onAction(id, sel) { if (id === 'receipt') { if (!sel) toast('請先選擇一條記錄'); else { const inv = S().invoices.find(i => i.no === sel.inv); if (inv) printInvoice(inv); } return true; } },
+    });
+  }
+
+  function dayEnd() {
+    document.title = '日結報表(手機俠有限公司)';
+    const s = S();
+    const rec = s.receipts.filter(r => r.date === TODAY);
+    const buys = s.slips.filter(r => r.date === TODAY);
+    const by = (list, key, amt) => { const m = {}; list.forEach(r => { m[r[key]] = m[r[key]] || { n: 0, a: 0 }; m[r[key]].n++; m[r[key]].a += r[amt]; }); return m; };
+    const inM = by(rec, 'method', 'amount');
+    const outM = by(buys, 'pay', 'price');
+    const float = 8000;
+    const cashIn = (inM['現金'] || { a: 0 }).a, cashOut = (outM['現金'] || { a: 0 }).a;
+    const expect = float + cashIn - cashOut;
+    const rowsHTML = m => Object.keys(m).map(k => `<tr><td>${esc(k)}</td><td class="num">${m[k].n}</td><td class="num">${money(m[k].a)}</td></tr>`).join('') || '<tr class="empty"><td colspan="3" style="height:60px">今日未有記錄</td></tr>';
+    const el = fresh();
+    el.innerHTML = `<div class="ls-top"><div class="ls-filters"><label>日期</label><input value="${TODAY}"><span></span><span></span><span><button type="button" class="jb go" data-act="go">GO</button></span><label>分店</label><div class="lk"><input class="plain" value="01"><button type="button">🔍</button></div><span></span><span></span><span></span></div>
+      <div class="ls-right"><div class="ls-btns"><button type="button" class="jb w" data-act="print">打印</button><button type="button" class="jb green" data-act="close">確認日結</button></div></div></div>
+      <div class="ls-note">新畫面：收款同回收付款一齊對數。現金回收會由收銀櫃支出，所以要扣減。</div>
+      <div class="de">
+        <div><h3>今日收款（按收款方式）</h3><div class="jgrid"><table><thead><tr><th style="min-width:120px">收款方式</th><th class="num" style="min-width:60px">筆數</th><th class="num" style="min-width:110px">金額</th></tr></thead><tbody>${rowsHTML(inM)}</tbody></table></div></div>
+        <div><h3>今日回收付款（按付款方式）</h3><div class="jgrid"><table><thead><tr><th style="min-width:120px">付款方式</th><th class="num" style="min-width:60px">部數</th><th class="num" style="min-width:110px">金額</th></tr></thead><tbody>${rowsHTML(outM)}</tbody></table></div></div>
+        <div class="cashbox"><div class="r"><span>開店備用金</span><span>${money(float)}</span></div><div class="r"><span>+ 現金收款</span><span>${money(cashIn)}</span></div><div class="r"><span>− 現金回收付款</span><span>${money(cashOut)}</span></div><div class="r" style="border-top:1px solid #ccc"><b>應有現金</b><b>${money(expect)}</b></div><div class="r"><span>實點現金</span><input id="de-count" value="${expect}"></div><div class="r"><span>差額</span><span class="diff" id="de-diff">0.00</span></div></div>
+      </div>`;
+    $('#de-count', el).addEventListener('input', e => { const d = (parseFloat(e.target.value) || 0) - expect; const x = $('#de-diff', el); x.textContent = money(d); x.style.color = d === 0 ? '#2e7d32' : '#c62828'; });
+    el.onclick = e => {
+      const b = e.target.closest('[data-act]');
+      if (!b) return;
+      if (b.dataset.act === 'print') {
+        const lines = Object.keys(inM).map(k => `<div class="row"><span>${esc(k)} ×${inM[k].n}</span><span>${hkd(inM[k].a)}</span></div>`).join('');
+        const out = Object.keys(outM).map(k => `<div class="row"><span>回收 ${esc(k)} ×${outM[k].n}</span><span>-${hkd(outM[k].a)}</span></div>`).join('');
+        UI.printPreview(`<div class="receipt"><div class="c big">手機俠 Phonemen</div><div class="c" style="font-weight:700">日結報表 ${TODAY}</div><div class="rule"></div>${lines || '<div>今日未有收款</div>'}<div class="rule"></div>${out || '<div>今日未有回收</div>'}<div class="rule"></div><div class="row"><span>應有現金</span><span>${hkd(expect)}</span></div><div class="row"><span>實點現金</span><span>${hkd(parseFloat($('#de-count', el).value) || 0)}</span></div><div class="row tot"><span>差額</span><span>${$('#de-diff', el).textContent}</span></div><div class="rule"></div><div class="small">經手人 ${ME}　　覆核 ________</div></div>`, { title: '列印預覽 · 日結 80mm' });
+      } else if (b.dataset.act === 'close') toast('已確認今日日結（示範）');
+      else toast('已重新查詢');
+    };
+  }
+
+  // ---------------------------------------------------------------- router
+  const ROUTES = {
+    '/invoice': invoiceList, '/buyback': buybackList, '/units': () => unitList(false), '/stock': () => unitList(true), '/refurb': refurbList, '/labels': labelList,
+    '/repair': repairList, '/bookings': bookingList, '/cms-pages': cmsPages, '/cms-banners': cmsBanners, '/cms-matrix': cmsMatrix, '/web-orders': webOrders, '/leads': leadList,
+    '/receipts': receiptList, '/dayend': dayEnd,
+  };
+  // Hash routing, with an in-memory fallback for pages that can't change their hash (e.g. previews).
+  let fallback = null;
+  function go(path) {
+    try { location.hash = path; } catch (e) { /* ignore */ }
+    if (location.hash !== '#' + path) { fallback = path; route(); }
+  }
+  function route() {
+    const path = fallback || (location.hash || '#/invoice').slice(1).split('?')[0];
+    $$('.ew-ov').forEach(x => x.remove());
+    (ROUTES[path] || invoiceList)();
+  }
+  window.__go = go;
+  renderMenu();
+  window.addEventListener('hashchange', route);
+  store.on(() => { if (!$('.ew-ov')) route(); });
+  route();
+})();
+
+</script>
+</body>
+</html>

@@ -1,0 +1,1286 @@
+<!doctype html>
+<html lang="zh-Hant-HK">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>手機俠 Phonemen｜二手 iPhone 買賣、回收及維修</title>
+<meta name="description" content="每部二手機都經 17 點檢查，有獨立編號、電池健康度同實拍相。網上預留，門市取機。">
+<style>
+/* Shared pieces for all three mockups: modal, toast, printouts, device art. */
+:root {
+  --font: -apple-system, "Segoe UI", "Microsoft JhengHei", "微軟正黑體", "PingFang HK", "Noto Sans TC", Arial, sans-serif;
+  --mono: "Cascadia Mono", Consolas, "SFMono-Regular", Menlo, monospace;
+}
+* { box-sizing: border-box; }
+
+/* Modal */
+.pm-overlay { position: fixed; inset: 0; background: rgba(15, 18, 25, .45); display: flex; align-items: flex-start; justify-content: center; z-index: 1000; padding: 48px 16px; overflow: auto; animation: pm-fade .12s ease-out; }
+.pm-modal { background: #fff; color: #18181b; border-radius: 14px; box-shadow: 0 24px 60px rgba(0,0,0,.25); width: 100%; max-width: 560px; font-family: var(--font); font-size: 14px; }
+.pm-modal-head { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; border-bottom: 1px solid #ececf0; font-weight: 600; font-size: 16px; }
+.pm-modal-head button { border: 0; background: none; font-size: 20px; line-height: 1; cursor: pointer; color: #71717a; }
+.pm-modal-body { padding: 20px; }
+.pm-modal-foot { padding: 14px 20px; border-top: 1px solid #ececf0; display: flex; gap: 8px; justify-content: flex-end; }
+@keyframes pm-fade { from { opacity: 0; } to { opacity: 1; } }
+.pm-btn { font: 14px var(--font); padding: 8px 14px; border-radius: 8px; border: 1px solid #d4d4d8; background: #fff; color: #18181b; cursor: pointer; }
+.pm-btn:hover { background: #f4f4f5; }
+.pm-btn.primary { background: #18181b; border-color: #18181b; color: #fff; }
+.pm-btn.primary:hover { background: #27272a; }
+
+/* Toast */
+.pm-toasts { position: fixed; left: 50%; bottom: 28px; transform: translateX(-50%); display: flex; flex-direction: column; gap: 8px; z-index: 2000; pointer-events: none; }
+.pm-toast { background: #18181b; color: #fafafa; font: 14px var(--font); padding: 10px 16px; border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,.25); animation: pm-up .18s ease-out; }
+@keyframes pm-up { from { transform: translateY(8px); opacity: 0; } to { transform: none; opacity: 1; } }
+
+/* Printouts: 80 mm thermal paper and a 50 x 30 mm label */
+.paper-stage { background: #e9e9ee; border-radius: 10px; padding: 24px; display: flex; justify-content: center; }
+.receipt { width: 302px; background: #fff; color: #111; font: 12px/1.45 var(--mono); padding: 16px 14px 22px; box-shadow: 0 2px 10px rgba(0,0,0,.12); position: relative; }
+.receipt::after { content: ''; position: absolute; left: 0; right: 0; bottom: -8px; height: 8px; background: linear-gradient(-45deg, transparent 33%, #fff 33%, #fff 66%, transparent 66%) 0 0 / 12px 8px, linear-gradient(45deg, transparent 33%, #fff 33%, #fff 66%, transparent 66%) 0 0 / 12px 8px; }
+.receipt .c { text-align: center; }
+.receipt .big { font-size: 16px; font-weight: 700; font-family: var(--font); }
+.receipt .rule { border-top: 1px dashed #777; margin: 8px 0; }
+.receipt .row { display: flex; justify-content: space-between; gap: 8px; }
+.receipt .muted { color: #555; }
+.receipt .tot { font-size: 15px; font-weight: 700; }
+.receipt .qr { width: 96px; height: 96px; margin: 8px auto 0; }
+.receipt .sig { height: 54px; border-bottom: 1px solid #333; margin-top: 6px; display: flex; align-items: flex-end; }
+.receipt .sig img { max-height: 52px; }
+.receipt .small { font-size: 10.5px; line-height: 1.4; }
+.label { width: 302px; height: 181px; background: #fff; color: #111; border-radius: 6px; padding: 12px 14px; font: 12px var(--font); box-shadow: 0 2px 10px rgba(0,0,0,.12); display: flex; flex-direction: column; justify-content: space-between; }
+.label .l1 { font-weight: 700; font-size: 15px; }
+.label .l2 { display: flex; justify-content: space-between; font-size: 12px; }
+.label .bc { height: 44px; }
+.label .bc svg { width: 100%; height: 100%; }
+.label .code { font: 12px var(--mono); text-align: center; letter-spacing: .08em; }
+
+/* Device art */
+.dev { display: flex; align-items: center; justify-content: center; background: radial-gradient(circle at 50% 35%, #fbfbfd, #eceef2); border-radius: 12px; overflow: hidden; }
+.dev svg { height: 86%; width: auto; max-width: 86%; filter: drop-shadow(0 8px 14px rgba(0,0,0,.14)); }
+
+</style>
+<style>
+/* Storefront — customer-facing site shared by both proposals. */
+:root { --ink: #0b0b0f; --ink2: #3f3f46; --muted: #71717a; --line: #e7e5e4; --soft: #f6f5f3; --acc: #ff5a1f; --acc-d: #e64a12; --green: #15803d; --r: 16px; }
+body { margin: 0; font: 15px/1.6 var(--font); color: var(--ink); background: #fff; }
+a { color: inherit; text-decoration: none; }
+button { font: inherit; cursor: pointer; }
+input, select { font: inherit; }
+.wrap { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+.ic { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+
+/* Header */
+.promo { background: var(--ink); color: #fff; font-size: 13.5px; text-align: center; padding: 8px 12px; }
+.promo b { color: #ffb08f; }
+.hdr { position: sticky; top: 0; z-index: 40; background: rgba(255,255,255,.94); backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); }
+.hdr-in { display: flex; align-items: center; gap: 28px; height: 68px; }
+.logo { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 20px; letter-spacing: .02em; white-space: nowrap; }
+.logo i { width: 34px; height: 34px; border-radius: 10px; background: linear-gradient(135deg, #ff6a2b, #ff3d6e); color: #fff; display: grid; place-items: center; font-style: normal; font-size: 18px; }
+.logo small { font-size: 11px; letter-spacing: .18em; color: var(--muted); font-weight: 600; display: block; line-height: 1; margin-top: 2px; }
+.mainnav { display: flex; gap: 22px; font-weight: 500; overflow-x: auto; }
+.mainnav a { padding: 6px 0; white-space: nowrap; color: var(--ink2); }
+.mainnav a:hover, .mainnav a.on { color: var(--ink); }
+.mainnav a.hl { color: var(--acc); font-weight: 700; }
+.hdr-r { margin-left: auto; display: flex; align-items: center; gap: 14px; font-size: 14px; color: var(--ink2); }
+.hdr-r .lang b { color: var(--ink); }
+.pill { display: inline-flex; align-items: center; gap: 8px; height: 40px; padding: 0 16px; border-radius: 999px; border: 1px solid var(--line); background: #fff; font-weight: 600; white-space: nowrap; }
+.pill.wa { background: #25d366; border-color: #25d366; color: #fff; }
+
+/* Buttons */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 48px; padding: 0 22px; border-radius: 999px; border: 1px solid var(--ink); background: var(--ink); color: #fff; font-weight: 700; white-space: nowrap; }
+.btn:hover { background: #26262b; }
+.btn.acc { background: var(--acc); border-color: var(--acc); }
+.btn.acc:hover { background: var(--acc-d); }
+.btn.line { background: #fff; color: var(--ink); border-color: #d6d3d1; }
+.btn.line:hover { background: var(--soft); }
+.btn.ghost-w { background: transparent; border-color: rgba(255,255,255,.4); color: #fff; }
+.btn.sm { height: 38px; padding: 0 16px; font-size: 14px; }
+.btn.block { width: 100%; }
+.btn[disabled] { opacity: .4; cursor: not-allowed; }
+
+/* Hero */
+.hero { background: radial-gradient(1200px 500px at 85% 20%, #3b1d10 0%, transparent 60%), linear-gradient(160deg, #0b0b0f 0%, #17171d 60%, #221510 100%); color: #fff; overflow: hidden; }
+.hero-in { display: grid; grid-template-columns: 1.1fr 1fr; align-items: center; gap: 40px; padding: 72px 24px 64px; }
+.kicker { display: inline-flex; gap: 8px; align-items: center; font-size: 13.5px; font-weight: 600; color: #ffb08f; background: rgba(255,90,31,.12); border: 1px solid rgba(255,90,31,.35); border-radius: 999px; padding: 5px 12px; }
+.hero h1 { font-size: 52px; line-height: 1.12; letter-spacing: -.02em; margin: 18px 0 14px; }
+.hero p { font-size: 18px; color: #d4d4d8; margin: 0 0 28px; max-width: 520px; }
+.hero .ctas { display: flex; gap: 12px; flex-wrap: wrap; }
+.hero .proof { display: flex; gap: 26px; margin-top: 34px; color: #a1a1aa; font-size: 14px; }
+.hero .proof b { display: block; color: #fff; font-size: 22px; }
+.collage { position: relative; height: 380px; }
+.collage .p { position: absolute; width: 170px; height: 340px; filter: drop-shadow(0 30px 40px rgba(0,0,0,.45)); }
+.collage .p svg { width: 100%; height: 100%; }
+.collage .p1 { left: 8%; top: 30px; transform: rotate(-10deg); }
+.collage .p2 { left: 36%; top: 0; z-index: 2; }
+.collage .p3 { left: 64%; top: 40px; transform: rotate(9deg); }
+
+/* Sections */
+.sec { padding: 64px 0; }
+.sec.soft { background: var(--soft); }
+.sec-hd { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; margin-bottom: 26px; }
+.sec-hd h2 { font-size: 30px; margin: 0; letter-spacing: -.01em; }
+.sec-hd p { margin: 6px 0 0; color: var(--muted); }
+.sec-hd a { font-weight: 600; white-space: nowrap; }
+.usp { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+.usp div { display: flex; gap: 14px; align-items: flex-start; background: #fff; border: 1px solid var(--line); border-radius: var(--r); padding: 18px; }
+.usp .ic { width: 26px; height: 26px; color: var(--acc); margin-top: 2px; }
+.usp b { display: block; }
+.usp span { color: var(--muted); font-size: 13.5px; line-height: 1.5; }
+.cats { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; }
+.cat { background: var(--soft); border-radius: var(--r); padding: 18px 18px 0; display: flex; flex-direction: column; overflow: hidden; transition: transform .15s; }
+.cat:hover { transform: translateY(-3px); }
+.cat b { font-size: 18px; }
+.cat span { color: var(--muted); font-size: 13.5px; }
+.cat .dev { height: 150px; background: none; margin-top: 10px; }
+
+/* Product cards */
+.grid4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
+.grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+.pc { border: 1px solid var(--line); border-radius: var(--r); overflow: hidden; background: #fff; display: flex; flex-direction: column; transition: box-shadow .15s, transform .15s; }
+.pc:hover { box-shadow: 0 12px 30px rgba(0,0,0,.08); transform: translateY(-2px); }
+.pc .dev { height: 230px; border-radius: 0; position: relative; }
+.pc .badges { position: absolute; left: 12px; top: 12px; display: flex; gap: 6px; }
+.pc .bd { padding: 14px 16px 16px; display: flex; flex-direction: column; gap: 6px; flex: 1; }
+.pc .nm { font-weight: 700; line-height: 1.35; }
+.pc .meta { color: var(--muted); font-size: 13.5px; }
+.pc .pr { display: flex; align-items: baseline; justify-content: space-between; margin-top: auto; padding-top: 6px; }
+.pc .pr b { font-size: 20px; }
+.tag { display: inline-flex; align-items: center; height: 24px; padding: 0 9px; border-radius: 999px; font-size: 12.5px; font-weight: 700; background: #fff; border: 1px solid var(--line); color: var(--ink2); white-space: nowrap; }
+.tag.g { background: #f0fdf4; border-color: #bbf7d0; color: var(--green); }
+.tag.a { background: #fff7ed; border-color: #fed7aa; color: #c2410c; }
+.tag.dark { background: var(--ink); border-color: var(--ink); color: #fff; }
+.swatches { display: flex; gap: 5px; }
+.swatches i { width: 14px; height: 14px; border-radius: 50%; border: 1px solid rgba(0,0,0,.15); display: inline-block; }
+
+/* Sell band */
+.band { background: linear-gradient(120deg, #ff5a1f, #ff2d6b); color: #fff; border-radius: 24px; padding: 40px; display: grid; grid-template-columns: 1.2fr 1fr; gap: 32px; align-items: center; }
+.band h2 { font-size: 32px; margin: 0 0 8px; }
+.band p { margin: 0; opacity: .92; }
+.qq { background: #fff; color: var(--ink); border-radius: 18px; padding: 20px; display: flex; flex-direction: column; gap: 12px; }
+.qq select { height: 46px; border: 1px solid var(--line); border-radius: 12px; padding: 0 12px; }
+.qq .q { font-size: 14px; color: var(--muted); }
+.qq .q b { color: var(--ink); font-size: 26px; display: block; }
+
+.grades { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
+.grades div { border: 1px solid var(--line); border-radius: 14px; padding: 16px; background: #fff; }
+.grades b { font-size: 20px; display: block; }
+.grades span { color: var(--muted); font-size: 13.5px; }
+.store { display: grid; grid-template-columns: 1fr 1.2fr; gap: 24px; align-items: stretch; }
+.store .info { border: 1px solid var(--line); border-radius: var(--r); padding: 24px; line-height: 2; }
+.map { border-radius: var(--r); background: repeating-linear-gradient(45deg, #f1f1ef 0 12px, #ebebe8 12px 24px); display: grid; place-items: center; color: var(--muted); min-height: 220px; }
+
+/* Listing page */
+.crumb { color: var(--muted); font-size: 14px; padding: 22px 0 6px; }
+.crumb a:hover { color: var(--ink); }
+.list-hd { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; margin: 4px 0 22px; flex-wrap: wrap; }
+.list-hd h1 { margin: 0; font-size: 34px; letter-spacing: -.01em; }
+.list-hd p { margin: 4px 0 0; color: var(--muted); }
+.list { display: grid; grid-template-columns: 240px 1fr; gap: 28px; align-items: start; padding-bottom: 64px; }
+.filters { position: sticky; top: 90px; display: flex; flex-direction: column; gap: 22px; }
+.filters h4 { margin: 0 0 8px; font-size: 14px; }
+.filters label { display: flex; align-items: center; gap: 8px; font-size: 14px; padding: 3px 0; cursor: pointer; }
+.filters label span { margin-left: auto; color: var(--muted); font-size: 12.5px; }
+.seg { display: inline-flex; background: var(--soft); border-radius: 999px; padding: 4px; }
+.seg button { border: 0; background: none; padding: 7px 14px; border-radius: 999px; font-weight: 600; color: var(--muted); }
+.seg button.on { background: #fff; color: var(--ink); box-shadow: 0 1px 3px rgba(0,0,0,.1); }
+.sort { height: 40px; border: 1px solid var(--line); border-radius: 999px; padding: 0 14px; background: #fff; }
+
+/* Product page */
+.pdp { display: grid; grid-template-columns: 1.1fr 1fr; gap: 48px; padding: 10px 0 64px; align-items: start; }
+.gallery .main { height: 520px; border-radius: 22px; }
+.gallery .thumbs { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; margin-top: 12px; }
+.gallery .thumbs button { border: 2px solid transparent; border-radius: 12px; padding: 0; background: none; height: 74px; overflow: hidden; }
+.gallery .thumbs button.on { border-color: var(--ink); }
+.gallery .thumbs .dev { height: 100%; border-radius: 10px; }
+.gallery .real { font-size: 13px; color: var(--muted); margin-top: 10px; display: flex; gap: 6px; align-items: center; }
+.buy h1 { font-size: 32px; margin: 0; letter-spacing: -.01em; line-height: 1.2; }
+.buy .price { font-size: 34px; font-weight: 800; margin: 14px 0 4px; letter-spacing: -.02em; }
+.buy .price small { font-size: 15px; color: var(--muted); font-weight: 500; margin-left: 8px; text-decoration: line-through; }
+.opt { margin-top: 22px; }
+.opt h4 { margin: 0 0 10px; font-size: 14px; display: flex; justify-content: space-between; }
+.opt h4 span { color: var(--muted); font-weight: 500; }
+.chips { display: flex; gap: 8px; flex-wrap: wrap; }
+.ch { min-width: 74px; height: 46px; padding: 0 14px; border: 1.5px solid var(--line); border-radius: 12px; background: #fff; font-weight: 600; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+.ch.on { border-color: var(--ink); box-shadow: inset 0 0 0 1px var(--ink); }
+.ch[disabled] { color: #c4c4c8; background: #fafafa; text-decoration: line-through; cursor: not-allowed; }
+.ch i { width: 18px; height: 18px; border-radius: 50%; border: 1px solid rgba(0,0,0,.18); }
+.units { border: 1px solid var(--line); border-radius: 14px; overflow: hidden; margin-top: 10px; }
+.unit { display: grid; grid-template-columns: 22px 1fr auto; gap: 12px; align-items: center; padding: 12px 14px; border-top: 1px solid var(--line); cursor: pointer; }
+.unit:first-child { border-top: 0; }
+.unit.on { background: #fff7f2; }
+.unit .rad { width: 18px; height: 18px; border-radius: 50%; border: 2px solid #d4d4d8; }
+.unit.on .rad { border: 6px solid var(--acc); }
+.unit b { font-size: 16px; }
+.unit .m { font-size: 13px; color: var(--muted); }
+.ctas { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 22px; }
+.trust { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px; }
+.trust div { display: flex; gap: 10px; align-items: center; font-size: 14px; background: var(--soft); border-radius: 12px; padding: 12px; }
+.trust .ic { color: var(--green); }
+details { border-top: 1px solid var(--line); padding: 14px 0; }
+details summary { font-weight: 700; cursor: pointer; list-style: none; display: flex; justify-content: space-between; }
+details summary::after { content: '+'; font-size: 20px; line-height: 1; color: var(--muted); }
+details[open] summary::after { content: '–'; }
+.chkgrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px 14px; margin-top: 12px; font-size: 14px; }
+.chkgrid span { display: flex; gap: 6px; align-items: center; }
+.chkgrid .ic { width: 16px; height: 16px; color: var(--green); }
+
+/* Sell and repair flows */
+.flow { max-width: 900px; margin: 0 auto; padding: 10px 24px 72px; }
+.flow h1 { font-size: 38px; margin: 6px 0 6px; letter-spacing: -.01em; }
+.flow .lead { color: var(--muted); margin: 0 0 26px; font-size: 17px; }
+.stepbox { border: 1px solid var(--line); border-radius: 20px; padding: 24px; margin-bottom: 16px; }
+.stepbox h3 { margin: 0 0 14px; font-size: 18px; display: flex; gap: 10px; align-items: center; }
+.stepbox h3 .n { width: 28px; height: 28px; border-radius: 50%; background: var(--ink); color: #fff; display: grid; place-items: center; font-size: 14px; }
+.stepbox.done h3 .n { background: var(--green); }
+.stepbox.wait { opacity: .45; }
+.models { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+.mdl { border: 1.5px solid var(--line); border-radius: 14px; background: #fff; padding: 10px; display: flex; flex-direction: column; align-items: center; gap: 6px; font-weight: 600; font-size: 14px; text-align: center; }
+.mdl .dev { height: 90px; width: 100%; background: none; }
+.mdl.on { border-color: var(--ink); box-shadow: inset 0 0 0 1px var(--ink); }
+.qs { display: flex; flex-direction: column; gap: 16px; }
+.qrow { display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; }
+.qrow b { font-weight: 600; }
+.result { background: var(--ink); color: #fff; border-radius: 20px; padding: 28px; display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: center; }
+.result .amt { font-size: 44px; font-weight: 800; letter-spacing: -.02em; }
+.result .amt small { font-size: 16px; color: #a1a1aa; font-weight: 500; display: block; }
+.form { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.form input, .form select { height: 48px; border: 1px solid #d6d3d1; border-radius: 12px; padding: 0 14px; background: #fff; color: var(--ink); width: 100%; }
+.result .form input, .result .form select { border-color: #3f3f46; }
+.ok-box { text-align: center; padding: 30px; border: 1px solid var(--line); border-radius: 20px; }
+.ok-box .ic { width: 56px; height: 56px; color: var(--green); }
+.tbl { width: 100%; border-collapse: collapse; font-size: 14.5px; }
+.tbl th, .tbl td { text-align: left; padding: 11px 12px; border-bottom: 1px solid var(--line); }
+.tbl th { color: var(--muted); font-weight: 600; font-size: 13px; }
+.tbl td.r, .tbl th.r { text-align: right; }
+
+/* Page */
+.page { max-width: 760px; margin: 0 auto; padding: 10px 24px 80px; }
+.page h1 { font-size: 38px; margin: 6px 0 4px; }
+.page .upd { color: var(--muted); font-size: 14px; margin-bottom: 26px; }
+.page p { font-size: 17px; line-height: 1.85; }
+
+/* Footer */
+.ftr { background: var(--ink); color: #a1a1aa; padding: 48px 0 28px; font-size: 14px; }
+.ftr-in { display: grid; grid-template-columns: 1.4fr 1fr 1fr 1fr; gap: 28px; }
+.ftr b { color: #fff; display: block; margin-bottom: 10px; }
+.ftr a { display: block; padding: 3px 0; }
+.ftr a:hover { color: #fff; }
+.ftr .bottom { border-top: 1px solid #27272a; margin-top: 30px; padding-top: 18px; display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.demo { position: fixed; left: 14px; bottom: 14px; z-index: 50; background: rgba(11,11,15,.88); color: #fff; font-size: 12.5px; border-radius: 999px; padding: 6px 12px; }
+.demo a { color: #ffb08f; margin-left: 8px; }
+
+/* Reserve modal content */
+.rv { display: flex; flex-direction: column; gap: 14px; }
+.rv .sumline { display: flex; gap: 12px; align-items: center; background: var(--soft); border-radius: 12px; padding: 10px; }
+.rv .sumline .dev { width: 64px; height: 64px; border-radius: 10px; flex: none; }
+.rv .opts { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.rv .opts button { height: 46px; border: 1.5px solid var(--line); border-radius: 12px; background: #fff; font-weight: 600; }
+.rv .opts button.on { border-color: var(--ink); box-shadow: inset 0 0 0 1px var(--ink); }
+.rv input { height: 46px; border: 1px solid #d6d3d1; border-radius: 12px; padding: 0 12px; width: 100%; font-size: 15px; }
+.fps { display: grid; grid-template-columns: 130px 1fr; gap: 14px; align-items: center; border: 1px dashed #d6d3d1; border-radius: 14px; padding: 14px; }
+
+@media (max-width: 960px) {
+  .hero-in, .band, .pdp, .store, .result, .list { grid-template-columns: 1fr; }
+  .hero h1 { font-size: 38px; }
+  .collage { display: none; }
+  .grid4, .cats { grid-template-columns: repeat(2, 1fr); }
+  .usp, .grades { grid-template-columns: 1fr 1fr; }
+  .models { grid-template-columns: repeat(2, 1fr); }
+  .filters { position: static; }
+  .hdr-in { flex-wrap: wrap; height: auto; gap: 8px 16px; padding: 10px 24px 0; }
+  .mainnav { order: 3; width: 100%; gap: 18px; padding-bottom: 6px; }
+  .hdr-r .lang { display: none; }
+  .pill.wa { height: 36px; padding: 0 12px; font-size: 13px; }
+  .demo { font-size: 11px; padding: 4px 10px; }
+  .gallery .main { height: 360px; }
+  .ftr-in { grid-template-columns: 1fr 1fr; }
+  .form { grid-template-columns: 1fr; }
+  .grid3 { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 560px) {
+  .usp, .grades { grid-template-columns: 1fr; }
+  .pc .dev { height: 170px; }
+  .gallery .thumbs { grid-template-columns: repeat(4, 1fr); }
+  .band { padding: 26px; }
+  .sec { padding: 44px 0; }
+}
+
+</style>
+</head>
+<body>
+<div class="promo" id="promo"></div>
+<header class="hdr">
+  <div class="wrap hdr-in">
+    <a class="logo" href="#/"><i>俠</i><span>手機俠<small>PHONEMEN</small></span></a>
+    <nav class="mainnav" id="mainnav"></nav>
+    <div class="hdr-r"><span class="lang"><b>繁</b> | EN</span><a class="pill wa" href="#/page/about">WhatsApp 查詢</a></div>
+  </div>
+</header>
+<main id="app"></main>
+<footer class="ftr" id="footer"></footer>
+<div class="demo">網店示範 · 兩個方案共用<a href="index.html">返回示範首頁</a></div>
+<script>window.PM_LINKS = {"hub": "index.html", "a": "proposal-a.html", "b": "proposal-b.html", "shop": "storefront.html"};</script>
+<script>
+/* Phonemen mockups: demo data plus a tiny shared store (localStorage).
+   Every customer, phone number, IMEI, serial number and price here is fictional. */
+(function () {
+  'use strict';
+
+  const TODAY = '2026-11-02';
+  const day = n => { const d = new Date(Date.UTC(2026, 10, 2)); d.setUTCDate(d.getUTCDate() - n); return d.toISOString().slice(0, 10); };
+  const daysBetween = (a, b) => Math.round((Date.parse(b) - Date.parse(a)) / 864e5);
+  const hkd = n => 'HK$' + Math.round(Number(n) || 0).toLocaleString('en-US');
+  const r10 = n => Math.round(n / 10) * 10;
+
+  const REGIONS = { HK: '港版', US: '美版', JP: '日版', KR: '韓版', AU: '澳洲版', CA: '加拿大版' };
+
+  const GRADES = [
+    { id: 'A★★★', name: '近全新', desc: '機身及螢幕幾乎無痕，接近全新', mult: 1.08 },
+    { id: 'A★', name: '極新淨', desc: '細看才見輕微使用痕', mult: 1.04 },
+    { id: 'A', name: '新淨', desc: '輕微使用痕，螢幕無花', mult: 1 },
+    { id: 'B', name: '正常使用痕', desc: '機身有花痕，螢幕或有細花', mult: 0.9 },
+    { id: 'C', name: '明顯花痕', desc: '機身有明顯花痕或撞痕，功能正常', mult: 0.8 },
+  ];
+  const gradeOf = id => GRADES.find(g => g.id === id) || GRADES[2];
+  const BUY_MULT = { 'A★★★': 1.06, 'A★': 1.03, A: 1, B: 0.88, C: 0.75 };
+
+  // The 17-point checklist from today's 維修記錄 screen.
+  const CHECKS = [
+    ['touch', '觸控'], ['screen', '熒幕'], ['port', '尾插'], ['sim', 'Sim 卡'], ['call', '打電話'],
+    ['earpiece', '聽筒'], ['mic', '話筒'], ['speaker', '擴音'], ['vibrate', '震機'], ['wifi', 'WIFI'],
+    ['bt', '藍牙'], ['buttons', '按鈕'], ['faceid', 'FaceID/TouchID'], ['fcam', '前鏡頭'], ['rcam', '後鏡頭'],
+    ['housing', '後殼'], ['battery', '電池'],
+  ].map(([id, name]) => ({ id, name }));
+  const checkName = id => (CHECKS.find(c => c.id === id) || { name: id }).name;
+
+  // [buyback price cut, typical refurb cost]
+  const FAULTS = { screen: [0.35, 650], touch: [0.3, 650], faceid: [0.3, 0], rcam: [0.15, 420], fcam: [0.1, 320], battery: [0.06, 280], housing: [0.1, 380], port: [0.06, 220] };
+  const faultCut = id => (FAULTS[id] || [0.05, 180])[0];
+  const faultFix = id => (FAULTS[id] || [0.05, 180])[1];
+
+  // base = asking price at grade A, by capacity
+  const MODELS = [
+    { id: 'ip16pm', family: 'iPhone', name: 'iPhone 16 Pro Max', slug: 'iphone-16-pro-max', no: 'A3084', pro: true, os: 'iOS 26.0.1', colors: [['沙漠色鈦金屬', '#C7B39B'], ['黑色鈦金屬', '#3A3A3C'], ['原色鈦金屬', '#BEB7AC']], base: { '256GB': 6680, '512GB': 7480 } },
+    { id: 'ip16p', family: 'iPhone', name: 'iPhone 16 Pro', slug: 'iphone-16-pro', no: 'A3083', pro: true, os: 'iOS 26.0.1', colors: [['白色鈦金屬', '#E5E3DE'], ['沙漠色鈦金屬', '#C7B39B'], ['黑色鈦金屬', '#3A3A3C']], base: { '128GB': 5280, '256GB': 5880 } },
+    { id: 'ip15p', family: 'iPhone', name: 'iPhone 15 Pro', slug: 'iphone-15-pro', no: 'A2848', pro: true, os: 'iOS 26.0', colors: [['原色鈦金屬', '#BDB5A9'], ['藍色鈦金屬', '#414B5A'], ['白色鈦金屬', '#E6E4DF'], ['黑色鈦金屬', '#2F2F31']], base: { '128GB': 4180, '256GB': 4680 } },
+    { id: 'ip15', family: 'iPhone', name: 'iPhone 15', slug: 'iphone-15', no: 'A2846', os: 'iOS 26.0', colors: [['粉紅色', '#F1D5D9'], ['藍色', '#CDDEE7'], ['黑色', '#35393B']], base: { '128GB': 3180, '256GB': 3580 } },
+    { id: 'ip14p', family: 'iPhone', name: 'iPhone 14 Pro', slug: 'iphone-14-pro', no: 'A2892', pro: true, os: 'iOS 18.6', colors: [['深紫色', '#4F455A'], ['太空黑色', '#2E2D2F'], ['金色', '#F1E2C5']], base: { '128GB': 3380, '256GB': 3780 } },
+    { id: 'ip14plus', family: 'iPhone', name: 'iPhone 14 Plus', slug: 'iphone-14-plus', no: 'A2888', os: 'iOS 18.6', colors: [['午夜色', '#232A31'], ['藍色', '#A6C0D8'], ['紫色', '#D7CEE0']], base: { '128GB': 2680, '256GB': 2980 } },
+    { id: 'ip13p', family: 'iPhone', name: 'iPhone 13 Pro', slug: 'iphone-13-pro', no: 'A2639', pro: true, os: 'iOS 18.5', colors: [['天峰藍色', '#9AB4CD'], ['石墨色', '#55534F'], ['松嶺青色', '#576957']], base: { '128GB': 2580, '256GB': 2880 } },
+    { id: 'ip13', family: 'iPhone', name: 'iPhone 13', slug: 'iphone-13', no: 'A2634', os: 'iOS 18.5', colors: [['午夜色', '#232A31'], ['星光色', '#F0EAE0'], ['粉紅色', '#F8DFE0']], base: { '128GB': 1880 } },
+    { id: 'ipse3', family: 'iPhone', name: 'iPhone SE (2022)', slug: 'iphone-se-2022', no: 'A2785', se: true, os: 'iOS 18.5', colors: [['午夜色', '#232A31'], ['(PRODUCT)RED', '#BE1E2D']], base: { '64GB': 980, '128GB': 1180 } },
+    { id: 'ipadpro11m4', family: 'iPad', name: 'iPad Pro 11" (M4) Wi-Fi', slug: 'ipad-pro-11-m4', no: 'A2836', cellular: false, os: 'iPadOS 18.6', colors: [['太空黑色', '#2F2F31'], ['銀色', '#E2E3E4']], base: { '256GB': 5480, '512GB': 6280 } },
+    { id: 'ipadmini6', family: 'iPad', name: 'iPad mini 6 Wi-Fi', slug: 'ipad-mini-6', no: 'A2567', cellular: false, os: 'iPadOS 18.6', colors: [['太空灰色', '#5E5E60'], ['星光色', '#F0EAE0']], base: { '64GB': 1980, '256GB': 2480 } },
+    { id: 'ipad9', family: 'iPad', name: 'iPad 9 Wi-Fi', slug: 'ipad-9', no: 'A2602', cellular: false, os: 'iPadOS 18.6', colors: [['太空灰色', '#5E5E60'], ['銀色', '#E2E3E4']], base: { '64GB': 1080 } },
+    { id: 'mbam2', family: 'Mac', name: 'MacBook Air 13" (M2)', slug: 'macbook-air-m2', no: 'A2681', cellular: false, os: 'macOS 15.6', colors: [['午夜色', '#2E3641'], ['星光色', '#E6DDD2']], base: { '256GB': 4580, '512GB': 5280 } },
+    { id: 's24u', family: 'Android', name: 'Samsung Galaxy S24 Ultra', slug: 'galaxy-s24-ultra', no: 'SM-S9280', os: 'One UI 7', colors: [['鈦灰色', '#8A8885'], ['鈦黑色', '#2C2C2C']], base: { '256GB': 4380, '512GB': 4880 } },
+    { id: 'pixel8', family: 'Android', name: 'Google Pixel 8', slug: 'pixel-8', no: 'GKWS6', pixel: true, os: 'Android 16', colors: [['曜石黑', '#2B2B2B'], ['海灣藍', '#A8C1D5']], base: { '128GB': 1880 } },
+    { id: 'aw9', family: 'Watch', name: 'Apple Watch Series 9 45mm', slug: 'apple-watch-s9-45', no: 'A2980', cellular: false, os: 'watchOS 11', colors: [['午夜色', '#232A31'], ['星光色', '#F0EAE0']], base: { 'GPS': 1380 } },
+  ];
+  const modelOf = id => MODELS.find(m => m.id === id);
+  const modelBySlug = slug => MODELS.find(m => m.slug === slug);
+  const FAMILIES = [
+    { id: 'iphone', name: 'iPhone', family: 'iPhone' },
+    { id: 'ipad', name: 'iPad', family: 'iPad' },
+    { id: 'mac', name: 'Mac', family: 'Mac' },
+    { id: 'android', name: 'Android', family: 'Android' },
+    { id: 'watch', name: 'Apple Watch', family: 'Watch' },
+  ];
+
+  const STAFF = [{ id: 'Alan', role: '經理' }, { id: 'Bonnie', role: '店員' }, { id: 'Carmen', role: '店員' }, { id: 'Dicky', role: '師傅' }];
+  const TECHS = ['Dicky', '外判師傅 K'];
+  const CHANNELS = ['門市', 'WhatsApp', 'Carousell', '網店', '公司'];
+  const PAYMENTS = ['轉數快', '現金', '信用卡', '支付寶HK', '銀行轉帳'];
+
+  const CUSTOMERS = [
+    { phone: '9123 4567', name: '陳大文', since: '2024-03-12', note: '常客，偏好 Pro 系列', consent: true },
+    { phone: '6234 5678', name: '李小美', since: '2025-08-02', note: '', consent: true },
+    { phone: '5432 1098', name: '張志明', since: '2025-11-20', note: '', consent: false },
+    { phone: '9876 5432', name: '黃家樂', since: '2023-06-30', note: '有一部 iPad 送修中', consent: true },
+    { phone: '6111 2233', name: '何嘉欣', since: '2026-01-15', note: '', consent: true },
+    { phone: '9333 4455', name: 'Tom Lee', since: '2026-05-09', note: 'Carousell 客', consent: false },
+    { phone: '5666 7788', name: 'Mandy Chan', since: '2024-09-21', note: '公司客，月結', consent: true },
+    { phone: '9444 1122', name: '林小儀', since: '2026-10-30', note: '', consent: true },
+    { phone: '6555 3344', name: '周志強', since: '2025-02-14', note: '', consent: false },
+  ];
+
+  // Deterministic pseudo-random numbers so every reset gives the same demo.
+  let seedN = 20261102;
+  const rnd = () => (seedN = (seedN * 1103515245 + 12345) % 2147483648) / 2147483648;
+  const luhn = s => { let t = 0; for (let i = 0; i < s.length; i++) { let d = +s[i]; if (i % 2 === 1) { d *= 2; if (d > 9) d -= 9; } t += d; } return (10 - (t % 10)) % 10; };
+  const makeImei = () => { let s = '35' + String(Math.floor(rnd() * 1e6)).padStart(6, '0'); while (s.length < 14) s += Math.floor(rnd() * 10); return s + luhn(s); };
+  const SN = 'CDFGHJKLMNPQRTVWXY0123456789';
+  const makeSerial = () => Array.from({ length: 10 }, () => SN[Math.floor(rnd() * SN.length)]).join('');
+
+  const askPrice = (m, cap, grade, battery) => { const p = m.base[cap] * gradeOf(grade).mult - (battery < 85 ? 100 : 0); return Math.floor(p / 100) * 100 + 80; };
+
+  // [model, capacity, colour index, grade, battery %, region, status, photos, days since buyback, faults, extra]
+  const U = [
+    ['ip16pm', '256GB', 0, 'A★', 96, 'US', 'listed', 6, 4],
+    ['ip16pm', '512GB', 1, 'A', 92, 'HK', 'listed', 5, 9],
+    ['ip16p', '128GB', 2, 'A★★★', 100, 'HK', 'listed', 6, 2],
+    ['ip16p', '256GB', 0, 'B', 88, 'JP', 'listed', 4, 12],
+    ['ip15p', '256GB', 0, 'A★', 89, 'US', 'listed', 5, 5],
+    ['ip15p', '128GB', 1, 'A', 86, 'HK', 'listed', 4, 7],
+    ['ip15p', '128GB', 3, 'B', 84, 'JP', 'listed', 4, 15],
+    ['ip15', '128GB', 1, 'A', 91, 'HK', 'listed', 4, 3],
+    ['ip15', '256GB', 2, 'C', 82, 'US', 'listed', 4, 21],
+    ['ip14p', '128GB', 0, 'A', 87, 'HK', 'listed', 5, 6, [], { pastFix: ['housing'] }],
+    ['ip14p', '256GB', 1, 'B', 83, 'US', 'listed', 4, 18],
+    ['ip14plus', '128GB', 1, 'A★', 90, 'HK', 'listed', 4, 8],
+    ['ip13p', '128GB', 0, 'A', 85, 'HK', 'listed', 4, 10],
+    ['ip13p', '256GB', 1, 'B', 81, 'JP', 'listed', 4, 26],
+    ['ip13', '128GB', 1, 'A', 88, 'HK', 'listed', 4, 4],
+    ['ipse3', '64GB', 0, 'B', 84, 'HK', 'listed', 3, 33, [], { pastFix: ['buttons'] }],
+    ['ipadpro11m4', '256GB', 0, 'A★★★', 100, 'HK', 'listed', 6, 5],
+    ['ipadmini6', '64GB', 0, 'A', 92, 'US', 'listed', 4, 14],
+    ['ipad9', '64GB', 1, 'B', 90, 'HK', 'listed', 4, 40],
+    ['mbam2', '256GB', 0, 'A★', 94, 'HK', 'listed', 5, 11],
+    ['s24u', '256GB', 0, 'A', 93, 'HK', 'listed', 4, 9],
+    ['pixel8', '128GB', 0, 'B', 88, 'HK', 'listed', 3, 37],
+    ['aw9', 'GPS', 0, 'A', 95, 'HK', 'listed', 3, 16],
+    ['ip16p', '256GB', 1, 'A★', 97, 'HK', 'reserved', 5, 3, [], { by: '6234 5678', deposit: 200, channel: '網店' }],
+    ['ip14plus', '256GB', 0, 'A', 89, 'US', 'reserved', 4, 6, [], { by: '5432 1098', deposit: 300, channel: 'WhatsApp' }],
+    ['ip15p', '128GB', 2, 'A', 90, 'HK', 'ready', 0, 1],
+    ['ip13', '128GB', 0, 'B', 86, 'JP', 'ready', 0, 2],
+    ['ipadmini6', '256GB', 1, 'A★', 98, 'HK', 'ready', 2, 2],
+    ['ip14p', '128GB', 2, 'A', 85, 'US', 'ready', 0, 1],
+    ['ip16pm', '256GB', 2, 'A', 94, 'HK', 'qc', 0, 0],
+    ['ip15', '128GB', 0, 'A', 89, 'HK', 'qc', 0, 0],
+    ['s24u', '512GB', 1, 'B', 87, 'HK', 'qc', 0, 1],
+    ['ip13p', '128GB', 2, 'B', 83, 'US', 'qc', 0, 0],
+    ['ip14p', '256GB', 0, 'B', 76, 'HK', 'refurb', 0, 3, ['battery'], { tech: '外判師傅 K', place: '外判' }],
+    ['ip13p', '128GB', 1, 'B', 84, 'JP', 'refurb', 0, 7, ['rcam'], { tech: 'Dicky', place: '店內' }],
+    ['ip15', '128GB', 2, 'A', 90, 'US', 'refurb', 0, 2, ['screen'], { tech: '外判師傅 K', place: '外判' }],
+    ['ipadpro11m4', '512GB', 1, 'A', 96, 'HK', 'refurb', 0, 1, ['port'], { tech: 'Dicky', place: '店內' }],
+    ['ip15p', '256GB', 1, 'A★', 92, 'HK', 'sold', 5, 20, [], { soldAgo: 9, to: '9123 4567', channel: 'WhatsApp', pay: '轉數快', staff: 'Alan' }],
+    ['ip13', '128GB', 2, 'A', 87, 'HK', 'sold', 4, 12, [], { soldAgo: 2, to: '9876 5432', channel: '門市', pay: '現金', staff: 'Carmen' }],
+    ['ip16p', '128GB', 0, 'A', 95, 'US', 'sold', 5, 6, [], { soldAgo: 1, to: '9333 4455', channel: 'Carousell', pay: '轉數快', staff: 'Bonnie' }],
+    ['ipad9', '64GB', 0, 'C', 85, 'HK', 'sold', 3, 30, [], { soldAgo: 0, to: '5666 7788', channel: '門市', pay: '信用卡', staff: 'Carmen' }],
+  ];
+
+  function customerName(list, phone) { const c = list.find(x => x.phone === phone); return c ? c.name : '散客'; }
+
+  function buildUnits() {
+    const order = U.map((t, i) => ({ t, i })).sort((a, b) => b.t[8] - a.t[8] || a.i - b.i);
+    let code = 126301, octSeq = 391, novSeq = 1;
+    const sellers = ['6111 2233', '9444 1122', '6555 3344', '9876 5432', '9123 4567', '5432 1098', '9333 4455'];
+    return order.map(({ t }, k) => {
+      const [mid, cap, ci, grade, battery, region, status, photos, ago, faults = [], x = {}] = t;
+      const m = modelOf(mid);
+      const bought = day(ago);
+      const seq = bought >= '2026-11-01' ? novSeq++ : octSeq++;
+      const slip = '01CGR' + bought.slice(2, 4) + bought.slice(5, 7) + String(seq).padStart(4, '0');
+      const cellular = m.cellular !== false;
+      const price = askPrice(m, cap, grade, battery);
+      const pastFix = x.pastFix || [];
+      const staff = ['Alan', 'Bonnie', 'Carmen'][k % 3];
+      const u = {
+        code: '2ND' + (code++), model: mid, cap, color: m.colors[ci][0], hex: m.colors[ci][1], grade, battery, region, os: m.os,
+        imei: cellular ? makeImei() : '', serial: cellular ? '' : makeSerial(),
+        cost: r10(price * 0.72), refurb: pastFix.reduce((s, f) => s + faultFix(f), 0), price, floor: r10(price * 0.93),
+        status, photos, bought, slip, seller: sellers[k % sellers.length], staff,
+        faults: faults.slice(), tech: x.tech || '', place: x.place || '', fixFrom: status === 'refurb' ? bought : '',
+        reserved: null, sold: null, checks: {}, events: [],
+      };
+      if (status !== 'qc') CHECKS.forEach(c => { u.checks[c.id] = pastFix.includes(c.id) ? 'fixed' : faults.includes(c.id) ? 'fault' : 'ok'; });
+      const ev = (d, type, note, by) => u.events.push({ d, type, note, by });
+      ev(bought, '回收', `回收單 ${slip}，收購價 ${hkd(u.cost)}`, staff);
+      if (status !== 'qc') ev(bought, 'QC', faults.length ? `發現問題：${faults.map(checkName).join('、')}` : pastFix.length ? `需處理：${pastFix.map(checkName).join('、')}` : '17 點檢查全部合格', 'Dicky');
+      if (pastFix.length) ev(day(Math.max(0, ago - 1)), '翻新', `${pastFix.map(checkName).join('、')}，成本 ${hkd(u.refurb)}`, 'Dicky');
+      if (status === 'refurb') ev(bought, '送修', `${faults.map(checkName).join('、')} → ${u.tech}`, staff);
+      if (['listed', 'reserved', 'sold'].includes(status)) ev(day(Math.max(0, ago - 1)), '上架', `影相 ${photos} 張，售價 ${hkd(price)}`, 'Bonnie');
+      if (status === 'reserved') {
+        u.reserved = { by: x.by, deposit: x.deposit, channel: x.channel, date: day(Math.max(0, ago - 2)) };
+        ev(u.reserved.date, '預留', `${x.channel}，訂金 ${hkd(x.deposit)}`, x.channel === '網店' ? '網店' : 'Bonnie');
+      }
+      if (status === 'sold') {
+        u.sold = { date: day(x.soldAgo), to: x.to, channel: x.channel, pay: x.pay, price, staff: x.staff, inv: '' };
+        ev(u.sold.date, '售出', `${x.channel}，${x.pay}，${hkd(price)}`, x.staff);
+      }
+      u.events.sort((a, b) => a.d.localeCompare(b.d));
+      return u;
+    });
+  }
+
+  const EXTRA_INV = [
+    ['2026-10-29', '6234 5678', '門市', 'Carmen', 'iPhone 15 128GB 粉紅色', 3180, 3180, '轉數快', ''],
+    ['2026-10-30', '9123 4567', 'WhatsApp', 'Alan', 'Apple Watch Series 9 45mm 午夜色', 1380, 1380, '轉數快', ''],
+    ['2026-10-31', '6111 2233', 'WhatsApp', 'Bonnie', 'iPhone 14 Pro 256GB 金色', 3680, 3680, '轉數快', ''],
+    ['2026-10-31', '9444 1122', '門市', 'Carmen', 'iPhone 13 128GB 午夜色', 1880, 1880, '現金', ''],
+    ['2026-11-01', '6555 3344', 'Carousell', 'Bonnie', 'iPad mini 6 64GB 太空灰色', 1980, 1980, '轉數快', '順豐到付'],
+    ['2026-11-01', '5666 7788', '公司', 'Alan', 'iPad 9 Wi-Fi 64GB × 5', 5200, 0, '', '月結'],
+    ['2026-11-02', '9876 5432', 'WhatsApp', 'Alan', 'iPhone 14 Plus 128GB 藍色', 2780, 1000, '轉數快', '餘數取機時付'],
+  ];
+
+  function buildBooks(units) {
+    const rows = [];
+    units.filter(u => u.sold).forEach(u => {
+      const m = modelOf(u.model);
+      rows.push({ date: u.sold.date, phone: u.sold.to, channel: u.sold.channel, staff: u.sold.staff, lines: [{ code: u.code, name: `${m.name} ${u.cap} ${u.color}`, imei: u.imei || u.serial, price: u.price, grade: u.grade }], amount: u.price, received: u.price, pay: u.sold.pay, note: '', unit: u });
+    });
+    EXTRA_INV.forEach(([date, phone, channel, staff, name, amount, received, pay, note]) => rows.push({ date, phone, channel, staff, lines: [{ code: '2ND1259' + String(rows.length + 10), name, imei: makeImei(), price: amount, grade: 'A' }], amount, received, pay, note }));
+    rows.sort((a, b) => a.date.localeCompare(b.date));
+    let octI = 188, novI = 0, octR = 176, novR = 0;
+    const invoices = [], receipts = [];
+    rows.forEach(r => {
+      const nov = r.date >= '2026-11-01';
+      const no = '01SI26' + (nov ? '11' : '10') + String(nov ? ++novI : ++octI).padStart(4, '0');
+      if (r.unit) r.unit.sold.inv = no;
+      invoices.push({ no, date: r.date, phone: r.phone, name: customerName(CUSTOMERS, r.phone), channel: r.channel, staff: r.staff, lines: r.lines, amount: r.amount, received: r.received, note: r.note });
+      if (r.received > 0) receipts.push({ no: 'RV26' + (nov ? '11' : '10') + String(nov ? ++novR : ++octR).padStart(4, '0'), date: r.date, phone: r.phone, name: customerName(CUSTOMERS, r.phone), method: r.pay, amount: r.received, inv: no });
+    });
+    return { invoices: invoices.reverse(), receipts: receipts.reverse(), seq: { inv: novI, rv: novR } };
+  }
+
+  function buildSlips(units) {
+    return units.map(u => ({ no: u.slip, date: u.bought, phone: u.seller, name: customerName(CUSTOMERS, u.seller), code: u.code, price: u.cost, pay: u.cost > 3000 ? '轉數快' : '現金', staff: u.staff }))
+      .sort((a, b) => b.no.localeCompare(a.no));
+  }
+
+  function buildJobs(units) {
+    let n = 101880;
+    const jobs = [];
+    units.forEach(u => {
+      const done = u.events.find(e => e.type === '翻新');
+      if (done) jobs.push({ no: 'FIX' + (++n), code: u.code, date: u.bought, faults: CHECKS.filter(c => u.checks[c.id] === 'fixed').map(c => c.id), tech: 'Dicky', place: '店內', eta: done.d, cost: u.refurb, done: done.d, by: 'Dicky' });
+      if (u.status === 'refurb') jobs.push({ no: 'FIX' + (++n), code: u.code, date: u.fixFrom, faults: u.faults.slice(), tech: u.tech, place: u.place, eta: day(Math.max(0, daysBetween(u.fixFrom, TODAY) - 3)), cost: 0, done: '', by: '' });
+    });
+    return { jobs: jobs.sort((a, b) => b.no.localeCompare(a.no)), last: n };
+  }
+
+  const REPAIRS = [
+    { no: 'RP26110003', date: '2026-11-02', phone: '9444 1122', device: 'iPhone 12', color: '白色', imei: '356781092345671', issue: '電池健康度 72%，想換電池', faults: ['battery'], quote: 380, deposit: 0, status: 'received', tech: '', eta: '2026-11-02' },
+    { no: 'RP26110002', date: '2026-11-01', phone: '6111 2233', device: 'iPhone 14', color: '午夜色', imei: '353912118804562', issue: '熒幕碎裂，觸控正常', faults: ['screen'], quote: 1280, deposit: 300, status: 'awaiting', tech: '外判師傅 K', eta: '2026-11-04' },
+    { no: 'RP26110001', date: '2026-11-01', phone: '9876 5432', device: 'iPad Air 5', color: '藍色', imei: 'SN F9XKQ2LMN4', issue: '尾插接觸不良，充唔到電', faults: ['port'], quote: 480, deposit: 200, status: 'repairing', tech: 'Dicky', eta: '2026-11-03' },
+    { no: 'RP26100018', date: '2026-10-30', phone: '9123 4567', device: 'iPhone 13 Pro', color: '天峰藍色', imei: '352219107763418', issue: '後鏡頭對焦失靈', faults: ['rcam'], quote: 880, deposit: 300, status: 'ready', tech: 'Dicky', eta: '2026-11-01' },
+    { no: 'RP26100017', date: '2026-10-29', phone: '6555 3344', device: 'Samsung Galaxy S23', color: '黑色', imei: '358845221907735', issue: '入水，開唔到機', faults: ['screen', 'battery'], quote: 0, deposit: 0, status: 'diagnosing', tech: '外判師傅 K', eta: '2026-11-05' },
+    { no: 'RP26100015', date: '2026-10-27', phone: '5432 1098', device: 'iPhone 15', color: '藍色', imei: '356123097718203', issue: '換電池', faults: ['battery'], quote: 580, deposit: 580, status: 'done', tech: 'Dicky', eta: '2026-10-28' },
+  ];
+  const REPAIR_STATUS = [
+    ['received', '已收機'], ['diagnosing', '檢查報價'], ['awaiting', '待客戶確認'], ['repairing', '維修中'], ['ready', '待取機'], ['done', '已取機'],
+  ];
+
+  const REPAIR_PRICES = [
+    ['iPhone 16 系列', '換熒幕', 2280], ['iPhone 16 系列', '換電池', 680],
+    ['iPhone 15 系列', '換熒幕', 1880], ['iPhone 15 系列', '換電池', 580],
+    ['iPhone 14 系列', '換熒幕', 1280], ['iPhone 14 系列', '換電池', 480],
+    ['iPhone 13 系列', '換熒幕', 1080], ['iPhone 13 系列', '換電池', 420],
+    ['iPhone 12 或以前', '換熒幕', 780], ['iPhone 12 或以前', '換電池', 380],
+    ['iPad 系列', '換尾插', 480], ['所有型號', '檢查費（維修後全數扣減）', 100],
+  ];
+
+  const CMS = {
+    hero: { kicker: '17 點檢查 · 3 個月保養', title: '二手 iPhone，檢查好先上架', sub: '每部機都有獨立編號、電池健康度同實拍相，揀中即刻預留，門市取機。', cta1: '揀機', cta2: '即時回收報價' },
+    banners: [
+      { id: 'b1', title: '雙十一：iPhone 15 Pro 減 $300', from: '2026-11-08', to: '2026-11-11', on: true },
+      { id: 'b2', title: '高價回收 iPhone 16 系列', from: '2026-10-01', to: '2026-12-31', on: true },
+      { id: 'b3', title: '換電池 $380 起，即日取機', from: '2026-10-15', to: '2026-11-30', on: false },
+    ],
+    pages: [
+      { slug: 'warranty', title: '保養條款', status: '已發佈', updated: '2026-10-20', body: '所有二手機均享 3 個月保養，涵蓋機身功能故障（人為損壞、入水除外）。電池保養 1 個月。保養期內請帶同收據及機身到門市，我們會先檢查再安排維修或更換。' },
+      { slug: 'how-to-sell', title: '回收流程', status: '已發佈', updated: '2026-10-12', body: '1. 網上即時報價或直接到門市。2. 店員現場以 17 點檢查測試功能，並評定成色。3. 確認價錢後即場以現金或轉數快付款。請帶同身份證明文件，並先關閉「尋找」功能。' },
+      { slug: 'grading', title: '成色分級', status: '已發佈', updated: '2026-09-30', body: 'A★★★ 近全新；A★ 極新淨；A 新淨；B 正常使用痕；C 明顯花痕。所有成色均通過 17 點功能檢查。' },
+      { slug: 'faq', title: '常見問題', status: '草稿', updated: '2026-11-01', body: '可唔可以試機？可以，門市預留後可試機。可唔可以分期？信用卡可於門市辦理。' },
+      { slug: 'about', title: '關於手機俠', status: '已發佈', updated: '2026-08-15', body: '手機俠專營二手手機回收、銷售及維修。每部機都有獨立編號同檢查紀錄。' },
+    ],
+    store: { name: '手機俠 Phonemen', address: '九龍旺角（示範地址）', hours: '每日 12:00 – 21:00', whatsapp: '+852 5XXX XXXX（示範）' },
+    blocks: ['hero', 'usp', 'categories', 'latest', 'sell', 'grading', 'store'],
+  };
+
+  const LEADS = [
+    { id: 'Q1031', date: '2026-11-02 10:14', name: 'Kelvin', phone: '6888 1200', model: 'ip14p', cap: '128GB', grade: 'B', quote: 2050, status: '新報價' },
+    { id: 'Q1030', date: '2026-11-01 21:47', name: 'Ada', phone: '9221 7788', model: 'ip15', cap: '256GB', grade: 'A', quote: 2500, status: '已約到店' },
+  ];
+  const BOOKINGS = [
+    { id: 'BK208', date: '2026-11-03', slot: '15:00', name: 'Jason', phone: '6777 1290', device: 'iPhone 13', issue: '換電池', price: 420, status: '已預約' },
+  ];
+
+  // ---- store ----
+  const KEY = 'phonemen-demo-v1';
+  let state = null;
+  const listeners = [];
+
+  function seed() {
+    seedN = 20261102;
+    const units = buildUnits();
+    const books = buildBooks(units);
+    const fix = buildJobs(units);
+    const lastUnit = Math.max(...units.map(u => +u.code.slice(3)));
+    return {
+      v: 1,
+      units,
+      customers: CUSTOMERS.map(c => ({ ...c })),
+      invoices: books.invoices,
+      receipts: books.receipts,
+      slips: buildSlips(units),
+      jobs: fix.jobs,
+      repairs: REPAIRS.map(r => ({ ...r, faults: r.faults.slice() })),
+      repairPrices: REPAIR_PRICES.map(r => r.slice()),
+      cms: JSON.parse(JSON.stringify(CMS)),
+      matrix: {},
+      leads: LEADS.map(l => ({ ...l })),
+      bookings: BOOKINGS.map(b => ({ ...b })),
+      seq: { unit: lastUnit, slip: units.filter(u => u.bought >= '2026-11-01').length, inv: books.seq.inv, rv: books.seq.rv, fix: fix.last, rp: 3, quote: 1031, book: 208 },
+    };
+  }
+
+  function get() {
+    if (!state) {
+      try { const s = JSON.parse(localStorage.getItem(KEY) || 'null'); state = s && s.v === 1 ? s : seed(); } catch (e) { state = seed(); }
+    }
+    return state;
+  }
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) { /* private mode */ } listeners.forEach(f => f()); }
+  function reset() { state = seed(); save(); }
+  function on(f) { listeners.push(f); }
+  window.addEventListener('storage', e => { if (e.key === KEY) { state = null; get(); listeners.forEach(f => f()); } });
+
+  function nextNo(kind) {
+    const s = get().seq;
+    s[kind] = (s[kind] || 0) + 1;
+    const n = s[kind];
+    const p4 = x => String(x).padStart(4, '0');
+    return { unit: '2ND' + n, slip: '01CGR2611' + p4(n), inv: '01SI2611' + p4(n), rv: 'RV2611' + p4(n), fix: 'FIX' + n, rp: 'RP2611' + p4(n), quote: 'Q' + n, book: 'BK' + n }[kind];
+  }
+
+  // ---- derived helpers ----
+  const unit = code => get().units.find(u => u.code === code);
+  const unitTitle = u => { const m = modelOf(u.model); return `${m.name} ${u.cap} ${u.color}`; };
+  const unitAge = u => daysBetween(u.bought, TODAY);
+  const customer = phone => get().customers.find(c => c.phone === phone);
+  const buyBase = (mid, cap) => { const k = mid + '|' + cap; const m = modelOf(mid); return get().matrix[k] != null ? get().matrix[k] : r10(m.base[cap] * 0.7); };
+
+  function buyQuote(mid, cap, grade, battery, faults) {
+    const base = buyBase(mid, cap);
+    const gradeAdj = r10(base * ((BUY_MULT[grade] || 1) - 1));
+    const sub = base + gradeAdj;
+    const battAdj = battery < 80 ? -r10(sub * 0.08) : battery < 85 ? -r10(sub * 0.04) : 0;
+    const faultAdj = (faults || []).map(f => ({ id: f, name: checkName(f), amount: -r10(sub * faultCut(f)) }));
+    const total = Math.max(0, sub + battAdj + faultAdj.reduce((s, x) => s + x.amount, 0));
+    return { base, gradeAdj, battAdj, faultAdj, total: Math.floor(total / 10) * 10 };
+  }
+
+  function upsertCustomer(phone, name) {
+    const s = get();
+    let c = s.customers.find(x => x.phone === phone);
+    if (!c) { c = { phone, name: name || '新客戶', since: TODAY, note: '', consent: false }; s.customers.push(c); }
+    else if (name && c.name !== name) c.name = name;
+    return c;
+  }
+
+  window.PM = {
+    TODAY, day, daysBetween, hkd, r10, REGIONS, GRADES, gradeOf, BUY_MULT, CHECKS, checkName, FAULTS, faultCut, faultFix,
+    MODELS, modelOf, modelBySlug, FAMILIES, STAFF, TECHS, CHANNELS, PAYMENTS, REPAIR_STATUS, askPrice, makeImei, makeSerial,
+    store: { get, save, reset, on }, nextNo, unit, unitTitle, unitAge, customer, buyBase, buyQuote, upsertCustomer,
+  };
+})();
+
+</script>
+<script>
+/* Phonemen mockups: shared UI helpers — device art, QR and barcode art, toast, modal, printouts. */
+(function () {
+  'use strict';
+  const PM = window.PM;
+  const hkd = PM.hkd;
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const $ = (sel, root) => (root || document).querySelector(sel);
+  const $$ = (sel, root) => Array.from((root || document).querySelectorAll(sel));
+  const now = () => PM.TODAY + ' ' + new Date().toTimeString().slice(0, 5);
+  const maskPhone = p => (p || '').replace(/(\d{4})\s?(\d{4})/, '$1 ****');
+  let uid = 0;
+
+  // ---------- colour helpers ----------
+  function shade(hex, amt) {
+    const n = parseInt(hex.slice(1), 16);
+    const t = amt < 0 ? 0 : 255, p = Math.abs(amt);
+    const ch = v => Math.round((t - v) * p + v);
+    const r = ch(n >> 16), g = ch((n >> 8) & 255), b = ch(n & 255);
+    return '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+  }
+  const lum = hex => { const n = parseInt(hex.slice(1), 16); return (0.299 * (n >> 16) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255)) / 255; };
+
+  // ---------- device art ----------
+  const APPLE = 'M10 6C8 4.5 4 5 4 10c0 4 3 8 5 8 1 0 1.5-.5 3-.5s2 .5 3 .5c2 0 4-3.5 4.5-5.5-2-1-2.5-4-1-5.5-1-1.5-3-2-4.5-1.5S11.5 6.5 10 6zM12 4.5c0-1.5 1.5-3 3-3 0 1.5-1.5 3-3 3z';
+  const apple = (cx, cy, s, fill) => `<path d="${APPLE}" transform="translate(${cx - s} ${cy - s}) scale(${s / 10})" fill="${fill}" opacity=".55"/>`;
+  const wall = id => `<defs><linearGradient id="${id}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#1e3a8a"/><stop offset=".55" stop-color="#7c3aed"/><stop offset="1" stop-color="#f97316"/></linearGradient></defs>`;
+
+  function phone(m, hex, view) {
+    const edge = shade(hex, -0.22);
+    if (view === 'front') {
+      const g = 'w' + (++uid);
+      if (m.se) return `<svg viewBox="0 0 120 240" xmlns="http://www.w3.org/2000/svg">${wall(g)}<rect x="10" y="4" width="100" height="232" rx="18" fill="${edge}"/><rect x="12" y="6" width="96" height="228" rx="16" fill="#111"/><rect x="18" y="40" width="84" height="150" rx="2" fill="url(#${g})"/><rect x="48" y="22" width="24" height="4" rx="2" fill="#333"/><circle cx="60" cy="212" r="11" fill="none" stroke="#444" stroke-width="2"/></svg>`;
+      const hole = m.family === 'Android' ? '<circle cx="60" cy="20" r="4" fill="#000"/>' : '<rect x="44" y="15" width="32" height="10" rx="5" fill="#000"/>';
+      return `<svg viewBox="0 0 120 240" xmlns="http://www.w3.org/2000/svg">${wall(g)}<rect x="10" y="4" width="100" height="232" rx="20" fill="${edge}"/><rect x="12" y="6" width="96" height="228" rx="18" fill="#0b0b0c"/><rect x="16" y="10" width="88" height="220" rx="15" fill="url(#${g})"/>${hole}<text x="60" y="64" text-anchor="middle" font-size="18" font-family="Arial" fill="#fff" opacity=".9">10:09</text></svg>`;
+    }
+    const bump = shade(hex, lum(hex) > 0.6 ? -0.08 : 0.1);
+    let cam;
+    if (m.pixel) cam = `<rect x="12" y="44" width="96" height="22" rx="6" fill="#1d1d1f"/><circle cx="40" cy="55" r="6" fill="#0c0c0e" stroke="#555"/><circle cx="58" cy="55" r="6" fill="#0c0c0e" stroke="#555"/><circle cx="80" cy="55" r="2.5" fill="#f5f5f5"/>`;
+    else if (m.family === 'Android') cam = [26, 46, 66].map(y => `<circle cx="30" cy="${y}" r="7.5" fill="#111" stroke="${edge}" stroke-width="2"/>`).join('') + `<circle cx="50" cy="30" r="5" fill="#111" stroke="${edge}"/><circle cx="50" cy="46" r="2.5" fill="#eee"/>`;
+    else if (m.se) cam = `<circle cx="28" cy="26" r="7" fill="#111" stroke="${edge}" stroke-width="2"/><circle cx="28" cy="41" r="2.5" fill="#eee"/>`;
+    else if (m.pro) cam = `<rect x="20" y="14" width="50" height="50" rx="14" fill="${bump}" stroke="${edge}"/><circle cx="33" cy="27" r="9" fill="#141416" stroke="#4a4a4f" stroke-width="2"/><circle cx="33" cy="51" r="9" fill="#141416" stroke="#4a4a4f" stroke-width="2"/><circle cx="56" cy="39" r="9" fill="#141416" stroke="#4a4a4f" stroke-width="2"/><circle cx="57" cy="22" r="3" fill="#f3f3f3"/><circle cx="57" cy="56" r="3" fill="#2a2a2a"/>`;
+    else cam = `<rect x="20" y="14" width="40" height="50" rx="13" fill="${bump}" stroke="${edge}"/><circle cx="32" cy="27" r="8.5" fill="#141416" stroke="#4a4a4f" stroke-width="2"/><circle cx="48" cy="51" r="8.5" fill="#141416" stroke="#4a4a4f" stroke-width="2"/><circle cx="50" cy="26" r="2.8" fill="#f3f3f3"/>`;
+    const logo = m.family === 'iPhone' ? apple(60, 122, 9, edge) : m.family === 'Android' && !m.pixel ? `<text x="60" y="200" text-anchor="middle" font-size="8" font-family="Arial" fill="${edge}" opacity=".7">SAMSUNG</text>` : '';
+    return `<svg viewBox="0 0 120 240" xmlns="http://www.w3.org/2000/svg"><rect x="10" y="4" width="100" height="232" rx="20" fill="${edge}"/><rect x="12" y="6" width="96" height="228" rx="18" fill="${hex}"/>${cam}${logo}</svg>`;
+  }
+
+  function tablet(m, hex, view) {
+    const edge = shade(hex, -0.22);
+    if (view === 'front') {
+      const g = 'w' + (++uid);
+      return `<svg viewBox="0 0 170 240" xmlns="http://www.w3.org/2000/svg">${wall(g)}<rect x="6" y="4" width="158" height="232" rx="16" fill="${edge}"/><rect x="8" y="6" width="154" height="228" rx="14" fill="#0b0b0c"/><rect x="16" y="14" width="138" height="212" rx="8" fill="url(#${g})"/></svg>`;
+    }
+    return `<svg viewBox="0 0 170 240" xmlns="http://www.w3.org/2000/svg"><rect x="6" y="4" width="158" height="232" rx="16" fill="${edge}"/><rect x="8" y="6" width="154" height="228" rx="14" fill="${hex}"/><rect x="18" y="16" width="20" height="20" rx="6" fill="${shade(hex, -0.1)}"/><circle cx="28" cy="26" r="5" fill="#141416"/>${apple(85, 120, 11, edge)}</svg>`;
+  }
+
+  function laptop(m, hex, view) {
+    const edge = shade(hex, -0.22);
+    if (view === 'front') {
+      const g = 'w' + (++uid);
+      return `<svg viewBox="0 0 240 170" xmlns="http://www.w3.org/2000/svg">${wall(g)}<rect x="30" y="10" width="180" height="120" rx="8" fill="#0b0b0c" stroke="${edge}" stroke-width="2"/><rect x="38" y="18" width="164" height="104" rx="2" fill="url(#${g})"/><path d="M14 132h212l-10 16H24z" fill="${hex}" stroke="${edge}"/><rect x="104" y="132" width="32" height="4" rx="2" fill="${edge}"/></svg>`;
+    }
+    return `<svg viewBox="0 0 240 170" xmlns="http://www.w3.org/2000/svg"><rect x="20" y="16" width="200" height="138" rx="10" fill="${edge}"/><rect x="22" y="18" width="196" height="134" rx="9" fill="${hex}"/>${apple(120, 85, 12, edge)}</svg>`;
+  }
+
+  function watch(m, hex, view) {
+    const band = shade(hex, -0.05);
+    const face = view === 'front'
+      ? `<rect x="33" y="55" width="54" height="90" rx="14" fill="#000"/><text x="60" y="96" text-anchor="middle" font-size="17" font-family="Arial" fill="#fff">10:09</text><text x="60" y="114" text-anchor="middle" font-size="8" font-family="Arial" fill="#f97316">MON 2</text>`
+      : `<circle cx="60" cy="100" r="22" fill="#2a2a2c" stroke="#555"/><circle cx="60" cy="100" r="8" fill="#111"/>`;
+    return `<svg viewBox="0 0 120 200" xmlns="http://www.w3.org/2000/svg"><rect x="36" y="0" width="48" height="58" rx="8" fill="${band}"/><rect x="36" y="142" width="48" height="58" rx="8" fill="${band}"/><rect x="24" y="44" width="72" height="112" rx="22" fill="${view === 'front' ? '#1c1c1e' : shade(hex, -0.15)}" stroke="${hex}" stroke-width="5"/>${face}<rect x="97" y="80" width="6" height="18" rx="3" fill="${hex}"/></svg>`;
+  }
+
+  // view: back | front | tilt | detail
+  function deviceSVG(modelId, hex, view) {
+    const m = typeof modelId === 'string' ? PM.modelOf(modelId) : modelId;
+    const v = view === 'tilt' || view === 'detail' ? 'back' : view || 'back';
+    const fn = m.family === 'iPad' ? tablet : m.family === 'Mac' ? laptop : m.family === 'Watch' ? watch : phone;
+    let svg = fn(m, hex || m.colors[0][1], v);
+    if (view === 'tilt') svg = svg.replace(/<svg ([^>]*)>/, '<svg $1><g transform="rotate(-14 60 120) translate(0 4)">').replace(/<\/svg>$/, '</g></svg>');
+    if (view === 'detail') svg = svg.replace(/viewBox="0 0 (\d+) (\d+)"/, (s, w, h) => `viewBox="0 0 ${Math.round(w * 0.62)} ${Math.round(h * 0.38)}"`);
+    return svg;
+  }
+  const PHOTO_VIEWS = ['back', 'front', 'tilt', 'detail', 'back', 'front'];
+  const photoSVG = (u, i) => deviceSVG(u.model, u.hex, PHOTO_VIEWS[i % PHOTO_VIEWS.length]);
+
+  // ---------- QR and barcode art (look-alikes, not scannable) ----------
+  function hash(s) { let h = 2166136261; for (const c of String(s)) { h ^= c.charCodeAt(0); h = Math.imul(h, 16777619); } return h >>> 0; }
+  function qrSVG(text) {
+    const n = 25; let h = hash(text) || 1; let cells = '';
+    const inFinder = (x, y) => (x < 8 && y < 8) || (x > n - 9 && y < 8) || (x < 8 && y > n - 9);
+    for (let y = 0; y < n; y++) for (let x = 0; x < n; x++) {
+      if (inFinder(x, y)) continue;
+      h = (Math.imul(h, 1103515245) + 12345) >>> 0;
+      if ((h >>> 16) % 2 === 0) cells += `M${x} ${y}h1v1h-1z`;
+    }
+    const finder = (x, y) => `<rect x="${x}" y="${y}" width="7" height="7" fill="#000"/><rect x="${x + 1}" y="${y + 1}" width="5" height="5" fill="#fff"/><rect x="${x + 2}" y="${y + 2}" width="3" height="3" fill="#000"/>`;
+    return `<svg viewBox="-2 -2 ${n + 4} ${n + 4}" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges"><rect x="-2" y="-2" width="${n + 4}" height="${n + 4}" fill="#fff"/><path d="${cells}" fill="#000"/>${finder(0, 0)}${finder(n - 7, 0)}${finder(0, n - 7)}</svg>`;
+  }
+  function barcodeSVG(text) {
+    let bits = '11010010000';
+    for (const c of String(text)) bits += (hash(c + text.length) >>> 3).toString(2).padStart(11, '0').slice(-11) + '0';
+    bits += '1100011101011';
+    let x = 0, d = '';
+    for (const b of bits) { if (b === '1') d += `M${x} 0h1v40h-1z`; x++; }
+    return `<svg viewBox="0 0 ${x} 40" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges"><path d="${d}" fill="#000"/></svg>`;
+  }
+
+  // ---------- toast ----------
+  function toast(msg) {
+    let box = $('.pm-toasts');
+    if (!box) { box = document.createElement('div'); box.className = 'pm-toasts'; document.body.appendChild(box); }
+    const t = document.createElement('div');
+    t.className = 'pm-toast';
+    t.textContent = msg;
+    box.appendChild(t);
+    setTimeout(() => t.remove(), 2800);
+  }
+
+  // ---------- modal ----------
+  function modal({ title, body, foot, width, onClose }) {
+    const ov = document.createElement('div');
+    ov.className = 'pm-overlay';
+    ov.innerHTML = `<div class="pm-modal" style="max-width:${width || 560}px" role="dialog" aria-modal="true"><div class="pm-modal-head"><span>${title || ''}</span><button type="button" data-close aria-label="關閉">×</button></div><div class="pm-modal-body">${body || ''}</div>${foot ? `<div class="pm-modal-foot">${foot}</div>` : ''}</div>`;
+    const close = () => { ov.remove(); document.removeEventListener('keydown', onKey); if (onClose) onClose(); };
+    const onKey = e => { if (e.key === 'Escape') close(); };
+    ov.addEventListener('mousedown', e => { if (e.target === ov) close(); });
+    ov.addEventListener('click', e => { if (e.target.closest('[data-close]')) close(); });
+    document.addEventListener('keydown', onKey);
+    document.body.appendChild(ov);
+    return { el: ov.querySelector('.pm-modal'), close };
+  }
+
+  function printPreview(html, opts) {
+    opts = opts || {};
+    const m = modal({
+      title: opts.title || '列印預覽',
+      width: opts.width || 440,
+      body: `<div class="paper-stage">${html}</div><p style="margin:12px 0 0;color:#71717a;font-size:13px">${opts.hint || '一按即印：經打印代理直接送到收據打印機，唔使揀打印機。'}</p>`,
+      foot: `<button type="button" class="pm-btn" data-close>關閉</button><button type="button" class="pm-btn primary" data-print>列印</button>`,
+    });
+    m.el.querySelector('[data-print]').addEventListener('click', () => { m.close(); toast(opts.sent || '已送到收據打印機（示範）'); });
+    return m;
+  }
+
+  // ---------- printouts ----------
+  const STORE = () => PM.store.get().cms.store;
+  const head = sub => `<div class="c big">手機俠 Phonemen</div><div class="c muted">${esc(STORE().address)}</div><div class="c muted">WhatsApp ${esc(STORE().whatsapp)}</div>${sub ? `<div class="c" style="margin-top:6px;font-weight:700">${sub}</div>` : ''}<div class="rule"></div>`;
+  const row = (a, b) => `<div class="row"><span>${a}</span><span>${b}</span></div>`;
+  const plusMonths = (d, n) => { const t = new Date(d + 'T00:00:00Z'); t.setUTCMonth(t.getUTCMonth() + n); return t.toISOString().slice(0, 10); };
+
+  function receiptSale(d) {
+    const lines = d.lines.map(l => `<div style="margin-top:4px">${esc(l.title)}</div><div class="row muted"><span>${esc(l.code)} · ${esc(l.grade)}${l.battery ? ' · 電池 ' + l.battery + '%' : ''}</span></div><div class="row muted"><span>${l.imei ? (l.imei.length === 15 ? 'IMEI ' : '序號 ') + esc(l.imei) : ''}</span><span>${hkd(l.price)}</span></div>`).join('');
+    const pays = (d.payments || []).map(p => row(esc(p.method), hkd(p.amount))).join('');
+    return `<div class="receipt">${head('發票 / 收據')}${row('單號', esc(d.no))}${row('日期', esc(d.date))}${row('店員', esc(d.staff) + ' · ' + esc(d.channel))}${d.customer ? row('客戶', esc(d.customer.name) + ' ' + maskPhone(d.customer.phone)) : ''}<div class="rule"></div>${lines}<div class="rule"></div>${d.discount ? row('折扣', '-' + hkd(d.discount)) : ''}${pays}<div class="row tot"><span>合共</span><span>${hkd(d.total)}</span></div><div class="rule"></div><div class="small">保養至 ${plusMonths(d.date.slice(0, 10), 3)}（3 個月；人為損壞及入水除外）。請保留此收據。</div><div class="qr">${qrSVG(d.no)}</div><div class="c small">掃描查看保養及裝置檔案</div><div class="c" style="margin-top:6px">多謝惠顧！</div></div>`;
+  }
+
+  function slipBuyback(d) {
+    const fails = (d.faults || []).length ? d.faults.map(PM.checkName).join('、') : '全部合格';
+    return `<div class="receipt">${head('二手機回收單')}${row('單號', esc(d.no))}${row('日期', esc(d.date))}${row('店員', esc(d.staff))}<div class="rule"></div>${row('賣方', esc(d.name))}${row('電話', maskPhone(d.phone))}${d.idno ? row('證件', esc(d.idno)) : ''}<div class="rule"></div><div>${esc(d.title)}</div>${row(d.imei && d.imei.length === 15 ? 'IMEI' : '序號', esc(d.imei))}${row('成色 / 電池', esc(d.grade) + ' / ' + d.battery + '%')}${row('17 點檢查', esc(fails))}<div class="rule"></div>${row('付款方式', esc(d.pay))}<div class="row tot"><span>回收價</span><span>${hkd(d.price)}</span></div><div class="rule"></div><div class="small">本人確認上述裝置為本人合法擁有，並無任何借貸、按揭或盜竊來源，已關閉「尋找」功能及登出帳戶，並同意以上價錢出售予手機俠。</div><div class="small" style="margin-top:8px">賣方簽署</div><div class="sig">${d.signature ? `<img alt="簽署" src="${d.signature}">` : ''}</div><div class="c small" style="margin-top:8px">個人資料只用於交易紀錄，按《個人資料（私隱）條例》處理。</div></div>`;
+  }
+
+  function ticketRepair(d) {
+    return `<div class="receipt">${head('維修單')}${row('單號', esc(d.no))}${row('收機日期', esc(d.date))}${row('客戶', esc(d.name) + ' ' + maskPhone(d.phone))}<div class="rule"></div><div>${esc(d.device)} ${esc(d.color || '')}</div>${row('IMEI / 序號', esc(d.imei || '-'))}<div class="small" style="margin:4px 0">問題：${esc(d.issue)}</div><div class="rule"></div>${row('報價', d.quote ? hkd(d.quote) : '待檢查')}${row('訂金', hkd(d.deposit || 0))}${row('預計取機', esc(d.eta))}<div class="rule"></div><div class="small">取機時請出示此單。維修部分保養 30 日。機主確認已備份資料。</div><div class="qr">${qrSVG(d.no)}</div><div class="c small">掃描查看維修進度</div></div>`;
+  }
+
+  function label(u) {
+    const m = PM.modelOf(u.model);
+    return `<div class="label"><div><div class="l1">${esc(m.name)} ${esc(u.cap)}</div><div class="l2"><span>${esc(u.color)} · ${esc(u.grade)}${u.battery ? ' · 電池 ' + u.battery + '%' : ''}</span></div></div><div class="bc">${barcodeSVG(u.code)}</div><div class="l2"><span class="code">${esc(u.code)}</span><b>${hkd(u.price)}</b></div></div>`;
+  }
+
+  // ---------- signature pad ----------
+  function signaturePad(canvas) {
+    const ctx = canvas.getContext('2d');
+    let drawing = false, empty = true, last = null;
+    const pos = e => { const r = canvas.getBoundingClientRect(); const p = e.touches ? e.touches[0] : e; return [(p.clientX - r.left) * canvas.width / r.width, (p.clientY - r.top) * canvas.height / r.height]; };
+    const start = e => { drawing = true; last = pos(e); e.preventDefault(); };
+    const move = e => { if (!drawing) return; const p = pos(e); ctx.strokeStyle = '#111'; ctx.lineWidth = 2.4; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(last[0], last[1]); ctx.lineTo(p[0], p[1]); ctx.stroke(); last = p; empty = false; e.preventDefault(); };
+    const end = () => { drawing = false; };
+    canvas.addEventListener('mousedown', start); canvas.addEventListener('mousemove', move); window.addEventListener('mouseup', end);
+    canvas.addEventListener('touchstart', start, { passive: false }); canvas.addEventListener('touchmove', move, { passive: false }); canvas.addEventListener('touchend', end);
+    return {
+      clear() { ctx.clearRect(0, 0, canvas.width, canvas.height); empty = true; },
+      isEmpty: () => empty,
+      toDataURL: () => canvas.toDataURL('image/png'),
+      demo() { this.clear(); ctx.strokeStyle = '#111'; ctx.lineWidth = 2.4; ctx.lineCap = 'round'; ctx.beginPath(); const w = canvas.width, h = canvas.height; ctx.moveTo(w * .12, h * .62); for (let i = 0; i <= 40; i++) { const x = w * (.12 + i * .018); ctx.lineTo(x, h * (.55 + Math.sin(i * .7) * .18 - i * .002)); } ctx.stroke(); empty = false; },
+    };
+  }
+
+  // Links between the mockups. The single-file bundles (dist/) override these paths.
+  const LINKS = Object.assign({ hub: '../', a: '../a/', b: '../b/', shop: '../shop/' }, window.PM_LINKS || {});
+  const link = (app, hash) => LINKS[app] + (hash || '');
+  const shopURL = hash => link('shop', hash);
+
+  const STATUS = {
+    qc: { label: '待QC', tone: 'amber' },
+    refurb: { label: '翻新中', tone: 'orange' },
+    ready: { label: '可上架', tone: 'sky' },
+    listed: { label: '已上架', tone: 'green' },
+    reserved: { label: '已預留', tone: 'violet' },
+    sold: { label: '已售', tone: 'slate' },
+  };
+
+  window.UI = { esc, $, $$, now, hkd, maskPhone, shade, lum, deviceSVG, photoSVG, qrSVG, barcodeSVG, toast, modal, printPreview, receiptSale, slipBuyback, ticketRepair, label, signaturePad, STATUS, plusMonths, link, shopURL };
+})();
+
+</script>
+<script>
+/* Storefront — every Listed unit shows up automatically. Reservations, trade-in quotes
+   and repair bookings go straight into the shared backend data. */
+(function () {
+  'use strict';
+  const { store, hkd, modelOf, TODAY } = PM;
+  const { esc, $, $$, toast } = UI;
+  const S = () => store.get();
+  const nospace = p => String(p || '').replace(/\s/g, '');
+  const fmtPhone = p => { const d = nospace(p); return /^\d{8}$/.test(d) ? d.slice(0, 4) + ' ' + d.slice(4) : d; };
+
+  const P = {
+    check: 'M20 6L9 17l-5-5',
+    shield: 'M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6zM9 12l2 2 4-4',
+    store: 'M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11zM12 12.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z',
+    card: 'M3 6h18v12H3zM3 10h18M7 15h4',
+    arrow: 'M5 12h14M13 6l6 6-6 6',
+    msg: 'M20 12a8 8 0 0 1-11.6 7.1L4 20l1-4.2A8 8 0 1 1 20 12z',
+    camera: 'M4 8h3l2-3h6l2 3h3v11H4zM12 16.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z',
+    spark: 'M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z',
+    clock: 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM12 7v5l3 2',
+  };
+  const ic = (n, st) => `<svg class="ic" viewBox="0 0 24 24"${st ? ` style="${st}"` : ''}><path d="${P[n]}"/></svg>`;
+  const live = () => S().units.filter(u => u.status === 'listed');
+  const famById = id => PM.FAMILIES.find(f => f.id === id) || PM.FAMILIES[0];
+  const famOfModel = m => PM.FAMILIES.find(f => f.family === m.family);
+  const gradeTag = g => `<span class="tag ${g.startsWith('A') ? 'dark' : ''}">${esc(g)}</span>`;
+  const battTag = b => `<span class="tag ${b >= 85 ? 'g' : 'a'}">電池 ${b}%</span>`;
+  const plainTitle = m => m.name.replace(' Wi-Fi', '');
+  // Saves made here re-render explicitly; changes from the backend tab re-render through the listener.
+  let muted = false;
+  const commit = () => { muted = true; store.save(); muted = false; };
+
+  // ---------------------------------------------------------------- routing
+  let fallback = null;
+  const current = () => fallback || (location.hash || '#/').slice(1) || '/';
+  function go(path) {
+    if (current() === path) { route(); return; }
+    try { location.hash = path; } catch (e) { /* ignore */ }
+    if (location.hash !== '#' + path) { fallback = path; route(); }
+  }
+  window.__go = go;
+  document.addEventListener('click', e => {
+    const a = e.target.closest('a[href^="#/"]');
+    if (!a) return;
+    e.preventDefault();
+    go(a.getAttribute('href').slice(1));
+  });
+  window.addEventListener('hashchange', () => { fallback = null; route(); });
+
+  function route() {
+    const [path, qs] = current().split('?');
+    const q = new URLSearchParams(qs || '');
+    const parts = path.split('/').filter(Boolean);
+    renderChrome(parts[0] === 'c' ? parts[1] : parts[0] === 'p' ? famOfModel(PM.modelBySlug(parts[1]) || PM.MODELS[0]).id : parts[0]);
+    const el = document.createElement('div');
+    $('#app').replaceChildren(el);
+    window.scrollTo(0, 0);
+    if (!parts.length) home(el);
+    else if (parts[0] === 'c') category(el, parts[1] || 'iphone');
+    else if (parts[0] === 'p') product(el, parts[1], q);
+    else if (parts[0] === 'sell') sell(el, q);
+    else if (parts[0] === 'repair') repair(el);
+    else if (parts[0] === 'page') page(el, parts[1]);
+    else home(el);
+  }
+
+  function renderChrome(active) {
+    const cms = S().cms;
+    const banner = cms.banners.find(b => b.on);
+    $('#promo').innerHTML = banner ? `<b>${esc(banner.title)}</b>　·　${esc(banner.from)} 至 ${esc(banner.to)}　<a href="#/c/iphone" style="text-decoration:underline">立即睇</a>` : `<b>${esc(cms.hero.kicker)}</b>`;
+    $('#mainnav').innerHTML = PM.FAMILIES.map(f => `<a href="#/c/${f.id}" class="${active === f.id ? 'on' : ''}">${f.name}</a>`).join('') + `<a href="#/sell" class="hl ${active === 'sell' ? 'on' : ''}">回收報價</a><a href="#/repair" class="${active === 'repair' ? 'on' : ''}">維修</a>`;
+    const st = cms.store;
+    $('#footer').innerHTML = `<div class="wrap"><div class="ftr-in">
+      <div><b>${esc(st.name)}</b>${esc(st.address)}<br>${esc(st.hours)}<br>WhatsApp ${esc(st.whatsapp)}</div>
+      <div><b>買機</b>${PM.FAMILIES.map(f => `<a href="#/c/${f.id}">二手 ${f.name}</a>`).join('')}</div>
+      <div><b>服務</b><a href="#/sell">即時回收報價</a><a href="#/repair">維修預約</a><a href="#/page/warranty">保養條款</a><a href="#/page/how-to-sell">回收流程</a></div>
+      <div><b>關於</b>${cms.pages.filter(p => p.status === '已發佈').map(p => `<a href="#/page/${p.slug}">${esc(p.title)}</a>`).join('')}</div>
+    </div><div class="bottom"><span>© 2026 手機俠有限公司 · 示範網站</span><span>付款：轉數快 FPS · 信用卡 · 門市現金</span></div></div>`;
+  }
+
+  // ---------------------------------------------------------------- cards
+  function unitCard(u) {
+    const m = modelOf(u.model);
+    return `<a class="pc" href="#/p/${m.slug}?u=${u.code}"><div class="dev">${UI.photoSVG(u, 0)}<div class="badges">${gradeTag(u.grade)}${battTag(u.battery)}</div></div>
+      <div class="bd"><div class="nm">${esc(plainTitle(m))} ${esc(u.cap)}</div><div class="meta">${esc(u.color)} · ${PM.REGIONS[u.region]} · ${u.photos} 張實拍</div><div class="pr"><b>${hkd(u.price)}</b><span class="meta">${ic('check', 'width:15px;height:15px;color:#15803d;vertical-align:-3px')} 17 點檢查</span></div></div></a>`;
+  }
+  function modelCard(m, units) {
+    const min = Math.min(...units.map(u => u.price));
+    const hexes = [...new Set(units.map(u => u.hex))];
+    const caps = [...new Set(units.map(u => u.cap))];
+    const grades = [...new Set(units.map(u => u.grade))].sort();
+    return `<a class="pc" href="#/p/${m.slug}"><div class="dev">${UI.deviceSVG(m.id, units[0].hex, 'back')}<div class="badges"><span class="tag">${units.length} 部現貨</span></div></div>
+      <div class="bd"><div class="nm">${esc(plainTitle(m))}</div><div class="meta">${caps.join(' / ')} · 成色 ${grades.join(' ')}</div><div class="swatches">${hexes.map(h => `<i style="background:${h}"></i>`).join('')}</div><div class="pr"><b>${hkd(min)} 起</b></div></div></a>`;
+  }
+
+  // ---------------------------------------------------------------- home (blocks come from the CMS)
+  function home(el) {
+    const s = S();
+    const cms = s.cms;
+    const hidden = cms.hidden || [];
+    const L = live().sort((a, b) => b.bought.localeCompare(a.bought) || b.code.localeCompare(a.code));
+    const BLK = {
+      hero: () => {
+        const p1 = L.find(u => modelOf(u.model).family === 'iPhone' && modelOf(u.model).pro);
+        const p2 = L.find(u => modelOf(u.model).family === 'iPhone' && u !== p1 && u.hex !== (p1 || {}).hex);
+        const pick = [p1, p2, L.find(u => u !== p1 && u !== p2)].filter(Boolean);
+        return `<section class="hero"><div class="wrap hero-in"><div>
+          <span class="kicker">${ic('shield', 'width:16px;height:16px')} ${esc(cms.hero.kicker)}</span>
+          <h1>${esc(cms.hero.title)}</h1><p>${esc(cms.hero.sub)}</p>
+          <div class="ctas"><a class="btn acc" href="#/c/iphone">${esc(cms.hero.cta1)} ${ic('arrow')}</a><a class="btn ghost-w" href="#/sell">${esc(cms.hero.cta2)}</a></div>
+          <div class="proof"><span><b>${L.length}</b>部現貨</span><span><b>17 點</b>出廠檢查</span><span><b>3 個月</b>保養</span></div></div>
+          <div class="collage">${pick.map((u, i) => `<div class="p p${i + 1}">${UI.deviceSVG(u.model, u.hex, i === 1 ? 'front' : 'back')}</div>`).join('')}</div></div></section>`;
+      },
+      usp: () => `<section class="sec" style="padding:28px 0"><div class="wrap usp">
+        <div>${ic('shield')}<span><b>17 點檢查</b>每部機上架前都經過測試，紀錄睇得到</span></div>
+        <div>${ic('camera')}<span><b>實拍相片</b>你睇到嘅就係你攞到嘅嗰一部</span></div>
+        <div>${ic('store')}<span><b>門市取機</b>網上預留，到旺角門市試機再付款</span></div>
+        <div>${ic('card')}<span><b>轉數快 · 信用卡</b>預留只需 HK$200 訂金</span></div></div></section>`,
+      categories: () => `<section class="sec" style="padding-top:20px"><div class="wrap"><div class="sec-hd"><div><h2>揀系列</h2><p>現貨數量即時更新</p></div></div><div class="cats">${PM.FAMILIES.map(f => { const us = L.filter(u => modelOf(u.model).family === f.family); const m = PM.MODELS.find(x => x.family === f.family); return `<a class="cat" href="#/c/${f.id}"><b>${f.name}</b><span>${us.length ? us.length + ' 部 · ' + hkd(Math.min(...us.map(u => u.price))) + ' 起' : '暫時冇貨'}</span><div class="dev">${UI.deviceSVG(m.id, us[0] ? us[0].hex : m.colors[0][1], 'back')}</div></a>`; }).join('')}</div></div></section>`,
+      latest: () => `<section class="sec soft"><div class="wrap"><div class="sec-hd"><div><h2>最新上架</h2><p>店內影相後自動上架，賣出即時落架</p></div><a href="#/c/iphone">睇晒全部 →</a></div><div class="grid4">${L.slice(0, 8).map(unitCard).join('')}</div></div></section>`,
+      sell: () => { const ms = PM.MODELS.filter(m => m.family === 'iPhone'); return `<section class="sec"><div class="wrap"><div class="band"><div><h2>舊機換現金</h2><p>揀型號，即時睇回收價。到門市 10 分鐘檢查，即場現金或轉數快過數。</p></div><div class="qq"><select id="qq-m">${ms.map(m => `<option value="${m.id}">${esc(m.name)}</option>`).join('')}</select><div class="q">最高回收價<b id="qq-v"></b></div><a class="btn" id="qq-go" href="#/sell">開始報價</a></div></div></div></section>`; },
+      grading: () => `<section class="sec soft"><div class="wrap"><div class="sec-hd"><div><h2>成色點樣分</h2><p>所有成色都通過同一套 17 點功能檢查</p></div><a href="#/page/grading">詳細說明 →</a></div><div class="grades">${PM.GRADES.map(g => `<div><b>${g.id}</b><strong>${g.name}</strong><br><span>${g.desc}</span></div>`).join('')}</div></div></section>`,
+      store: () => `<section class="sec"><div class="wrap"><div class="sec-hd"><div><h2>門市</h2></div></div><div class="store"><div class="info"><b>${esc(cms.store.name)}</b><br>${ic('store', 'width:16px;height:16px;vertical-align:-3px')} ${esc(cms.store.address)}<br>${ic('clock', 'width:16px;height:16px;vertical-align:-3px')} ${esc(cms.store.hours)}<br>${ic('msg', 'width:16px;height:16px;vertical-align:-3px')} WhatsApp ${esc(cms.store.whatsapp)}<br><a class="btn sm" href="#/repair" style="margin-top:12px">預約維修</a></div><div class="map">地圖（示範）</div></div></div></section>`,
+    };
+    el.innerHTML = cms.blocks.filter(b => !hidden.includes(b) && BLK[b]).map(b => BLK[b]()).join('');
+    const sel = $('#qq-m', el);
+    if (sel) {
+      const upd = () => { const m = modelOf(sel.value); const cap = Object.keys(m.base).pop(); $('#qq-v', el).textContent = hkd(PM.buyQuote(m.id, cap, 'A★★★', 100, []).total); $('#qq-go', el).setAttribute('href', '#/sell?m=' + m.id); };
+      sel.addEventListener('change', upd);
+      upd();
+    }
+  }
+
+  // ---------------------------------------------------------------- category
+  const cf = { fam: '', models: [], caps: [], grades: [], batt: false, hk: false, sort: 'new', view: 'model' };
+  function category(el, famId) {
+    const fam = famById(famId);
+    if (cf.fam !== fam.id) Object.assign(cf, { fam: fam.id, models: [], caps: [], grades: [], batt: false, hk: false });
+    const all = live().filter(u => modelOf(u.model).family === fam.family);
+    const models = PM.MODELS.filter(m => m.family === fam.family && all.some(u => u.model === m.id));
+    const caps = [...new Set(all.map(u => u.cap))];
+    const cnt = (f, v) => all.filter(u => u[f] === v).length;
+    el.innerHTML = `<div class="wrap"><div class="crumb"><a href="#/">首頁</a> / 二手 ${fam.name}</div>
+      <div class="list-hd"><div><h1>二手 ${fam.name}</h1><p>${all.length} 部現貨 · 每部都有獨立編號同實拍相</p></div>
+        <div class="row" style="display:flex;gap:10px;align-items:center"><div class="seg"><button data-view="model" class="${cf.view === 'model' ? 'on' : ''}">按型號</button><button data-view="unit" class="${cf.view === 'unit' ? 'on' : ''}">逐部睇</button></div>
+        <select class="sort" id="sort"><option value="new">最新上架</option><option value="low">價錢低至高</option><option value="high">價錢高至低</option><option value="batt">電池最好</option></select></div></div>
+      <div class="list"><aside class="filters">
+        <div><h4>型號</h4>${models.map(m => `<label><input type="checkbox" data-f="models" value="${m.id}"${cf.models.includes(m.id) ? ' checked' : ''}>${esc(plainTitle(m))}<span>${cnt('model', m.id)}</span></label>`).join('')}</div>
+        <div><h4>容量</h4>${caps.map(c => `<label><input type="checkbox" data-f="caps" value="${c}"${cf.caps.includes(c) ? ' checked' : ''}>${c}<span>${cnt('cap', c)}</span></label>`).join('')}</div>
+        <div><h4>成色</h4>${PM.GRADES.map(g => `<label><input type="checkbox" data-f="grades" value="${g.id}"${cf.grades.includes(g.id) ? ' checked' : ''}>${g.id} ${g.name}<span>${cnt('grade', g.id)}</span></label>`).join('')}</div>
+        <div><h4>其他</h4><label><input type="checkbox" data-f="batt"${cf.batt ? ' checked' : ''}>電池 85% 或以上</label><label><input type="checkbox" data-f="hk"${cf.hk ? ' checked' : ''}>只睇港版</label></div>
+      </aside><div id="results"></div></div></div>`;
+    $('#sort', el).value = cf.sort;
+    const draw = () => {
+      let us = all.filter(u => (!cf.models.length || cf.models.includes(u.model)) && (!cf.caps.length || cf.caps.includes(u.cap)) && (!cf.grades.length || cf.grades.includes(u.grade)) && (!cf.batt || u.battery >= 85) && (!cf.hk || u.region === 'HK'));
+      us.sort(cf.sort === 'low' ? (a, b) => a.price - b.price : cf.sort === 'high' ? (a, b) => b.price - a.price : cf.sort === 'batt' ? (a, b) => b.battery - a.battery : (a, b) => b.bought.localeCompare(a.bought));
+      let html;
+      if (!us.length) html = `<div class="ok-box">冇符合條件嘅現貨。<br><a class="btn sm line" href="#/c/${fam.id}" style="margin-top:12px" data-reset>清除篩選</a></div>`;
+      else if (cf.view === 'unit') html = `<div class="grid3">${us.map(unitCard).join('')}</div>`;
+      else { const by = {}; us.forEach(u => { (by[u.model] = by[u.model] || []).push(u); }); html = `<div class="grid3">${Object.keys(by).map(id => modelCard(modelOf(id), by[id])).join('')}</div>`; }
+      $('#results', el).innerHTML = html;
+    };
+    el.addEventListener('change', e => {
+      const f = e.target.dataset.f;
+      if (f === 'batt' || f === 'hk') cf[f] = e.target.checked;
+      else if (f) cf[f] = $$(`[data-f=${f}]`, el).filter(i => i.checked).map(i => i.value);
+      if (e.target.id === 'sort') cf.sort = e.target.value;
+      draw();
+    });
+    el.addEventListener('click', e => {
+      const v = e.target.closest('[data-view]');
+      if (v) { cf.view = v.dataset.view; $$('[data-view]', el).forEach(b => b.classList.toggle('on', b === v)); draw(); }
+      if (e.target.closest('[data-reset]')) Object.assign(cf, { models: [], caps: [], grades: [], batt: false, hk: false });
+    });
+    draw();
+  }
+
+  // ---------------------------------------------------------------- product page
+  function product(el, slug, q) {
+    const m = PM.modelBySlug(slug);
+    if (!m) { el.innerHTML = '<div class="wrap"><div class="ok-box" style="margin:40px 0">搵唔到呢個型號</div></div>'; return; }
+    const fam = famOfModel(m);
+    let units = live().filter(u => u.model === m.id);
+    const reservedN = S().units.filter(u => u.model === m.id && u.status === 'reserved').length;
+    let sel = units.find(u => u.code === q.get('u')) || units.slice().sort((a, b) => a.price - b.price)[0] || null;
+    let photo = 0;
+    const draw = () => {
+      if (!sel) {
+        el.innerHTML = `<div class="wrap"><div class="crumb"><a href="#/">首頁</a> / <a href="#/c/${fam.id}">二手 ${fam.name}</a> / ${esc(plainTitle(m))}</div><div class="pdp"><div class="gallery"><div class="dev main">${UI.deviceSVG(m.id, m.colors[0][1], 'back')}</div></div><div class="buy"><h1>${esc(plainTitle(m))}</h1><p class="price" style="font-size:22px">暫時冇現貨${reservedN ? `（${reservedN} 部已被預留）` : ''}</p><p>留低 WhatsApp，有貨即刻通知你。</p><div class="ctas"><a class="btn" href="#/c/${fam.id}">睇其他 ${fam.name}</a><a class="btn line" href="#/sell?m=${m.id}">回收你部舊機</a></div></div></div></div>`;
+        return;
+      }
+      const same = units.filter(u => u.cap === sel.cap && u.color === sel.color).sort((a, b) => a.price - b.price);
+      const capOK = c => units.some(u => u.cap === c);
+      const colOK = c => units.some(u => u.color === c && u.cap === sel.cap) || units.some(u => u.color === c);
+      const gradeN = g => units.filter(u => u.grade === g && u.cap === sel.cap).length;
+      const warranty = (S().cms.pages.find(p => p.slug === 'warranty') || { body: '' }).body;
+      const fixed = Object.keys(sel.checks || {}).filter(k => sel.checks[k] === 'fixed').map(PM.checkName);
+      el.innerHTML = `<div class="wrap"><div class="crumb"><a href="#/">首頁</a> / <a href="#/c/${fam.id}">二手 ${fam.name}</a> / ${esc(plainTitle(m))}</div>
+        <div class="pdp">
+          <div class="gallery"><div class="dev main">${UI.photoSVG(sel, photo)}</div>
+            <div class="thumbs">${Array.from({ length: sel.photos }, (_, i) => `<button type="button" data-ph="${i}" class="${i === photo ? 'on' : ''}" aria-label="相片 ${i + 1}"><div class="dev">${UI.photoSVG(sel, i)}</div></button>`).join('')}</div>
+            <div class="real">${ic('camera', 'width:16px;height:16px')} 實拍相片 · 編號 ${sel.code} 呢一部</div></div>
+          <div class="buy">
+            <h1>${esc(plainTitle(m))} ${esc(sel.cap)}</h1>
+            <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px">${gradeTag(sel.grade + ' ' + PM.gradeOf(sel.grade).name)}${battTag(sel.battery)}<span class="tag">${PM.REGIONS[sel.region]}</span><span class="tag g">${ic('check', 'width:14px;height:14px')} 17 點檢查</span></div>
+            <div class="price">${hkd(sel.price)}</div>
+            <div style="color:var(--muted);font-size:14px">或預留只需 HK$200 訂金 · 門市試機滿意先付餘數</div>
+            <div class="opt"><h4>容量</h4><div class="chips">${Object.keys(m.base).map(c => `<button type="button" class="ch ${c === sel.cap ? 'on' : ''}" data-cap="${c}"${capOK(c) ? '' : ' disabled'}>${c}</button>`).join('')}</div></div>
+            <div class="opt"><h4>顏色 <span>${esc(sel.color)}</span></h4><div class="chips">${m.colors.map(([n, h]) => `<button type="button" class="ch ${n === sel.color ? 'on' : ''}" data-color="${esc(n)}"${colOK(n) ? '' : ' disabled'} title="${esc(n)}"><i style="background:${h}"></i>${esc(n)}</button>`).join('')}</div></div>
+            <div class="opt"><h4>成色</h4><div class="chips">${PM.GRADES.map(g => `<button type="button" class="ch ${g.id === sel.grade ? 'on' : ''}" data-grade="${g.id}"${gradeN(g.id) ? '' : ' disabled'}>${g.id}${gradeN(g.id) ? ` <span style="color:var(--muted);font-weight:500">${gradeN(g.id)}</span>` : ''}</button>`).join('')}</div></div>
+            <div class="opt"><h4>呢個組合嘅現貨 <span>${same.length} 部</span></h4><div class="units">${same.map(u => `<div class="unit ${u.code === sel.code ? 'on' : ''}" data-unit="${u.code}"><span class="rad"></span><div><b>${hkd(u.price)}</b> <span class="m">· ${esc(u.grade)} · 電池 ${u.battery}% · ${PM.REGIONS[u.region]}</span><div class="m">編號 ${u.code} · ${u.photos} 張實拍</div></div><span class="tag">${PM.unitAge(u) <= 3 ? '新上架' : u.photos + ' 張相'}</span></div>`).join('')}</div></div>
+            <div class="ctas"><button class="btn acc" data-act="reserve" style="flex:1">預留 · 訂金 HK$200</button><button class="btn line" data-act="buy" style="flex:1">全數付款</button></div>
+            <div class="ctas" style="margin-top:10px"><a class="btn line sm" href="#/page/about">${ic('msg', 'width:16px;height:16px')} WhatsApp 查詢呢部</a></div>
+            <div class="trust"><div>${ic('shield')}3 個月保養</div><div>${ic('store')}旺角門市取機或順豐</div><div>${ic('check')}唔滿意試機可取消</div><div>${ic('card')}轉數快 · 信用卡</div></div>
+            <details open><summary>17 點檢查結果</summary><div class="chkgrid">${PM.CHECKS.map(c => `<span>${ic('check')}${c.name}</span>`).join('')}</div>${fixed.length ? `<p style="color:var(--muted);font-size:14px;margin:12px 0 0">已更換：${fixed.join('、')}（使用相容零件，保養同樣有效）</p>` : ''}</details>
+            <details><summary>保養條款</summary><p style="color:var(--muted);font-size:14px">${esc(warranty)}</p></details>
+            <details><summary>取機及付款</summary><p style="color:var(--muted);font-size:14px">網上預留後 48 小時內到門市試機及付餘數；亦可全數付款後以順豐寄送（示範）。付款：轉數快、信用卡或門市現金。</p></details>
+          </div></div></div>`;
+    };
+    const pick = (cap, color, grade) => {
+      const pool = units.filter(u => u.cap === cap);
+      sel = pool.filter(u => u.color === color && u.grade === grade).sort((a, b) => a.price - b.price)[0] || pool.filter(u => u.color === color).sort((a, b) => a.price - b.price)[0] || pool.filter(u => u.grade === grade)[0] || pool[0] || sel;
+      photo = 0;
+      draw();
+    };
+    el.addEventListener('click', e => {
+      const t = e.target.closest('[data-ph],[data-cap],[data-color],[data-grade],[data-unit],[data-act]');
+      if (!t || t.disabled) return;
+      if (t.dataset.ph != null) { photo = +t.dataset.ph; draw(); }
+      else if (t.dataset.cap) pick(t.dataset.cap, sel.color, sel.grade);
+      else if (t.dataset.color) { const pool = units.filter(u => u.color === t.dataset.color); const cap = pool.some(u => u.cap === sel.cap) ? sel.cap : (pool[0] || sel).cap; pick(cap, t.dataset.color, sel.grade); }
+      else if (t.dataset.grade) pick(sel.cap, sel.color, t.dataset.grade);
+      else if (t.dataset.unit) { sel = units.find(u => u.code === t.dataset.unit); photo = 0; draw(); }
+      else if (t.dataset.act === 'reserve' || t.dataset.act === 'buy') reserveModal(sel, t.dataset.act === 'buy', () => { units = live().filter(u => u.model === m.id); sel = units[0] || null; draw(); });
+    });
+    draw();
+  }
+
+  function reserveModal(u, full, done) {
+    const m = modelOf(u.model);
+    const amount = full ? u.price : 200;
+    const st = { pick: '門市取機', pay: '轉數快' };
+    const md = UI.modal({
+      title: full ? '全數付款' : '預留呢部機', width: 500,
+      body: `<div class="rv">
+        <div class="sumline"><div class="dev">${UI.photoSVG(u, 0)}</div><div><b>${esc(plainTitle(m))} ${esc(u.cap)} ${esc(u.color)}</b><div style="font-size:13px;color:#71717a">編號 ${u.code} · ${esc(u.grade)} · 電池 ${u.battery}%</div></div><b style="margin-left:auto">${hkd(u.price)}</b></div>
+        <input id="rv-name" placeholder="姓名" autocomplete="name"><input id="rv-phone" placeholder="WhatsApp 電話（8 位）" inputmode="tel">
+        <div class="opts" data-g="pick"><button type="button" class="on" data-v="門市取機">門市取機</button><button type="button" data-v="順豐寄送"${full ? '' : ' disabled title="全數付款先可以寄"'}>順豐寄送</button></div>
+        <div class="opts" data-g="pay"><button type="button" class="on" data-v="轉數快">轉數快 FPS</button><button type="button" data-v="信用卡">信用卡</button></div>
+        <div class="fps" id="rv-paybox"><div>${UI.qrSVG('fps-' + u.code)}</div><div>用銀行 App 掃描轉數快 QR<br><b style="font-size:24px">${hkd(amount)}</b><br><span style="font-size:13px;color:#71717a">${full ? '全數付款' : '訂金，餘數取機時付'}</span></div></div>
+        <div style="font-size:13px;color:#71717a">${full ? '付款後我哋會 WhatsApp 確認取機或寄送時間。' : '預留 48 小時；逾時未取機，訂金全數退回。'}</div></div>`,
+      foot: `<button class="pm-btn" data-close>取消</button><button class="pm-btn primary" data-ok>我已付款，確認${full ? '購買' : '預留'}</button>`,
+    });
+    md.el.addEventListener('click', e => {
+      const b = e.target.closest('.opts button');
+      if (!b || b.disabled) return;
+      const g = b.parentElement.dataset.g;
+      st[g] = b.dataset.v;
+      $$('button', b.parentElement).forEach(x => x.classList.toggle('on', x === b));
+      if (g === 'pay') $('#rv-paybox', md.el).innerHTML = st.pay === '轉數快' ? `<div>${UI.qrSVG('fps-' + u.code)}</div><div>用銀行 App 掃描轉數快 QR<br><b style="font-size:24px">${hkd(amount)}</b></div>` : `<div style="grid-column:1/-1;display:grid;gap:8px"><input placeholder="卡號（示範，唔會收費）" disabled><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><input placeholder="MM/YY" disabled><input placeholder="CVC" disabled></div><b>${hkd(amount)}</b></div>`;
+    });
+    $('[data-ok]', md.el).addEventListener('click', () => {
+      const name = $('#rv-name', md.el).value.trim();
+      const phone = fmtPhone($('#rv-phone', md.el).value);
+      if (!name || nospace(phone).length !== 8) return toast('請輸入姓名同 8 位電話');
+      const unit = PM.unit(u.code);
+      if (unit.status !== 'listed') { md.close(); toast('唔好意思，呢部機啱啱被預留咗'); done(); return; }
+      PM.upsertCustomer(phone, name);
+      unit.status = 'reserved';
+      unit.reserved = { by: phone, deposit: amount, channel: '網店', date: TODAY, pickup: st.pick, paid: full };
+      unit.events.push({ d: TODAY, type: '預留', note: `網店${full ? '全數付款' : '預留'}，${st.pay} ${hkd(amount)}，${st.pick}`, by: '網店' });
+      commit();
+      md.close();
+      UI.modal({ title: full ? '付款成功' : '已預留', width: 460, body: `<div style="text-align:center"><div style="font-size:44px">🎉</div><p style="font-size:17px"><b>${esc(plainTitle(m))} ${esc(u.cap)}</b><br>編號 ${u.code} 已為你保留。</p><p style="color:#71717a">我哋會 WhatsApp ${esc(phone)} 確認。${full ? '' : `到門市付餘數 <b>${hkd(u.price - amount)}</b> 即可取機。`}</p></div>`, foot: '<button class="pm-btn primary" data-close>好</button>', onClose: done });
+    });
+  }
+
+  // ---------------------------------------------------------------- trade-in quote
+  const LOOKS = [['A★★★', '近全新', '冇花冇痕'], ['A', '輕微使用痕', '近睇先見細花'], ['B', '明顯花痕', '一眼睇到花痕'], ['C', '有撞痕', '邊框有撞或凹']];
+  const sl = { fam: 'iPhone', mid: '', cap: '', power: 'yes', screen: 'ok', faceid: 'ok', batt: '85', look: 'A', done: null };
+  function sell(el, q) {
+    if (q.get('m') && q.get('m') !== sl.mid) { const m = modelOf(q.get('m')); if (m) Object.assign(sl, { fam: m.family, mid: m.id, cap: '', done: null }); }
+    const draw = () => {
+      const fams = [...new Set(PM.MODELS.map(m => m.family))];
+      const m = sl.mid ? modelOf(sl.mid) : null;
+      const caps = m ? Object.keys(m.base) : [];
+      if (m && !caps.includes(sl.cap)) sl.cap = caps.length === 1 ? caps[0] : '';
+      const ready = m && sl.cap;
+      const faults = [];
+      if (sl.screen === 'cracked') faults.push('screen');
+      if (sl.faceid === 'bad') faults.push('faceid');
+      const batt = sl.batt === '85' ? 90 : sl.batt === '80' ? 82 : 76;
+      const qq = ready ? PM.buyQuote(sl.mid, sl.cap, sl.look, batt, faults) : null;
+      const hi = qq ? qq.total : 0;
+      const lo = PM.r10(hi * 0.93);
+      const yes = (k, a, b, la, lb) => `<div class="seg"><button data-k="${k}" data-v="${a}" class="${sl[k] === a ? 'on' : ''}">${la}</button><button data-k="${k}" data-v="${b}" class="${sl[k] === b ? 'on' : ''}">${lb}</button></div>`;
+      if (sl.done) {
+        el.innerHTML = `<div class="flow"><div class="crumb"><a href="#/">首頁</a> / 回收報價</div><div class="ok-box">${ic('check')}<h2>收到！報價編號 ${sl.done.id}</h2><p>${esc(sl.done.name)}，我哋會喺 1 小時內 WhatsApp ${esc(sl.done.phone)} 確認到店時間。<br>預計回收價 <b>${hkd(sl.done.lo)} – ${hkd(sl.done.hi)}</b>，最終以門市檢查為準。</p><p style="color:var(--muted)">記得帶身份證明文件，並先關閉「尋找」功能。</p><a class="btn" href="#/" style="margin-top:8px">返回首頁</a> <button class="btn line" data-again>再報一部</button></div></div>`;
+        return;
+      }
+      el.innerHTML = `<div class="flow"><div class="crumb"><a href="#/">首頁</a> / 回收報價</div><h1>即時回收報價</h1><p class="lead">三步睇到價。到門市 10 分鐘檢查，即場現金或轉數快過數。</p>
+        <div class="stepbox ${m ? 'done' : ''}"><h3><span class="n">1</span>揀型號</h3><div class="seg" style="margin-bottom:14px">${fams.map(f => `<button data-fam="${f}" class="${sl.fam === f ? 'on' : ''}">${f}</button>`).join('')}</div><div class="models">${PM.MODELS.filter(x => x.family === sl.fam).map(x => `<button type="button" class="mdl ${x.id === sl.mid ? 'on' : ''}" data-mid="${x.id}"><div class="dev">${UI.deviceSVG(x.id, x.colors[0][1], 'back')}</div>${esc(plainTitle(x))}</button>`).join('')}</div></div>
+        <div class="stepbox ${!m ? 'wait' : sl.cap ? 'done' : ''}"><h3><span class="n">2</span>容量</h3><div class="chips">${caps.map(c => `<button type="button" class="ch ${c === sl.cap ? 'on' : ''}" data-cap="${c}">${c}</button>`).join('') || '<span style="color:var(--muted)">先揀型號</span>'}</div></div>
+        <div class="stepbox ${ready ? '' : 'wait'}"><h3><span class="n">3</span>狀況</h3><div class="qs">
+          <div class="qrow"><b>可以正常開機？</b>${yes('power', 'yes', 'no', '可以', '唔可以')}</div>
+          <div class="qrow"><b>熒幕有冇裂？</b>${yes('screen', 'ok', 'cracked', '冇裂', '有裂')}</div>
+          <div class="qrow"><b>Face ID / Touch ID 正常？</b>${yes('faceid', 'ok', 'bad', '正常', '唔正常')}</div>
+          <div class="qrow"><b>電池健康度</b><div class="seg">${[['85', '85% 或以上'], ['80', '80–84%'], ['79', '79% 或以下']].map(([v, l]) => `<button data-k="batt" data-v="${v}" class="${sl.batt === v ? 'on' : ''}">${l}</button>`).join('')}</div></div>
+          <div class="qrow" style="align-items:flex-start"><b>外觀</b><div class="chips">${LOOKS.map(([g, n, d]) => `<button type="button" class="ch ${sl.look === g ? 'on' : ''}" data-k="look" data-v="${g}" style="flex-direction:column;height:auto;padding:8px 14px;align-items:flex-start"><span>${n}</span><span style="font-size:12px;color:var(--muted);font-weight:500">${d}</span></button>`).join('')}</div></div>
+        </div></div>
+        ${ready ? (sl.power === 'no' ? `<div class="stepbox"><h3>未能開機嘅裝置</h3><p>需要到門市檢查先可以報價。可以直接 WhatsApp 我哋或者預約維修。</p><a class="btn" href="#/repair">預約檢查</a></div>` : `<div class="result"><div><div class="amt"><small>預計回收價</small>${hkd(lo)} – ${hkd(hi)}</div><p style="color:#a1a1aa;margin:8px 0 0">${esc(plainTitle(m))} ${esc(sl.cap)} · ${LOOKS.find(l => l[0] === sl.look)[1]}${faults.length ? ' · ' + faults.map(PM.checkName).join('、') + '有問題' : ''}。最終價錢以門市 17 點檢查為準。</p></div>
+          <div class="form"><input id="sl-name" placeholder="姓名"><input id="sl-phone" placeholder="WhatsApp 電話" inputmode="tel"><select id="sl-day"><option>今日</option><option>明日</option><option>後日</option></select><select id="sl-time"><option>12:00–15:00</option><option>15:00–18:00</option><option>18:00–21:00</option></select><button class="btn acc" data-submit style="grid-column:1/-1">預約到店 · 鎖定報價 48 小時</button></div></div>`) : ''}
+        <div style="margin-top:40px"><h3>回收價目表（A 級，示範）</h3><table class="tbl"><thead><tr><th>型號</th><th>容量</th><th class="r">A★★★</th><th class="r">A</th><th class="r">B</th></tr></thead><tbody>${PM.MODELS.filter(x => x.family === 'iPhone').map(x => { const cap = Object.keys(x.base)[0]; const a = PM.buyBase(x.id, cap); return `<tr><td>${esc(x.name)}</td><td>${cap}</td><td class="r">${hkd(PM.r10(a * PM.BUY_MULT['A★★★']))}</td><td class="r">${hkd(a)}</td><td class="r">${hkd(PM.r10(a * PM.BUY_MULT.B))}</td></tr>`; }).join('')}</tbody></table></div>
+      </div>`;
+    };
+    el.addEventListener('click', e => {
+      const t = e.target.closest('[data-fam],[data-mid],[data-cap],[data-k],[data-submit],[data-again]');
+      if (!t) return;
+      if (t.dataset.fam) { sl.fam = t.dataset.fam; sl.mid = ''; sl.cap = ''; }
+      else if (t.dataset.mid) { sl.mid = t.dataset.mid; sl.cap = ''; }
+      else if (t.dataset.cap) sl.cap = t.dataset.cap;
+      else if (t.dataset.k) sl[t.dataset.k] = t.dataset.v;
+      else if (t.dataset.again != null) { Object.assign(sl, { mid: '', cap: '', done: null }); }
+      else if (t.dataset.submit != null) {
+        const name = $('#sl-name', el).value.trim();
+        const phone = fmtPhone($('#sl-phone', el).value);
+        if (!name || nospace(phone).length !== 8) return toast('請輸入姓名同 8 位電話');
+        const faults = [];
+        if (sl.screen === 'cracked') faults.push('screen');
+        if (sl.faceid === 'bad') faults.push('faceid');
+        const batt = sl.batt === '85' ? 90 : sl.batt === '80' ? 82 : 76;
+        const hi = PM.buyQuote(sl.mid, sl.cap, sl.look, batt, faults).total;
+        const id = PM.nextNo('quote');
+        S().leads.unshift({ id, date: TODAY + ' ' + UI.now().slice(11), name, phone, model: sl.mid, cap: sl.cap, grade: sl.look, quote: hi, status: '新報價', visit: $('#sl-day', el).value + ' ' + $('#sl-time', el).value });
+        commit();
+        sl.done = { id, name, phone, lo: PM.r10(hi * 0.93), hi };
+        window.scrollTo(0, 0);
+      }
+      draw();
+    });
+    draw();
+  }
+
+  // ---------------------------------------------------------------- repair booking
+  function repair(el) {
+    const prices = S().repairPrices;
+    const series = [...new Set(prices.map(p => p[0]))];
+    const st = { s: series[0], item: '', done: null };
+    const days = [0, 1, 2].map(n => PM.day(-n));
+    const draw = () => {
+      const items = prices.filter(p => p[0] === st.s);
+      if (!items.some(p => p[1] === st.item)) st.item = items[0][1];
+      const price = (items.find(p => p[1] === st.item) || [0, 0, 0])[2];
+      if (st.done) {
+        el.innerHTML = `<div class="flow"><div class="crumb"><a href="#/">首頁</a> / 維修</div><div class="ok-box">${ic('check')}<h2>預約成功 · ${st.done.id}</h2><p>${esc(st.done.name)}，${esc(st.done.date)} ${esc(st.done.slot)} 見！<br>${esc(st.done.device)} · ${esc(st.done.issue)} · ${hkd(st.done.price)}</p><p style="color:var(--muted)">我哋會 WhatsApp 提你。到店後師傅會先檢查再確認價錢。</p><a class="btn" href="#/">返回首頁</a></div></div>`;
+        return;
+      }
+      el.innerHTML = `<div class="flow"><div class="crumb"><a href="#/">首頁</a> / 維修</div><h1>維修預約</h1><p class="lead">價錢一目了然。大部分換熒幕、換電池即日完成。</p>
+        <div class="stepbox"><h3><span class="n">1</span>你部機</h3><div class="chips">${series.map(x => `<button type="button" class="ch ${x === st.s ? 'on' : ''}" data-s="${esc(x)}">${esc(x)}</button>`).join('')}</div></div>
+        <div class="stepbox"><h3><span class="n">2</span>維修項目</h3><div class="chips">${items.map(p => `<button type="button" class="ch ${p[1] === st.item ? 'on' : ''}" data-item="${esc(p[1])}">${esc(p[1])} · ${hkd(p[2])}</button>`).join('')}</div></div>
+        <div class="stepbox"><h3><span class="n">3</span>時間同聯絡</h3><div class="form"><input id="rp-name" placeholder="姓名"><input id="rp-phone" placeholder="WhatsApp 電話" inputmode="tel"><select id="rp-day">${days.map((d, i) => `<option value="${d}">${['今日', '明日', '後日'][i]}（${d.slice(5)}）</option>`).join('')}</select><select id="rp-slot"><option>12:00</option><option>14:00</option><option>16:00</option><option>18:00</option><option>20:00</option></select></div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:16px;gap:12px;flex-wrap:wrap"><div style="font-size:15px">${esc(st.s)} · ${esc(st.item)}：<b style="font-size:22px">${hkd(price)}</b></div><button class="btn acc" data-book>確認預約</button></div></div>
+        <div style="margin-top:34px"><h3>維修價目表</h3><table class="tbl"><thead><tr><th>系列</th><th>項目</th><th class="r">價錢</th></tr></thead><tbody>${prices.map(p => `<tr><td>${esc(p[0])}</td><td>${esc(p[1])}</td><td class="r">${hkd(p[2])}</td></tr>`).join('')}</tbody></table></div></div>`;
+    };
+    el.addEventListener('click', e => {
+      const t = e.target.closest('[data-s],[data-item],[data-book]');
+      if (!t) return;
+      if (t.dataset.s) st.s = t.dataset.s;
+      else if (t.dataset.item) st.item = t.dataset.item;
+      else if (t.dataset.book != null) {
+        const name = $('#rp-name', el).value.trim();
+        const phone = fmtPhone($('#rp-phone', el).value);
+        if (!name || nospace(phone).length !== 8) return toast('請輸入姓名同 8 位電話');
+        const price = (prices.find(p => p[0] === st.s && p[1] === st.item) || [0, 0, 0])[2];
+        const b = { id: PM.nextNo('book'), date: $('#rp-day', el).value, slot: $('#rp-slot', el).value, name, phone, device: st.s, issue: st.item, price, status: '已預約' };
+        S().bookings.unshift(b);
+        commit();
+        st.done = b;
+        window.scrollTo(0, 0);
+      }
+      draw();
+    });
+    draw();
+  }
+
+  // ---------------------------------------------------------------- CMS page
+  function page(el, slug) {
+    const pg = S().cms.pages.find(p => p.slug === slug);
+    if (!pg || pg.status !== '已發佈') { el.innerHTML = `<div class="page"><h1>${slug === 'about' ? 'WhatsApp 查詢' : '搵唔到頁面'}</h1><p>${slug === 'about' ? '示範網站：實際會開啟 WhatsApp 對話。' : '呢個頁面未發佈。'}</p><a class="btn" href="#/">返回首頁</a></div>`; return; }
+    el.innerHTML = `<div class="page"><div class="crumb"><a href="#/">首頁</a> / ${esc(pg.title)}</div><h1>${esc(pg.title)}</h1><div class="upd">最後更新 ${esc(pg.updated)}</div>${pg.body.split(/\n+/).map(t => `<p>${esc(t)}</p>`).join('')}</div>`;
+  }
+
+  // Re-render when another tab (the backend) changes the data, unless a dialog is open.
+  store.on(() => { if (!muted && !document.querySelector('.pm-overlay')) route(); });
+  route();
+})();
+
+</script>
+</body>
+</html>
